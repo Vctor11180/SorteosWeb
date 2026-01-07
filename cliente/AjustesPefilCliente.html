@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ajustes de Perfil Cliente - Sorteos Web</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2463eb",
+              "background-light": "#f6f6f8",
+              "background-dark": "#111621",
+              "card-dark": "#1a202c",
+              "input-dark": "#2d3748",
+            },
+            fontFamily: {
+              "display": ["Inter", "Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<div class="w-full bg-[#111318] border-b border-[#282d39]">
+<div class="px-4 lg:px-10 py-3 flex items-center justify-between mx-auto max-w-[1440px]">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined !text-3xl">casino</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sorteos Web</h2>
+</div>
+<div class="hidden lg:flex flex-1 justify-end gap-8 items-center">
+<div class="flex items-center gap-9">
+<a class="text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Inicio</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Sorteos</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Resultados</a>
+<a class="text-primary text-sm font-bold leading-normal" href="#">Mi Perfil</a>
+</div>
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-blue-700 transition-colors text-white text-sm font-bold leading-normal">
+<span class="truncate">Cerrar Sesión</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-[#282d39]" data-alt="User profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYOfvIlWFtB4UFEE70bfsF2ZBD6TbDC3aEycI3vrLfmib_GQcLRVAc9vaWLIEp5B326lanREaTNBAdfiz6tYzrY2EzNZVEuxSjc8T__pXHYKjtE6T9Twczaf8zSrtG5ErGLf4YvYdXGG4Fz8BMHUu-e-cT3Po4DM7N2faB-27h4sj5KLFMxVPC49ViZyGHtknxfiuK38796iZW40E6S9X9yqeZGiJtzlyA1oT5dcrvq1l43-M0qV8Ft_ZjFEf4AqsN2WhLDUwC5YI");'></div>
+</div>
+<!-- Mobile Menu Toggle -->
+<div class="lg:hidden text-white">
+<span class="material-symbols-outlined">menu</span>
+</div>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="flex-1 w-full max-w-[1440px] mx-auto p-4 lg:p-8 flex flex-col lg:flex-row gap-6">
+<!-- Sidebar Navigation -->
+<aside class="w-full lg:w-72 flex-shrink-0">
+<div class="bg-[#111318] dark:bg-[#1a202c] rounded-xl p-6 border border-[#282d39] h-full min-h-[500px] flex flex-col">
+<!-- Profile Snippet -->
+<div class="flex items-center gap-4 mb-8 pb-6 border-b border-[#282d39]">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="User avatar small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBrupAsp5FgxLWvA_4eDdbO6IBv60Wu2kUzWPNIeip67-oe7I9b2nzaS82HH1OLDR3kt3eIpanzRITFMLGrGYsXnYYc9VA7cfYcoXpQAV1ZQ-hf-DJpgeVpZ2V8DWaQFUHaeUoD_hKmPFlDXfF9XUj5aA9UwMFZqIMKCl-VjIMi1AeKlxdFIXwIkUzXtyq30ajvF07xm95jeC5M4OIFYr8wXRjuU9unKPkk0g_KAcx7iySUtEgz0MBnnruUiSrXMXHZKuiIMrFkg4");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold">Juan Pérez</h1>
+<p class="text-[#9da6b9] text-xs">Cliente VIP</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border-l-4 border-primary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-sm font-bold">Información Personal</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9da6b9] hover:bg-[#282d39] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">lock</span>
+<span class="text-sm font-medium">Seguridad</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9da6b9] hover:bg-[#282d39] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="text-sm font-medium">Notificaciones</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9da6b9] hover:bg-[#282d39] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="text-sm font-medium">Métodos de Pago</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9da6b9] hover:bg-[#282d39] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-sm font-medium">Historial de Sorteos</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col gap-6">
+<!-- Page Header -->
+<div class="bg-[#111318] dark:bg-[#1a202c] p-6 rounded-xl border border-[#282d39] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h2 class="text-white text-2xl font-bold tracking-tight">Ajustes de Perfil</h2>
+<p class="text-[#9da6b9] text-sm mt-1">Gestiona tu información personal y preferencias de la cuenta.</p>
+</div>
+</div>
+<!-- Profile Info Section -->
+<section class="bg-[#111318] dark:bg-[#1a202c] rounded-xl border border-[#282d39] overflow-hidden">
+<div class="p-6 border-b border-[#282d39]">
+<h3 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">badge</span>
+                        Información Personal
+                    </h3>
+</div>
+<div class="p-6 lg:p-8">
+<!-- Avatar Upload -->
+<div class="flex flex-col sm:flex-row gap-6 mb-8 items-center sm:items-start">
+<div class="relative group cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full w-24 h-24 border-2 border-primary/50 group-hover:border-primary transition-colors" data-alt="User avatar large" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGuIh6aso4QumOT9FeAmtvNPV87AjsM2Mu8MP96AGuwYqp-sR6G0-z1o0dmajilp9nVokPOW8OcZ50OiPdVJVFhGSggxdLroPiSuUVFsm1KGlsQ1pqDNO2OPEmcqfxRfZxgd_jKnCmN8EFW5qEUr_nxBXzcB4-yqkx2E7vgzFgt1cLqtYKt0PVdk9Wtoc7eV28RI8aVzcqwEnGYvEF5hGaqeqEv_b9jRwJIFEXYSwZJmZiojOfS1yuoS6kLExlnIKcWOsvA8nc6Hk");'></div>
+<div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<div class="flex-1 text-center sm:text-left">
+<h4 class="text-white font-medium mb-1">Tu Foto de Perfil</h4>
+<p class="text-[#9da6b9] text-sm mb-4">Esta foto será visible para tu perfil público y comentarios.</p>
+<div class="flex gap-3 justify-center sm:justify-start">
+<button class="px-4 py-2 bg-[#282d39] hover:bg-[#323846] text-white text-xs font-bold rounded-lg transition-colors border border-[#3e4552]">
+                                    Subir Nueva
+                                </button>
+<button class="px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 text-xs font-bold rounded-lg transition-colors">
+                                    Eliminar
+                                </button>
+</div>
+</div>
+</div>
+<!-- Form Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Nombre Completo</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[#9da6b9] text-[20px]">person</span>
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu nombre" type="text" value="Juan Pérez"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Correo Electrónico</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[#9da6b9] text-[20px]">mail</span>
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="email@ejemplo.com" type="email" value="juan.perez@email.com"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Teléfono</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[#9da6b9] text-[20px]">call</span>
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="+1 234 567 890" type="tel" value="+34 612 345 678"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Dirección</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[#9da6b9] text-[20px]">location_on</span>
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu dirección completa" type="text" value="Calle Gran Vía 22, Madrid"/>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 bg-[#151a23] border-t border-[#282d39] flex justify-end">
+<button class="bg-primary hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-lg shadow-blue-900/20 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                        Guardar Información
+                    </button>
+</div>
+</section>
+<!-- Security Section -->
+<section class="bg-[#111318] dark:bg-[#1a202c] rounded-xl border border-[#282d39] overflow-hidden">
+<div class="p-6 border-b border-[#282d39]">
+<h3 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">lock_reset</span>
+                        Cambiar Contraseña
+                    </h3>
+</div>
+<div class="p-6 lg:p-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Contraseña Actual</label>
+<div class="relative">
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Nueva Contraseña</label>
+<div class="relative">
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-white text-sm font-medium">Confirmar Nueva</label>
+<div class="relative">
+<input class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 bg-[#151a23] border-t border-[#282d39] flex justify-end">
+<button class="bg-[#282d39] hover:bg-[#323846] text-white px-6 py-2 rounded-lg font-bold text-sm transition-all border border-[#3e4552]">
+                        Actualizar Contraseña
+                    </button>
+</div>
+</section>
+<!-- Notifications Section -->
+<section class="bg-[#111318] dark:bg-[#1a202c] rounded-xl border border-[#282d39] overflow-hidden">
+<div class="p-6 border-b border-[#282d39]">
+<h3 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+                        Preferencias de Notificación
+                    </h3>
+</div>
+<div class="p-6 lg:p-8 flex flex-col gap-6">
+<!-- Notification Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#282d39]">
+<div>
+<h4 class="text-white font-medium mb-1">Nuevos Sorteos Disponibles</h4>
+<p class="text-[#9da6b9] text-sm">Recibe alertas cuando se lancen nuevos sorteos en la plataforma.</p>
+</div>
+<div class="flex gap-4">
+<label class="inline-flex items-center cursor-pointer gap-2 group">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Email</span>
+</label>
+<label class="inline-flex items-center cursor-pointer gap-2 group">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">SMS</span>
+</label>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#282d39]">
+<div>
+<h4 class="text-white font-medium mb-1">Resultados de Sorteos</h4>
+<p class="text-[#9da6b9] text-sm">Entérate inmediatamente si has ganado o los resultados generales.</p>
+</div>
+<div class="flex gap-4">
+<label class="inline-flex items-center cursor-pointer gap-2 group">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Email</span>
+</label>
+<label class="inline-flex items-center cursor-pointer gap-2 group">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">WhatsApp</span>
+</label>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h4 class="text-white font-medium mb-1">Promociones y Ofertas</h4>
+<p class="text-[#9da6b9] text-sm">Ofertas especiales en la compra de boletos.</p>
+</div>
+<div class="flex gap-4">
+<label class="inline-flex items-center cursor-pointer gap-2 group">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">Email</span>
+</label>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 bg-[#151a23] border-t border-[#282d39] flex justify-end">
+<button class="bg-[#282d39] hover:bg-[#323846] text-white px-6 py-2 rounded-lg font-bold text-sm transition-all border border-[#3e4552]">
+                        Guardar Preferencias
+                    </button>
+</div>
+</section>
+</main>
+</div>
+<!-- Alert / Toast (Example: Hidden by default, just showing layout) -->
+<!-- Remove 'hidden' class to see it -->
+<div class="fixed bottom-6 right-6 hidden z-50 animate-bounce">
+<div class="bg-[#1a202c] border-l-4 border-green-500 text-white px-6 py-4 rounded shadow-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-green-500">check_circle</span>
+<div>
+<p class="font-bold text-sm">¡Guardado con éxito!</p>
+<p class="text-xs text-gray-400">Tus cambios se han actualizado correctamente.</p>
+</div>
+<span class="material-symbols-outlined text-gray-500 cursor-pointer text-sm ml-4">close</span>
+</div>
+</div>
+</body></html>
+
+//pagina para ajustes de perfil como cliente despues de iniciar sesion
+//Se ve esta pagina para ajustar la informacion personal, la seguridad, las notificaciones y los metodos de pago.

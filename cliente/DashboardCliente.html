@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Cliente - Sorteos Web</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111318", // Matching the component's dark bg
+                        "card-dark": "#282d39", // Matching the component's card bg
+                        "text-secondary": "#9da6b9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full">
+<div class="p-6 pb-2">
+<div class="flex items-center gap-3 mb-8">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
+</div>
+<!-- User Mini Profile -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture showing a smiling person" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h1 class="text-white text-sm font-semibold truncate">Juan Pérez</h1>
+<p class="text-text-secondary text-xs truncate">Usuario Premium</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1.5">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white group transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px]">confirmation_number</span>
+<p class="text-sm font-medium">Mis Boletos</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px]">emoji_events</span>
+<p class="text-sm font-medium">Ganadores</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-sm font-medium">Perfil</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+<p class="text-sm font-medium">Soporte</p>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button class="lg:hidden text-white mr-4">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos, boletos..." type="text"/>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+</button>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-xs text-text-secondary">Saldo Actual</p>
+<p class="text-sm font-bold text-[#0bda62]">$1,250.00</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
+<!-- Hero Section -->
+<section class="rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12 group" data-alt="Abstract dark background with floating shiny particles representing luck and lottery" style='background-image: linear-gradient(180deg, rgba(17,19,24,0) 0%, rgba(17,19,24,0.8) 60%, rgba(17,19,24,1) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBTGKTlTcTG4BHXQPfktzMWQHteochjDzWHtgPaEwftulmS7I2sXlx6-jahQ3bp2ruGdUAzPNDyh5VDcNApqNfpPi2WtgHPLdgOg1oRmva8Y9UpWEwqxpqclIzjKB2bMIS00VQ3RMgHhDqB8xHWRvXPxiwUK0geRKlCjUGt7BXbcLyBHaQtdogcRn_4mvMP56-RdqImA8uF6PRRpRTjIUM3ul88-nSyc9yXdsAhhmSjC05v1P53xI_XNKw3pyw4ZAdVMLkzseqUHto"); background-size: cover; background-position: center;'>
+<div class="absolute inset-0 bg-primary/10 mix-blend-overlay group-hover:bg-primary/20 transition-all duration-500"></div>
+<div class="relative z-10 max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider mb-4 animate-pulse">
+<span class="size-2 bg-red-500 rounded-full"></span>
+                        Termina Pronto
+                    </div>
+<h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
+                        ¡Gana el nuevo <span class="text-primary">iPhone 15 Pro</span>!
+                    </h1>
+<p class="text-gray-300 text-lg mb-8 max-w-lg">
+                        El sorteo cierra en <span class="text-white font-mono font-bold bg-card-dark px-2 py-0.5 rounded">04:23:10</span>. No te quedes sin tu oportunidad de ganar tecnología de punta.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="bg-primary hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5">
+                            Comprar Boletos Ahora
+                        </button>
+<button class="bg-card-dark hover:bg-[#353b4b] text-white px-6 py-3 rounded-lg font-medium text-base border border-[#3b4254] transition-colors">
+                            Ver Detalles
+                        </button>
+</div>
+</div>
+</section>
+<!-- Stats Overview -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Stat Card 1 -->
+<div class="bg-card-dark p-6 rounded-xl border border-[#282d39] flex flex-col gap-2 hover:border-[#3b4254] transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-text-secondary font-medium">Boletos Activos</p>
+<div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+</div>
+</div>
+<div class="flex items-end gap-3 mt-1">
+<p class="text-3xl font-bold text-white">12</p>
+<span class="text-[#0bda62] text-sm font-medium mb-1.5 flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-0.5">trending_up</span>
+                            +2 nuevos
+                        </span>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-card-dark p-6 rounded-xl border border-[#282d39] flex flex-col gap-2 hover:border-[#3b4254] transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-text-secondary font-medium">Ganancias Totales</p>
+<div class="size-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+</div>
+<div class="flex items-end gap-3 mt-1">
+<p class="text-3xl font-bold text-white">$1,250.00</p>
+<span class="text-[#0bda62] text-sm font-medium mb-1.5 flex items-center">
+                            +15% mes
+                        </span>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-card-dark p-6 rounded-xl border border-[#282d39] flex flex-col gap-2 hover:border-[#3b4254] transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-text-secondary font-medium">Puntos de Lealtad</p>
+<div class="size-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500">
+<span class="material-symbols-outlined text-[20px]">loyalty</span>
+</div>
+</div>
+<div class="flex items-end gap-3 mt-1">
+<p class="text-3xl font-bold text-white">450 pts</p>
+<span class="text-purple-400 text-sm font-medium mb-1.5">Nivel Plata</span>
+</div>
+</div>
+</section>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Active Tickets (2/3 width) -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="text-xl font-bold text-white">Mis Boletos Activos</h3>
+<a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="#">Ver todos</a>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm">
+<thead class="bg-[#1e2330] text-text-secondary uppercase text-xs font-semibold">
+<tr>
+<th class="px-6 py-4">Sorteo</th>
+<th class="px-6 py-4">Boleto #</th>
+<th class="px-6 py-4">Fecha Sorteo</th>
+<th class="px-6 py-4">Estado</th>
+<th class="px-6 py-4 text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#353b4b] transition-colors group">
+<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a red sports car" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCTFiMgdFume5-naslxVCi8KHfMZVpSvRg87GKIxN8P5NHTjpdk2IB7ECCt2HiMVK_IMA_nXy4SLin9FJ0CcXZeNMvloEssb0zXm_rHMNbZgYQZPhjeA2bNQC0-krjpFfTN1vVrwvBBVqF1gq8DCmqqjPwaqdE50J8YJMh23dYUUHXzTJsrdACmdylGgV5gxI4Cqcamgny_15ceSBdqTySwyF3fQwBK8xNvqMJqyp2KIYnz3TjO5J_eXR5IuQvppRcNctHHiEC57Ac");'></div>
+                                            Tesla Model 3
+                                        </td>
+<td class="px-6 py-4 text-text-secondary font-mono">#009-221</td>
+<td class="px-6 py-4 text-text-secondary">15 Nov, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0bda62]/10 text-[#0bda62]">
+<span class="size-1.5 rounded-full bg-[#0bda62]"></span>
+                                                Aprobado
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#353b4b] transition-colors group">
+<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a cash stack" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgDDeWRH6VtsICNOqlKVZC8xSDQ8Odnb_Wv-oCXVotBoTfBZjJXtkHsUizRGmeuElmXUhG_5uufBtjr-dAypG0MO-vLJLeAs76tU_qZ4wwUFZLs-SzFT-BNSKrfJKdnefpOjK9oruRH5fSPm0fX0d4MU-Xm0zpDmjoZsC0wVS4dyhq7IIk-lurlLmBvJyFWwFk6CPRVBEqFVXnoL1rIBHqIsrm2-Zrkyd6yn-oTLdKn7-uSAq6NWtr8T8o2nO_k_mdH-hpRZ7941U");'></div>
+                                            Gran Pozo Semanal
+                                        </td>
+<td class="px-6 py-4 text-text-secondary font-mono">#882-104</td>
+<td class="px-6 py-4 text-text-secondary">20 Nov, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500">
+<span class="size-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                                                Pendiente
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#353b4b] transition-colors group">
+<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a gaming console" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA4MZNrwdRTNrWI0pSF4khcf648iTnvoQMBoUYWQv-p-z0cI1r2t34pGp6kDjD30Q-F-QWkeLsvGaREQ3HzmI548zxTdpvnWuhxnVsrL67Yj4RjHRhyxvoe8D9f6yPsw0jDIFty1A13zO4TqgUblVziYlAayICV7VDs220DpcEOZcOGUObXHTCYM6sCgLoflCG7rK3rFAA3zU04L4KUZXqb0Rpn96oM3YZ_dFWfN9B9AWaSwiRKvQ54S4vHjj-qcbAMXPeDAmQnXaY");'></div>
+                                            PS5 Bundle
+                                        </td>
+<td class="px-6 py-4 text-text-secondary font-mono">#114-552</td>
+<td class="px-6 py-4 text-text-secondary">25 Nov, 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0bda62]/10 text-[#0bda62]">
+<span class="size-1.5 rounded-full bg-[#0bda62]"></span>
+                                                Aprobado
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Notifications & Quick Profile (1/3 width) -->
+<div class="flex flex-col gap-6">
+<h3 class="text-xl font-bold text-white">Notificaciones</h3>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-2">
+<div class="flex flex-col gap-1">
+<!-- Notification Item -->
+<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer relative">
+<div class="relative flex-shrink-0">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">emoji_events</span>
+</div>
+<span class="absolute top-0 right-0 size-2.5 bg-primary border-2 border-card-dark rounded-full"></span>
+</div>
+<div>
+<p class="text-sm font-medium text-white">¡Sorteo finalizado!</p>
+<p class="text-xs text-text-secondary mt-0.5">El ganador del sorteo #502 ha sido anunciado. Revisa si ganaste.</p>
+<p class="text-[10px] text-text-secondary mt-2">Hace 2 horas</p>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer">
+<div class="flex-shrink-0">
+<div class="size-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+</div>
+<div>
+<p class="text-sm font-medium text-white">Depósito confirmado</p>
+<p class="text-xs text-text-secondary mt-0.5">Tus $50.00 han sido acreditados a tu cuenta exitosamente.</p>
+<p class="text-[10px] text-text-secondary mt-2">Hace 1 día</p>
+</div>
+</div>
+<!-- Notification Item -->
+<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer">
+<div class="flex-shrink-0">
+<div class="size-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
+<span class="material-symbols-outlined text-[20px]">confirmation_number</span>
+</div>
+</div>
+<div>
+<p class="text-sm font-medium text-white">Boletos Pendientes</p>
+<p class="text-xs text-text-secondary mt-0.5">Tienes 2 boletos esperando aprobación del administrador.</p>
+<p class="text-[10px] text-text-secondary mt-2">Hace 2 días</p>
+</div>
+</div>
+</div>
+<button class="w-full text-center py-3 text-xs font-semibold text-text-secondary hover:text-white transition-colors border-t border-[#282d39] mt-1">
+                            Ver todas las notificaciones
+                        </button>
+</div>
+</div>
+</div>
+<!-- Other Active Raffles (Grid) -->
+<div>
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold text-white">Sorteos Destacados</h3>
+<div class="flex gap-2">
+<button class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Raffle Card 1 -->
+<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="h-40 bg-cover bg-center relative" data-alt="Red motorcycle parked in a studio setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmoyYDhgLhe24sBQ_d4ZJKBG2B6w0Ml47veU2fB8l9ENOIJ9RkWIGLTF9hDp8i9lt1Oag8-NoZd5RSJu3JO0Yd2AoZKNXkOVpCIzsGVskrWydzG361Xfg18f4KMG_8whDRs1deQoc6gYBxhU24OcSx6urh588_06I930OoNOsLg0IeZf5yvU94zBoRIB-lsau2zlrDTsa3wtI_pNy5DsdvORYv4-Ejx2jVrCFOkWLULvNSigNDr_eaM1_agBK2aYy5XpkkXoW-D34");'>
+<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                                $5.00 / boleto
+                            </div>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-bold text-white mb-1 truncate">Ducati Panigale V4</h4>
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs text-text-secondary">Quedan 150 boletos</span>
+<span class="text-xs font-mono text-yellow-500">23:59:00</span>
+</div>
+<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+                                Participar
+                            </button>
+</div>
+</div>
+<!-- Raffle Card 2 -->
+<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="h-40 bg-cover bg-center relative" data-alt="High-end laptop on a desk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhHqy8PUURfhnrtv6fmG5RhuYNK1sMtZ7tObgDNGTVF-8W0La1xgRdmmBK3uHl9KRm08mHzfCx4O5XE3mvC__xPjPeKX7MnZVjo-CRWOoPViOxAXz00ALd5InieV9AbWPL5HCkX2vvZxIcBvkpOaxIUbC2lgRX0pBgs8umcZoPSmhYyVEvbb7s7A2VBkrA9lA-O7YC46xSaUBetbQng8aVjjYdo-lB7PzfthfKw00h-nP7aZikTcRrbJ7b61VOmKQrte9ODM5fTvM");'>
+<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                                $2.00 / boleto
+                            </div>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-bold text-white mb-1 truncate">MacBook Pro M3</h4>
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs text-text-secondary">Quedan 430 boletos</span>
+<span class="text-xs font-mono text-yellow-500">2 Días</span>
+</div>
+<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 35%"></div>
+</div>
+<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+                                Participar
+                            </button>
+</div>
+</div>
+<!-- Raffle Card 3 -->
+<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="h-40 bg-cover bg-center relative" data-alt="Stack of gold coins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdrq7HXprS3_eVeuYorN_bZSnRy8yWQNV0RCwllNYlD-3hBNHLSCs2B4RrvhF6i3_qx9XeY0cwDo3Px0L734oW3YIK_EgaHSFCyI-IXItFOY8mZTk1L4tCYBd5eLUtMhHH1-9GzKQ2jyDRm8rcxh_W5Z2ulz5zrOz697rgfT84RoqF6UQgwMy46ENlmNQ9u0tMQbDx1XsicWJ8qcU-6ADkFjX-1_QZISnkcLzPCNURQ1gReLf3019_EXUKEX7601K1khjV_AdaPhw");'>
+<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                                $10.00 / boleto
+                            </div>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-bold text-white mb-1 truncate">$5,000 en Efectivo</h4>
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs text-text-secondary">Quedan 20 boletos</span>
+<span class="text-xs font-mono text-red-400 animate-pulse">00:45:12</span>
+</div>
+<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+                                Participar
+                            </button>
+</div>
+</div>
+<!-- Raffle Card 4 -->
+<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="h-40 bg-cover bg-center relative" data-alt="Luxury watch on a dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA_X34U5RwE868OA2ZDc3-KIuFL0HO1RhC4iYcu30MaouU6wEzcOcUvPyOwNjz-uh9fg45dA7mqhN7FnULIkt8hpUUM7NOIIg_c_Rhr5UptB7OH77OdNLigqKfGN38JTJUR6E0485v_9gJg4f7JwiKo-1BesqigVP9ZL8ZxBBo3uuYW5mVzKWfFDQVrw3DzeITMldCi7H1ReUEy1gAA4YASsN3YC2VZKXqjJIwpxAvwmZU2pen8U_ssmba0vgNZEGBtiJkcPGIVkf4");'>
+<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                                $15.00 / boleto
+                            </div>
+</div>
+<div class="p-4">
+<h4 class="text-lg font-bold text-white mb-1 truncate">Rolex Submariner</h4>
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs text-text-secondary">Quedan 800 boletos</span>
+<span class="text-xs font-mono text-text-secondary">5 Días</span>
+</div>
+<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
+</div>
+<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+                                Participar
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Spacing -->
+<div class="h-10"></div>
+</div>
+</main>
+</body></html>
+
+/dashboardcliente pagina de inicio del cliente despues de iniciar sesion

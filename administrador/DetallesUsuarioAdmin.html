@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalles de Usuario Admin</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-base">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#282d39] bg-[#111318] px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined">confirmation_number</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">LottoAdmin</h2>
+</div>
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Sorteos</a>
+<a class="text-white text-sm font-medium leading-normal" href="#">Usuarios</a>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Pagos</a>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Configuración</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#9da6b9] flex border-none bg-[#282d39] items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#282d39] focus:border-none h-full placeholder:text-[#9da6b9] px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal" placeholder="Buscar usuario..." value=""/>
+</div>
+</label>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#3b4354]" data-alt="Admin User Profile Picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqHFtRjboNkOknHV3XpnXpf5_FGoEcSXdUGHCl7CoWSOOmA4qvJM7rRRtaL_8DTYBM0M4StkBt23SzxXjT4b2ZpAYVzkOREawIQavcQbPeZ74pTRrd-P5lgQbXV-RB2gnbMA9TlB-GXzYwE6xuslj9fr3BZ1fnfh_uV6JZg6m080zvXmuXGRfj1t2YWzXH7c7FyD0xtRsK5hqVryyYrQVvX4gfkSjzt8sYQBcS-8IQIK304Pb-N0EFcrsLOABFx0hTtwNUbVQB73o");'></div>
+</div>
+</header>
+<div class="layout-container flex h-full grow flex-col bg-[#111318]">
+<div class="w-full flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[1200px] flex-1 px-4 md:px-8">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 py-4">
+<a class="text-[#9da6b9] hover:text-primary transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[18px]">home</span>
+                            Inicio
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<a class="text-[#9da6b9] hover:text-primary transition-colors text-sm font-medium leading-normal" href="#">Usuarios</a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Detalles de Usuario</span>
+</div>
+<!-- Page Heading & Actions -->
+<div class="flex flex-col md:flex-row flex-wrap justify-between gap-6 py-6 border-b border-[#282d39]">
+<div class="flex items-start gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-20 border-2 border-[#282d39]" data-alt="User Profile Picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDeGT95OhKm8WYbK2jwnHflNmVKv18iC3m-IbPYh4Zh7YUd_jsOnu2E5MAcQw0uCiqnC-8GQztOX3lMctK3qAQFaeIAftDgAnzKhUXrQhcV-DOZxMhWjcNgoNzAzdVnmH_XERfjhYOoWFmfGxrlpN_E3f5ZsN5psNWXFUhMjdliCKY61ZR54l9tnyj8D9ePTAHMesgD_jot5xyW_fYQIvKfdh7DFg2DqKVrfpJy780FS6JU2cjR01wtyRyajCTIOrGTv5VAm43774o");'></div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<h1 class="text-white text-3xl font-bold leading-tight">Juan Pérez</h1>
+<span class="inline-flex items-center gap-1 rounded-full bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
+                                        Activo
+                                    </span>
+</div>
+<p class="text-[#9da6b9] text-sm font-normal">ID: #849320 • Miembro desde Ene 2023</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-[#9da6b9] text-[16px]">location_on</span>
+<p class="text-[#9da6b9] text-xs">Madrid, España</p>
+</div>
+</div>
+</div>
+<div class="flex gap-3 items-center">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] border border-[#3b4354]">
+<span class="material-symbols-outlined mr-2 text-[18px]">lock_reset</span>
+<span class="truncate">Resetear Password</span>
+</button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="material-symbols-outlined mr-2 text-[18px]">edit</span>
+<span class="truncate">Editar Usuario</span>
+</button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
+<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Boletos Comprados</p>
+<div class="p-2 bg-[#282d39] rounded-lg text-primary">
+<span class="material-symbols-outlined">local_activity</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold">24</p>
+<p class="text-xs text-green-400 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +2 esta semana
+                            </p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Sorteos Ganados</p>
+<div class="p-2 bg-[#282d39] rounded-lg text-yellow-500">
+<span class="material-symbols-outlined">trophy</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold">5</p>
+<p class="text-xs text-[#9da6b9] font-medium">Último: Sorteo Navidad</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Total Gastado</p>
+<div class="p-2 bg-[#282d39] rounded-lg text-green-500">
+<span class="material-symbols-outlined">payments</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold">$1,250</p>
+<p class="text-xs text-[#9da6b9] font-medium">Promedio: $52/mes</p>
+</div>
+</div>
+<!-- Main Grid Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Info & Actions -->
+<div class="flex flex-col gap-6 lg:col-span-1">
+<!-- Personal Info Card -->
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden">
+<div class="px-5 py-4 border-b border-[#282d39]">
+<h3 class="text-white text-lg font-bold">Información Personal</h3>
+</div>
+<div class="p-5 flex flex-col gap-4">
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Nombre Completo</p>
+<p class="text-white text-sm">Juan Carlos Pérez</p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Correo Electrónico</p>
+<div class="flex items-center gap-2">
+<p class="text-white text-sm">juan.perez@email.com</p>
+<span class="material-symbols-outlined text-green-500 text-[16px]" title="Verificado">verified</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Teléfono</p>
+<p class="text-white text-sm">+34 612 345 678</p>
+</div>
+<div class="h-px bg-[#282d39] w-full my-1"></div>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Dirección</p>
+<p class="text-white text-sm">Calle Mayor 123</p>
+<p class="text-white text-sm">28001, Madrid</p>
+<p class="text-white text-sm">España</p>
+</div>
+</div>
+</div>
+<!-- Danger Zone Card -->
+<div class="rounded-xl border border-red-900/30 bg-[#1e232e] overflow-hidden">
+<div class="px-5 py-4 border-b border-red-900/30 bg-red-900/10">
+<h3 class="text-red-400 text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined">warning</span>
+                                        Zona de Peligro
+                                    </h3>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<p class="text-[#9da6b9] text-sm mb-2">Estas acciones pueden restringir el acceso del usuario.</p>
+<button class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 text-sm font-medium transition-colors">
+<span>Suspender Temporalmente</span>
+<span class="material-symbols-outlined text-[18px]">pause_circle</span>
+</button>
+<button class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 text-sm font-medium transition-colors">
+<span>Banear Usuario</span>
+<span class="material-symbols-outlined text-[18px]">block</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: History -->
+<div class="flex flex-col gap-6 lg:col-span-2">
+<!-- Tabs & Content Wrapper -->
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden flex flex-col h-full">
+<!-- Tabs Header -->
+<div class="flex border-b border-[#282d39] overflow-x-auto">
+<button class="px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                                        Historial de Boletos
+                                    </button>
+<button class="px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                        Historial de Pagos
+                                    </button>
+</div>
+<!-- Table: Tickets -->
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#282d39]/50 border-b border-[#282d39]">
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Sorteo</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Fecha</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Boletos</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Estado</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#282d39]/30 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Abstract colorful raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9eDYvieG69qdNkIILqBzH6zAnxWWKvPFkFVNpgU6pEzWTRS-oOXJjfNCSsV4FBpzijjSQSL8wunjneR7-m4TjeyJWq_58sy4GtOhPPTWR0AMxNjOrBfNMyJ8y45famsGcT0-u0wihzmqiaCl05vpWvGVt-mVOPzRXf8l0CutYr03EhmxldpjRjgR4xh_XhloqcO0gn1xSHAhz_dxtqJ1_zPOhKbe9b8vwb6Ga04kz9kD275clS9wGelddzKs_eWcwVzL1nQPLvhY");'></div>
+<div>
+<p class="text-white text-sm font-medium">Gran Sorteo Navideño</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2023-001</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">24 Dic 2023</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">5 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20">
+                                                        Finalizado
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-[#9da6b9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Tech gadget raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBYbBWcV7WzsMcmShPucG0UX0IldctNPj9PRQU6sikgTeRvXmKJODtyKFlVMO13tXKbCvm4Han1LE6reXtzeVHngXoCUrpARRb9BggZGUUDxhbCQs5ngtXbVsfBPjaq7mHGMJiE3blBido-uPlJhTs4LofqXt5fR2MzDy5auHFHfNqEBZXSCE6mnZOQ90QaNOdHUOhFn3GulNqXh8ta2SCOTbDcvYSXrPRBlGKGqunpN1IXZ-fFsMJ9XjaJ7wJVc_9pN_aJYkw0cV8");'></div>
+<div>
+<p class="text-white text-sm font-medium">MacBook Pro M3</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-012</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">15 Ene 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">2 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
+                                                        Ganador
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-[#9da6b9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Car raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAFvAWT1Iq67VhBJWPFN225tm261KmWKF3ZOXDwCis1_P1f8NxIf0PKSMy5fHj2HOzQHlhXDqCghs1FUZ_tEu8pkPQR5_LV46TTatwE5n-QOWgp4RP5k_o47K4dvB1D97uB_TjmYcA5MKvoEsnUbiBXuQPg-JbEwicbQ48CQ7xHGZcNMUT2Gbr2gnMrJHCgFbVxPPfKEVgtRsCyw5nYP3LwKql81YUThddgntLM69zVDXdNd2K2WIimzD89EU0yrifdG1-d9VtRflU");'></div>
+<div>
+<p class="text-white text-sm font-medium">Tesla Model 3</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-045</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">28 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">1 Boleto</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">
+                                                        En curso
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-[#9da6b9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Cash prize raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdzxSMhWMYOWZHBwBGzN-OBH70M_Nqs15AvWlBXodv7r6hRnoSW_SIkiLAE7v3jCuO75Hln-PunxERYQ_6Z3dImXkiw4mKdxuAQrL3BPv5bm6D9UuCq23PWtlubX-zpqlZsbaZlWgUELtLOZhdqUCogv-rf9jdzAP5hFVQKJGDO2tSvtyBfA5Av7EIxw2DjXWSOGiXU6af9oa0cG-HJCj91FhMM1HnvCcya3W2eueDhqFUNU6JGfAiyezMp6l4slcmPOFGQqY7yrw");'></div>
+<div>
+<p class="text-white text-sm font-medium">Sorteo Semanal $500</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-044</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">20 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">10 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">
+                                                        No Ganador
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="text-[#9da6b9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-[#282d39] flex justify-center">
+<button class="text-[#9da6b9] text-sm hover:text-white transition-colors flex items-center gap-1">
+                                        Ver historial completo
+                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Recent Transactions Summary (Mini Table) -->
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden">
+<div class="px-5 py-4 border-b border-[#282d39] flex justify-between items-center">
+<h3 class="text-white text-lg font-bold">Pagos Recientes</h3>
+<button class="text-primary text-sm font-medium hover:underline">Ver Todos</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#282d39]/50 border-b border-[#282d39]">
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">ID Pago</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Fecha</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Método</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Monto</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-3 px-5 text-[#d1d5db] text-sm">#PAY-9921</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm">28 Feb 2024</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Visa
+                                                </td>
+<td class="py-3 px-5 text-white text-sm font-bold">$25.00</td>
+<td class="py-3 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-3 px-5 text-[#d1d5db] text-sm">#PAY-9854</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm">20 Feb 2024</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> PayPal
+                                                </td>
+<td class="py-3 px-5 text-white text-sm font-bold">$100.00</td>
+<td class="py-3 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-3 px-5 text-[#d1d5db] text-sm">#PAY-9812</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm">10 Feb 2024</td>
+<td class="py-3 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Visa
+                                                </td>
+<td class="py-3 px-5 text-white text-sm font-bold">$50.00</td>
+<td class="py-3 px-5">
+<span class="text-red-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cancel</span> Fallido
+                                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
+
+//pagina para ver los detalles de un usuario como administrador despues de iniciar sesion
+//Se ve esta pagina para ver los detalles de un usuario y sus datos, los boletos comprados, los sorteos ganados, el total gastado y los pagos pendientes.

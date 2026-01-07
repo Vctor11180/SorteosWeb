@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Administrador - Sorteos Web</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "card-dark": "#1e2433", // Slightly lighter than bg-dark for contrast
+                        "border-dark": "#2a3241",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Configuración
+                </a>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Dashboard</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- Action Bar -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Resumen General</h2>
+<p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Bienvenido de nuevo. Aquí tienes lo que está pasando hoy.</p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Crear Nuevo Sorteo
+                    </button>
+</div>
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Total Ingresos -->
+<div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">attach_money</span>
+</div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">attach_money</span>
+</div>
+<span class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +12%
+                            </span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Ingresos Totales</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">$45,200</h3>
+</div>
+</div>
+<!-- Boletos Vendidos -->
+<div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-blue-400">confirmation_number</span>
+</div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+<span class="material-symbols-outlined">confirmation_number</span>
+</div>
+<span class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
+                            </span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Boletos Vendidos</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">1,450</h3>
+</div>
+</div>
+<!-- Sorteos Activos -->
+<div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-purple-400">casino</span>
+</div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+<span class="material-symbols-outlined">casino</span>
+</div>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Sorteos Activos</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">12</h3>
+</div>
+</div>
+<!-- Pagos Pendientes -->
+<div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-yellow-500/30 flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-yellow-500">pending_actions</span>
+</div>
+<div class="flex justify-between items-start">
+<div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<span class="flex items-center text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full animate-pulse">
+                                Acción Requerida
+                            </span>
+</div>
+<div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pagos Pendientes</p>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">23</h3>
+</div>
+</div>
+</div>
+<!-- Main Grid: Charts & Sidebar List -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Chart Section -->
+<div class="lg:col-span-2 bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark p-6">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Ventas de Boletos</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Últimos 30 días</p>
+</div>
+<select class="bg-gray-100 dark:bg-[#111621] border-none text-xs rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-0">
+<option>Últimos 30 días</option>
+<option>Esta semana</option>
+<option>Este año</option>
+</select>
+</div>
+<div class="h-64 w-full">
+<!-- SVG Chart Simulation -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
+<defs>
+<lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+<line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
+<line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
+<line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
+<!-- Area Path -->
+<path d="M0,250 
+                                         L0,200 
+                                         C100,180 150,220 200,150 
+                                         C250,80 300,120 400,100 
+                                         C500,80 550,60 600,90 
+                                         C650,120 700,50 800,40 
+                                         L800,250 Z" fill="url(#gradient)"></path>
+<!-- Line Path -->
+<path d="M0,200 
+                                         C100,180 150,220 200,150 
+                                         C250,80 300,120 400,100 
+                                         C500,80 550,60 600,90 
+                                         C650,120 700,50 800,40" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
+<!-- Data Points -->
+<circle cx="200" cy="150" fill="#2463eb" r="4" stroke="#1e2433" stroke-width="2"></circle>
+<circle cx="400" cy="100" fill="#2463eb" r="4" stroke="#1e2433" stroke-width="2"></circle>
+<circle cx="600" cy="90" fill="#2463eb" r="4" stroke="#1e2433" stroke-width="2"></circle>
+<circle cx="800" cy="40" fill="#2463eb" r="4" stroke="#1e2433" stroke-width="2"></circle>
+</svg>
+</div>
+<div class="flex justify-between text-xs text-gray-500 mt-2 px-2">
+<span>01 Nov</span>
+<span>08 Nov</span>
+<span>15 Nov</span>
+<span>22 Nov</span>
+<span>29 Nov</span>
+</div>
+</div>
+<!-- Closing Soon List -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark flex flex-col">
+<div class="p-6 border-b border-gray-200 dark:border-border-dark flex justify-between items-center">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Sorteos por Finalizar</h3>
+<a class="text-xs text-primary font-medium hover:underline" href="#">Ver todos</a>
+</div>
+<div class="flex-1 overflow-y-auto p-2">
+<div class="flex flex-col gap-2">
+<!-- Item 1 -->
+<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" data-alt="Red sneakers raffle prize" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCq-3tgp5lGbB0xASzRA--jUDA9r0pBzpdDgkBaYI42sDDGEwGNzJ_l24S6OTxUQUyKqwuaeU12ls5Lj9omLp-LstWtOeIdpdSkhwHZrsm89oAv-kGOrz1Fp25skZnqS0KiD-bf2f7NRh5NVfwAg1gja50faEvBuqUK_HQVsIEZXsFhWF0CZVrGfvJFC88v0mcmy7frNodLO4sn5ZxsbBiOKKwVF_eVCBA5eukr1N5NdnsOGMV_fhi10-UamU5Wn02ho_ksuCGxUHw')"></div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">Sorteo Zapatillas Jordan</h4>
+<p class="text-xs text-gray-500">Cierra en: <span class="text-orange-500 font-bold">2h 15m</span></p>
+</div>
+<button class="text-gray-400 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" data-alt="Smartphone raffle prize" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCpkgFbIrimnZVN6jB76zXf3QMxMQJ7bqKdmvlEuxwNYyrQL89geWWudBnKEvVYdYTlxethl7onPpeFYyT_o9zbxG_v7C26vX7eBBmn-QH7dPk3l-KPgbYjVybTVri00vTIkaPyCEOB5NdFoXMnpAybGzUEWEYlmI0I1Mi0H7IFAtfcPg4mPWQUh4hNfthDqigBf-7u21uOoAoDGKVlJ6UFX_qn8cn2sKFo_YRzVlcSQh2kgC2UwAi5zh0c8crYwqqkNiNjXhVQyAc')"></div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">iPhone 15 Pro Max</h4>
+<p class="text-xs text-gray-500">Cierra en: <span class="text-orange-500 font-bold">5h 30m</span></p>
+</div>
+<button class="text-gray-400 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Item 3 -->
+<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" data-alt="Cash prize stack" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBe3AebY0jlP6MwbHmPk7-cJ9UCA1rCis62mcAqVOLZt-94jGy6747rPmqmNOHDGY0ogR4p8RbJi-Kfr4XiPQSVYbOkCgkwnCsjg64-na6LhSJ-tUk3GigKdVp7RDZWExN0r1OWZLuuKPtkkYEefW2tAd70OIGR4NX5GVwYuYjYu9rLp50klMPrFlAt9d-c7t4EPMJsw2HRyK-ZZXzHRQFPJjch7jkxEZkBdYUWGMgbYQiOK-e_Uyqp8lyffJeGnpDntZVC4Y4J7iI')"></div>
+<div class="flex-1 min-w-0">
+<h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">Gran Premio $50,000</h4>
+<p class="text-xs text-gray-500">Cierra en: <span class="text-gray-400">1d 4h</span></p>
+</div>
+<button class="text-gray-400 hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<button class="w-full py-2 text-sm text-center text-slate-900 dark:text-white bg-gray-100 dark:bg-[#111621] hover:bg-gray-200 dark:hover:bg-[#2a3241] rounded-lg transition-colors font-medium">
+                                Gestionar Ganadores
+                            </button>
+</div>
+</div>
+</div>
+<!-- Recent Payments Table -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden">
+<div class="p-6 border-b border-gray-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Validación de Pagos Recientes</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Pagos que requieren tu atención inmediata.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Filtrar</button>
+<button class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Exportar</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-[#151a25] border-b border-gray-200 dark:border-border-dark">
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Usuario</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Sorteo</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Referencia</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Monto</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Estado</th>
+<th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-border-dark">
+<!-- Row 1 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-white">JP</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Juan Pérez</p>
+<p class="text-xs text-gray-500">juan.perez@email.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">Sorteo Zapatillas Jordan</td>
+<td class="py-4 px-6 text-sm text-gray-500 font-mono">REF-982342</td>
+<td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$25.00</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500">
+                                            Pendiente
+                                        </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+<button class="text-gray-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[20px]">block</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">MR</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">María Rodríguez</p>
+<p class="text-xs text-gray-500">maria.r@email.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">iPhone 15 Pro Max</td>
+<td class="py-4 px-6 text-sm text-gray-500 font-mono">REF-982343</td>
+<td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$50.00</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
+                                            Aprobado
+                                        </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">LG</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Luis González</p>
+<p class="text-xs text-gray-500">luis.g@email.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">Gran Premio $50,000</td>
+<td class="py-4 px-6 text-sm text-gray-500 font-mono">REF-982344</td>
+<td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$100.00</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
+                                            Rechazado
+                                        </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Detalles</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center text-xs font-bold text-white">AS</div>
+<div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Ana Sánchez</p>
+<p class="text-xs text-gray-500">ana.s@email.com</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">Sorteo Zapatillas Jordan</td>
+<td class="py-4 px-6 text-sm text-gray-500 font-mono">REF-982345</td>
+<td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$25.00</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500">
+                                            Pendiente
+                                        </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+<button class="text-gray-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-[20px]">block</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark flex items-center justify-between">
+<p class="text-xs text-gray-500">Mostrando 4 de 23 pendientes</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
+<button class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
+
+//pagina para ver el dashboard como administrador despues de iniciar sesion
+//Se ve esta pagina para ver el dashboard de la plataforma y los datos de los sorteos, los boletos vendidos, los pagos pendientes, los sorteos activos y los sorteos por finalizar.

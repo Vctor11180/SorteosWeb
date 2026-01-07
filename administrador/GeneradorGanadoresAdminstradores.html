@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Generación de Ganadores - Admin</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2424eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111118",
+                        "surface-dark": "#282839",
+                        "success": "#22C55E",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
+<!-- Top Navigation -->
+<div class="w-full border-b border-solid border-[#282839] bg-[#111118]">
+<div class="px-4 md:px-10 py-3 flex items-center justify-between whitespace-nowrap">
+<div class="flex items-center gap-4 text-white">
+<div class="size-8 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">casino</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Admin Sorteos</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<div class="hidden md:flex items-center gap-9">
+<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
+<a class="text-white text-sm font-medium leading-normal" href="#">Sorteos</a>
+<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Usuarios</a>
+<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Configuración</a>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#282839]" data-alt="Admin profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrKlWhd4pso74-R513YDBwJxwjJ-mjAB4-z9-F_gIpLVynxBsvyhE1ApGZ0FDEuXQcSONYY9GhLvLNptfWP5jiGLQY7h4DyuDN-LmQe3umtrgVAgGRVBuVbmN0vHLRs3VSSRglcZk7JFjTMO6YG8JiK5EDPAPPZEtL6mmFm2AsnzTfXRBu_n_djxv9S8n68AJ7ia_DwrBqFT7gUP5PBtFwG3KlrnoSXULmzLVAXhk5TMQUpFfg2VD8eEt9Xn0JE0rhUCn37DzFR7U");'></div>
+</div>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="flex flex-1 justify-center py-5 px-4 md:px-10 lg:px-40">
+<div class="flex flex-col max-w-[1200px] flex-1 w-full gap-6">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 px-4 pt-4">
+<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Inicio</a>
+<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
+<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Admin</a>
+<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
+<span class="text-white text-sm md:text-base font-medium leading-normal">Generación de Ganadores</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between gap-3 px-4">
+<div class="flex min-w-72 flex-col gap-2">
+<h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Generación de Ganadores</h1>
+<p class="text-[#9d9db9] text-base font-normal leading-normal">Selecciona y gestiona los ganadores de los sorteos finalizados.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 bg-surface-dark hover:bg-[#34344a] text-white px-4 py-2 rounded-lg transition-colors border border-gray-700/50">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="text-sm font-medium">Exportar Reporte</span>
+</button>
+</div>
+</div>
+<!-- Filters & Search Toolbar -->
+<div class="px-4 py-2 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<!-- Search -->
+<label class="flex flex-col min-w-40 h-12 w-full md:w-96">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#3e3e52] focus-within:border-primary transition-colors">
+<div class="text-[#9d9db9] flex bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
+</div>
+</label>
+<!-- Status Chips -->
+<div class="flex gap-2 flex-wrap">
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all">
+<span class="text-sm font-medium leading-normal">Todos</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
+<span class="text-sm font-medium leading-normal">Pendientes</span>
+</button>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
+<span class="text-sm font-medium leading-normal">Completados</span>
+</button>
+</div>
+</div>
+<!-- Raffle Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+<!-- Card 1: Pending Selection (High Priority) -->
+<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="relative h-48 w-full bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Blue abstract pattern representing technology raffle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoSINFL-cpmVH_XlcaDl1cwe8PsmG6-LfZhAMp6RsoF7trtqDTRFfKk5sIXMgJrd9WBHK-DdbbMp_iBnmZAjzllvHHUYkSJAGEVjLDLCWhBv4MmI_vIZPvHHpPo2ZPCLyUqtprYR5tjtzr02_ZjfJZn5vp65sDxXmvx8VfV15Knvf7T1LqTf0Ipli9ePqiuYdYZlvM39ef-ZSkeTiOjYUZF_V_XrEbpF1MSSt0CKq1dhIInIoMF6-wEfcLAFFPqb0iMqZd4reRAEM");'></div>
+<div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-surface-dark to-transparent"></div>
+</div>
+<div class="p-5 flex flex-col flex-1 gap-4">
+<div>
+<h3 class="text-white text-xl font-bold mb-1">MacBook Pro M3 Max</h3>
+<p class="text-[#9d9db9] text-sm">Sorteo #8821 • Cerrado hace 2 horas</p>
+</div>
+<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3e3e52]">
+<div class="flex flex-col">
+<span class="text-[#9d9db9] text-xs uppercase font-semibold">Boletos</span>
+<span class="text-white font-medium">2,000 / 2,000</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[#9d9db9] text-xs uppercase font-semibold">Recaudado</span>
+<span class="text-white font-medium">$10,000 USD</span>
+</div>
+</div>
+<div class="mt-auto pt-2">
+<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
+                                Generar Ganador
+                            </button>
+<p class="text-center text-[#9d9db9] text-xs mt-3 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">lock</span>
+                                Selección aleatoria segura
+                            </p>
+</div>
+</div>
+</div>
+<!-- Card 2: Winner Selected (Action needed) -->
+<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5">
+<div class="relative h-48 w-full bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Green luxury car abstract background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXzkVVFwoeTbIqAEzkgAVc-PdfRWGN9CzfHgq-R-IyIpCOpJHkWsiz3_kHlhIYj37QT3BpnU6WAlltwPp1D8r0BOtxTtdt0vYN6_uxtB-FyFrbFIuNiKnwGj34v6_Wqh2xWrLJ2l04DSYYmo798YqtuEISk_CsI0yiVwzDA2HHWgbkq5m-tGpkrI_Zpa9Rp7l-O5CJMLz2EdrbSPxIzGkvBuTJgBeJW-tJ4o9n70jbKvoEvZPQILuGV59UT4vBAw67bBVa6ZNgdLE");'></div>
+<div class="absolute top-3 right-3 bg-success text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Seleccionado
+                         </div>
+<div class="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-surface-dark via-surface-dark/60 to-transparent"></div>
+<!-- Winner Overlay Preview -->
+<div class="absolute bottom-4 left-4 flex items-center gap-3">
+<div class="size-12 rounded-full border-2 border-success bg-gray-700 bg-cover bg-center" data-alt="Winner profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD_8uQxIfLXRHTf7V4hHU-WPM8q0h5LPe3yQih00baUgiGfYdj9wfffllB6qrMJ-hULBuNDkJF9YE2wmsw5qQ5Cscip8-N0u7kRU_YPGfDRz9QkxC3qFzIkzWrL3zJa60er4jCFEaxudlGlRSOHKTG0DAHpCRz0lrtj7hvh5OqLwa23lunzn-9CUkQqgTSAWYLsXmN6SAC8KTgvyhWILRBRd8t9cewmkqVO1QQgKl58L30fRR-0mtlAmW9vQwJ3jF1xxnyB3BR3TaU");'></div>
+<div>
+<p class="text-white font-bold text-lg leading-tight">Carlos Ruiz</p>
+<p class="text-success font-medium text-sm">Ganador</p>
+</div>
+</div>
+</div>
+<div class="p-5 flex flex-col flex-1 gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-white text-xl font-bold mb-1">Ford Mustang GT</h3>
+<p class="text-[#9d9db9] text-sm">Sorteo #8820</p>
+</div>
+</div>
+<div class="bg-[#1e1e2d] rounded-lg p-3 border border-[#3e3e52] flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[#9d9db9] text-xs">Boleto Ganador</span>
+<span class="text-success text-2xl font-mono font-bold tracking-widest">#0592</span>
+</div>
+<div class="size-10 rounded-full bg-success/20 flex items-center justify-center text-success">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+</div>
+<div class="mt-auto flex flex-col gap-2 pt-2">
+<button class="w-full h-10 bg-[#34344a] hover:bg-[#3f3f5a] text-white font-medium rounded-lg border border-[#4a4a6a] flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">campaign</span>
+                                Anunciar Ganador
+                            </button>
+<button class="w-full h-10 bg-transparent hover:bg-white/5 text-primary font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">mail</span>
+                                Notificar a Carlos
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 3: Pending Selection -->
+<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="relative h-48 w-full bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Gold coins stack abstract" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtQcUBS2tMBXNjknJwJnuHc3dl3WeLGU9W_SWaMPjrG_b4EBZAPEYGOu0YmHcS7RqstSdcBLWocqrp0xyThF4vlP-XqXTc11iLDyX770MQZPGI5X9aOXh2qBFE-W3vGORC0R4C5A-c-Fu6tmCuapI750DAuW1-pvoDy-SuYkM4fhSviZVjli_Pg5eRyI17TR3qgb2jezjBBXZ9pRb01XTUpZpyCH4biUhw5UpdeHGa-1FQXyZbwSBBHnzpmAuMSd2SywcyCwQUIqk");'></div>
+<div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-surface-dark to-transparent"></div>
+</div>
+<div class="p-5 flex flex-col flex-1 gap-4">
+<div>
+<h3 class="text-white text-xl font-bold mb-1">Bono Efectivo $2,500</h3>
+<p class="text-[#9d9db9] text-sm">Sorteo #8819 • Cerrado ayer</p>
+</div>
+<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3e3e52]">
+<div class="flex flex-col">
+<span class="text-[#9d9db9] text-xs uppercase font-semibold">Boletos</span>
+<span class="text-white font-medium">500 / 500</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[#9d9db9] text-xs uppercase font-semibold">Recaudado</span>
+<span class="text-white font-medium">$5,000 USD</span>
+</div>
+</div>
+<div class="mt-auto pt-2">
+<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
+                                Generar Ganador
+                            </button>
+<p class="text-center text-[#9d9db9] text-xs mt-3 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">lock</span>
+                                Selección aleatoria segura
+                            </p>
+</div>
+</div>
+</div>
+<!-- Card 4: Upcoming/Live (Disabled State Example) -->
+<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75">
+<div class="relative h-48 w-full bg-gray-800 grayscale">
+<div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="Smart home devices collection" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBw3ocfkeRB5vo7w-n75WEJf1CFyeKk7qC3Il0zG_ze19TwO8pRz8MrCSApAo6oaDEEfVCGFSX11McTFqxtzsvnclH6gof9EyyKssuEz7YgKv3sAnx-zCmP-RYSQQC65dIawD0ZAVfgxVnrHSGfiCyGEXtd_bvwaxYYfhEO1TFjDDX6wlRHHrk09sn-tPfWVubrOA9jaL79-ehIBsVKfKxraQpm9bfTkXkYPk4gbv-_Xq0xlyNIzm1SVKuG0scwCfYwQHCXNlN_GgU");'></div>
+<div class="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">En Curso</div>
+</div>
+<div class="p-5 flex flex-col flex-1 gap-4">
+<div>
+<h3 class="text-white text-xl font-bold mb-1">Kit Smart Home</h3>
+<p class="text-[#9d9db9] text-sm">Sorteo #8822 • Cierra en 3 días</p>
+</div>
+<div class="w-full bg-[#1e1e2d] rounded-full h-2.5">
+<div class="bg-blue-500 h-2.5 rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex justify-between text-xs text-[#9d9db9]">
+<span>450 vendidos</span>
+<span>1000 total</span>
+</div>
+<div class="mt-auto pt-2">
+<button class="w-full h-12 bg-[#34344a] text-gray-500 font-semibold rounded-lg border border-[#3e3e52] cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined">schedule</span>
+                                Pendiente de cierre
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent History Table -->
+<div class="px-4 pb-10">
+<h3 class="text-white text-xl font-bold mb-4 mt-8 flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400">history</span>
+                    Historial Reciente
+                </h3>
+<div class="w-full overflow-x-auto rounded-xl border border-[#3e3e52] bg-surface-dark">
+<table class="w-full text-left text-sm text-[#9d9db9]">
+<thead class="bg-[#1e1e2d] text-xs uppercase text-white font-semibold">
+<tr>
+<th class="px-6 py-4" scope="col">Sorteo</th>
+<th class="px-6 py-4" scope="col">Fecha Sorteo</th>
+<th class="px-6 py-4" scope="col">Ganador</th>
+<th class="px-6 py-4" scope="col">Boleto</th>
+<th class="px-6 py-4 text-right" scope="col">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#3e3e52]">
+<tr class="hover:bg-[#2c2c3e] transition-colors">
+<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Playstation 5 thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAZr1D5zOrjUxp8UFLuK8N2iGa2hvsn1m-YJewZcNVpQVlzeXp5G3kTItVuMfPxD6gOFZLep1UitkuUgMdEu7mbpQYETRk-HD2NEzMv55FkqanXElU614jEaMt-RK0JZs0DyRlnjlJU97USBReAWHL89Zzon3P-kryJSYtkwbXYaKLMtgM2I9oitvBisCVcxYSd_-FsMbQ7Oh6EO6uMQnA2AQZS3EU3XRDYjVrLYvE0ot80eUnsUZMVDQsEWes2IHE-9_yjMfipdjc");'></div>
+                                    PlayStation 5 Bundle
+                                </td>
+<td class="px-6 py-4">20 Oct 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-600 bg-cover" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCATjZCXwEKd8em_pykPSSfw02bYB5iHvEqcLIeCh3EmDHGHCzCR7T6vU0VLKovM5UF1AUtyDvmXGYehNpkDzS4Pl5vtcJnav3iTtvnbG1WKkyFHpsH4oMVawEX0SFOA44Mv8JOF4_OP5puF8ZsnkRSMDcdXr3tUdFLb8PbZHq8WkEAZln2WjVE0m9xoEG1JegR52kJYN5-knQUy7_5z0AYzbBJ-DYYzGQZfI3InXGXLmm94HbDGVTZL7zet6liclarOJOGy11hImU");'></div>
+<span class="text-white">Maria G.</span>
+</td>
+<td class="px-6 py-4 font-mono text-success">#1024</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Entregado</span>
+</td>
+</tr>
+<tr class="hover:bg-[#2c2c3e] transition-colors">
+<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Travel tickets thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBElVBab9nMar63tUEz0rEXQ4BP60uEW1mu3KnN03SIym3G3qmvkE6SnypXnHSMMKs81ZVe-JGxAWE1VmP4OKSCZJe13webr6o259jVoRYjyQYx274Qn5TcV6ParVGeRl1QMXqbtbICOb1Qs6plf_VeaPJwAEFS5shTOxlT7khxE2eT-WWYdXhxiFT-LjK9UWz5aEtLp5JhAG4L2TXs0oNs3LKEBW-M0nGknB7KD-nKtm2lQ7W_omgj17N3fJ126x2uRdkdraoTgXc");'></div>
+                                    Viaje a Cancún
+                                </td>
+<td class="px-6 py-4">18 Oct 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-600 bg-cover" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBCQ5Q3pNTipDesKH35ad-QVQ8jKgDX2Oqs2zF60uk9O7Rc3HwbMLeNmG9RH-es5Teh6aQddEOyxdea9tEL2M5HEB0tLKqEUjwxhh1Q8uPBOhZVj05-lIny00LaFwtOdJanGONYm1nyLDoymO5trQE4R2c5UZk6WBmcNdsgbxg2aPxqHUc5BjXxLlNegK9XZqthKY_h871wWLgJnn9oUV2Ki_fPaRwBgKrpKXglPkTgysjT6IgnwxxOAa-V2l-vE5X2of746H_YeoM");'></div>
+<span class="text-white">Roberto L.</span>
+</td>
+<td class="px-6 py-4 font-mono text-success">#0042</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">Anunciado</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SorteosWeb - Gana Premios Increíbles</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563EB",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111827",
+                        "dark-card": "#1F2937",
+                        "dark-border": "#374151",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111318] dark:text-gray-200 font-display transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e7eb] dark:border-b-dark-border px-10 py-4 bg-white dark:bg-background-dark sticky top-0 z-50">
+<a href="index.html" class="flex items-center gap-4 text-[#111318] dark:text-white hover:opacity-80 transition-opacity">
+<div class="size-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">SorteosWeb</h2>
+</a>
+<div class="hidden lg:flex flex-1 justify-end gap-8">
+<nav class="flex items-center gap-9">
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.html">Inicio</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.html">Sorteos</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.html">Cómo Funciona</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.html">Preguntas Frecuentes</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="InicioSesion.html">Iniciar Sesión</a>
+</nav>
+<a href="CrearCuenta.html" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary hover:bg-blue-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-blue-500/20">
+<span class="truncate">Registrarse</span>
+</a>
+</div>
+<div class="lg:hidden text-[#111318] dark:text-white">
+<span class="material-symbols-outlined">menu</span>
+</div>
+</header>
+<main class="flex-1">
+<section class="px-4 py-8 md:px-10 lg:px-40 flex flex-1 justify-center">
+<div class="w-full max-w-[1280px]">
+<div class="rounded-xl overflow-hidden relative min-h-[520px] flex flex-col items-center justify-center p-8 text-center bg-cover bg-center" data-alt="Excited people celebrating a victory with confetti in the background" style='background-image: linear-gradient(rgba(17, 24, 39, 0.7) 0%, rgba(17, 24, 39, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBSlgNW9fJdrT5AdiqrOwvYQ226-o029jtB3KF4662QUnjyNWP_rBwZ4mkMeP3EfumRjv3akFDDVCVKpIAhqjbFOyAKDukTwwa2NlKlIRImqWYyYMaQQXF55xCOP35XwqwYOia6tuo89d6EMNg6DATMjllx1IiX3fzOnUk0axys3sxdur4pfSpYf5a--EuVYsvIcS5zHgJfURsd_fAPzBJM7lIUyHtKKARmkijjsFGg73R6ZJf5ODsBroCgjgPPpTwangVs07N_tCU");'>
+<div class="flex flex-col gap-4 max-w-[800px] z-10">
+<h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight drop-shadow-sm">
+                                Participa y Gana Premios Increíbles
+                            </h1>
+<h2 class="text-gray-300 text-base md:text-lg font-medium leading-relaxed max-w-2xl mx-auto">
+                                La plataforma más segura para participar en sorteos exclusivos. Compra tus boletos hoy y sé el próximo ganador de autos, viajes y tecnología.
+                            </h2>
+<div class="pt-6">
+<a href="index.html" class="inline-flex h-12 md:h-14 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-white shadow-lg shadow-blue-900/30 transition-transform hover:scale-105 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Ver Sorteos Disponibles
+                                </a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4 py-12 md:px-10 lg:px-40 flex flex-1 justify-center bg-white dark:bg-background-dark">
+<div class="w-full max-w-[1280px]">
+<div class="mb-12 text-center md:text-left">
+<h2 class="text-[#111318] dark:text-white text-3xl font-bold leading-tight tracking-tight mb-4">Cómo Funciona</h2>
+<p class="text-gray-500 dark:text-gray-400 text-lg max-w-2xl">Participar es muy fácil. Sigue estos tres sencillos pasos para entrar en la acción hoy mismo.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="flex flex-col gap-5 rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-background-light dark:bg-dark-card p-8 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-[#111318] dark:text-white text-xl font-bold">1. Elige tu Sorteo</h3>
+<p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+                                    Navega por nuestra lista de sorteos activos y selecciona el premio que más te guste, desde tecnología hasta viajes.
+                                </p>
+</div>
+</div>
+<div class="flex flex-col gap-5 rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-background-light dark:bg-dark-card p-8 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">credit_card</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-[#111318] dark:text-white text-xl font-bold">2. Compra tus Boletos</h3>
+<p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+                                    Selecciona la cantidad de boletos que deseas. Cuantos más boletos, ¡más oportunidades tienes de ganar!
+                                </p>
+</div>
+</div>
+<div class="flex flex-col gap-5 rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-background-light dark:bg-dark-card p-8 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">emoji_events</span>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-[#111318] dark:text-white text-xl font-bold">3. Gana Premios</h3>
+<p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
+                                    Espera la fecha del sorteo. Si tu número sale ganador, nos pondremos en contacto contigo inmediatamente.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4 py-12 md:px-10 lg:px-40 flex flex-1 justify-center bg-background-light dark:bg-background-dark">
+<div class="w-full max-w-[1280px]">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-[#111318] dark:text-white text-3xl font-bold leading-tight tracking-tight">Sorteos Populares</h2>
+<a class="hidden sm:flex items-center gap-1 text-primary font-bold hover:underline" href="#">
+                            Ver todos <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="group flex flex-col rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-white dark:bg-dark-card overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative h-56 w-full overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Modern laptop computer on a sleek desk setup" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAyNmF__CDb_3WOEX3vQqF-c8CSiDgnelIi4bHxXDR7fK0cLCzcrZ_VMCrA1OTNYhT33I9ya1gBkPRX-NeggMQRp4RkTTgjx5lB6amEREeKKFZ_OgImwfqJDmJpVo6rayBpbMphwAAMzWSqdC4A8tZZ65ELG8BUy8qP1hnj-Sno5j7h6yoB2uaMZaQ4S5cldTRxox2icARFxgByouCGoaWY-4jrGFoXXlzgRxtl2qIaAdw5orqEGmvo3YXXyf4b3P0CVeuLPULXrus");'></div>
+<div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
+                                    ¡Quedan pocos!
+                                </div>
+</div>
+<div class="flex flex-col flex-1 p-5 gap-4">
+<div>
+<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">MacBook Pro M3 Max</h3>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">La potencia definitiva. Gana la última MacBook Pro con procesador M3 Max.</p>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
+<span>75% Vendido</span>
+<span>150/200 boletos</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+<div class="flex flex-col">
+<span class="text-xs text-gray-500 dark:text-gray-400">Precio por boleto</span>
+<span class="text-xl font-bold text-[#111318] dark:text-white">$25.00</span>
+</div>
+<a href="InicioSesion.html?rol=cliente" class="bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-bold text-sm transition-colors inline-block text-center">
+                                        Comprar
+                                    </a>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-white dark:bg-dark-card overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative h-56 w-full overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Shiny blue sports car parked in a showroom" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDUNo9xX01QITOdl85qNGPzZ-W754mDXGd6G1olGxKdtDVkqC1Qjn8hBikT-QRSZjIQoCBVmCHWVFi1x_5g8iy8mwCGkX7u4PtFuu--_j8lsPFK5w2Wm1jF6xDAriMJ1XoK0n1lj6se_08dWLi8b4TM2sHbPH7XWG5RkrZmcsorM7fUg9SB_UYRqAGJVqE3bu5gg3E5IvZLOLEyEkfyJkgF9JtcDiQRS6G8Urf-LHT_5WAoeci-WwoRNdR5Y2_KNF2YNCDsgPAuZuk");'></div>
+</div>
+<div class="flex flex-col flex-1 p-5 gap-4">
+<div>
+<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">Chevrolet Corvette 2024</h3>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">Velocidad y estilo. Llévate a casa este deportivo de lujo totalmente equipado.</p>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
+<span>45% Vendido</span>
+<span>450/1000 boletos</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-green-500 h-2 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+<div class="flex flex-col">
+<span class="text-xs text-gray-500 dark:text-gray-400">Precio por boleto</span>
+<span class="text-xl font-bold text-[#111318] dark:text-white">$50.00</span>
+</div>
+<a href="InicioSesion.html?rol=cliente" class="bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-bold text-sm transition-colors inline-block text-center">
+                                        Comprar
+                                    </a>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-white dark:bg-dark-card overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+<div class="relative h-56 w-full overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Tropical beach resort with palm trees and clear blue water" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWLTe_uWEF5FGb5Zx7Tq_H1A8blrl9A92HZqveVzBtL4E5NCV4BQgsc4d1uSciXnUV7nkotMspd1c8Bt7onoBmX-_g1gYX3CWsFgagLdMK-yfsHTuS2XIaqg3vkEMWquM-X91gY1EXufkiTanFMqgRC9mgAT-uWzX50_mjE9a9vNwahoZVdszEJp3oKJeJN5L1pWZJGqFEQ7XdXBDfBoae6hwGxkZRCQV-ZjPnzBB42eCbaF-5j78dQPknaf9EXFDZF0ebKfRyR_A");'></div>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-black text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">flight_takeoff</span> Viaje
+                                </div>
+</div>
+<div class="flex flex-col flex-1 p-5 gap-4">
+<div>
+<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">Viaje a Cancún Todo Incluido</h3>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">7 días y 6 noches para 2 personas en un resort 5 estrellas.</p>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
+<span>20% Vendido</span>
+<span>100/500 boletos</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-yellow-500 h-2 rounded-full" style="width: 20%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
+<div class="flex flex-col">
+<span class="text-xs text-gray-500 dark:text-gray-400">Precio por boleto</span>
+<span class="text-xl font-bold text-[#111318] dark:text-white">$15.00</span>
+</div>
+<a href="InicioSesion.html?rol=cliente" class="bg-primary hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-bold text-sm transition-colors inline-block text-center">
+                                        Comprar
+                                    </a>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-center sm:hidden">
+<a href="index.html" class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-700 px-6 py-3 font-bold text-[#111318] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            Ver todos los sorteos
+                        </a>
+</div>
+</div>
+</section>
+<section class="px-4 py-16 flex justify-center bg-white dark:bg-background-dark border-t border-gray-100 dark:border-dark-border">
+<div class="w-full max-w-[960px] bg-gradient-to-r from-blue-700 to-blue-900 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="relative z-10 flex flex-col items-center gap-6">
+<h2 class="text-3xl md:text-4xl font-black tracking-tight">¿Listo para ganar?</h2>
+<p class="text-blue-100 text-lg max-w-xl">
+                            Regístrate hoy y recibe un 10% de descuento en tu primera compra de boletos. ¡No dejes pasar la oportunidad!
+                        </p>
+<div class="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+<input class="flex-1 rounded-lg border-0 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-white/50 placeholder:text-gray-500 outline-none" placeholder="Tu correo electrónico" type="email"/>
+<a href="CrearCuenta.html" class="bg-white text-blue-700 hover:bg-gray-100 px-6 py-3 rounded-lg font-bold transition-colors shadow-lg text-center">
+                                Empezar Ahora
+                            </a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-[#fcfcfd] dark:bg-background-dark border-t border-[#e5e7eb] dark:border-dark-border">
+<div class="px-4 py-12 md:px-10 lg:px-40 flex justify-center">
+<div class="w-full max-w-[1280px] grid grid-cols-1 md:grid-cols-4 gap-10">
+<div class="col-span-1 md:col-span-1 flex flex-col gap-4">
+<div class="flex items-center gap-2 text-[#111318] dark:text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="text-lg font-bold">SorteosWeb</span>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400">
+                            La plataforma líder en sorteos online. Transparencia, seguridad y premios reales.
+                        </p>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="text-sm font-bold uppercase tracking-wider text-[#111318] dark:text-white">Plataforma</h4>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Sorteos Activos</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Ganadores</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Promociones</a>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="text-sm font-bold uppercase tracking-wider text-[#111318] dark:text-white">Soporte</h4>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Ayuda</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Términos y Condiciones</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Política de Privacidad</a>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="text-sm font-bold uppercase tracking-wider text-[#111318] dark:text-white">Contacto</h4>
+<a class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-base">mail</span> soporte@sorteosweb.com
+                        </a>
+<div class="flex gap-4 mt-2">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full border-t border-[#e5e7eb] dark:border-dark-border py-6 text-center">
+<p class="text-sm text-gray-400">© 2024 SorteosWeb. Todos los derechos reservados.</p>
+</div>
+</footer>
+</div>
+</body></html>
+
+//vista inicial antes de iniciar sesion
