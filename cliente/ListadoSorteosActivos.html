@@ -23,47 +23,77 @@
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111318",
-                        "surface-dark": "#1e232e",
+                        "card-dark": "#282d39",
+                        "text-secondary": "#9da6b9",
                     },
                     fontFamily: {
                         "display": ["Inter", "Noto Sans", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
                 },
             },
         }
     </script>
+    <style>
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254;
+        }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden">
-<div class="relative flex h-auto min-h-screen w-full flex-col">
-<!-- TopNavBar -->
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#282d39] bg-[#111318] px-4 py-3 md:px-10">
-<div class="flex items-center gap-4 text-white">
-<div class="size-8 text-primary">
-<span class="material-symbols-outlined text-4xl">local_activity</span>
-</div>
-<h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em] hidden sm:block">Sorteos Web</h2>
-</div>
-<div class="flex flex-1 justify-end gap-4 md:gap-8">
-<div class="hidden md:flex items-center gap-9">
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Sorteos</a>
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Mis Boletos</a>
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Ganadores</a>
-</div>
-<div class="flex items-center gap-4">
-<button class="hidden sm:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-colors">
-<span class="truncate">Perfil</span>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden h-screen flex">
+<!-- Sidebar Container - Layout reutilizable -->
+<div id="client-sidebar-container"></div>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
 </button>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-[#282d39]" data-alt="User profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwxolkz3CUpvnGnezJblfU2WVIrl9Khug4bJPovv4_X9NmZjorMjj_xsEDvPCl2_EGtABJA1UiXLjIQEQcOyEkFRBIbboaX-PxFXlVFYEDjKoQM6hN3wbJp6WjlpuKZjU82P6lFysy6qrD33R-33W9g8SHMFdzJ8S30xotYNK2Yg9a3Px5XfEzW_oR4Lh07MelTOOboZLvWxesgUUOqKS6GZ0Rb61ZZGobKwl7vYQ-zlCQeci6sjukfHBW2sliiVQcpngXWPYhQzQ");'></div>
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
 </div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos..." type="text"/>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+</button>
 </div>
 </header>
-<main class="layout-container flex h-full grow flex-col items-center">
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
 <!-- Hero Section -->
-<div class="w-full bg-gradient-to-b from-[#111318] to-[#161b26] px-4 md:px-10 lg:px-40 py-8">
+<div class="w-full bg-gradient-to-b from-[#111318] to-[#161b26] rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12">
 <div class="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
 <div class="@container">
-<div class="flex flex-col gap-6 rounded-xl bg-surface-dark p-6 shadow-lg border border-[#282d39] @[864px]:flex-row @[864px]:items-center">
+<div class="flex flex-col gap-6 rounded-xl bg-card-dark p-6 shadow-lg border border-[#282d39] @[864px]:flex-row @[864px]:items-center">
 <div class="w-full bg-center bg-no-repeat bg-cover rounded-lg aspect-video @[864px]:w-1/2 min-h-[250px]" data-alt="Red sports car on a dark road" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6VJybytSxdbyHLz_biyHiqFh8RcWYf1c-M8zrfKX-_q3c5SpyP3ZIEbWGoJXox_cQlmjJ7liVyBds4LMtGvvIUyGaTA86g4Pp5dGRA2Purm28eGPUVVVrCslc-kP9U8OFPqHiKNX9iSRLnu1W4mPOCHuWx-Jq35OzD6y2sHRui9zm_pCZZeAzhYBxXanD6leNoj7k2eVumdOmJy-PUVhEEh8y4RVKH81QtXIRRwmroSSt3kCihJUArNv2zIT30wCHv6krd5796E8");'>
 <div class="w-full h-full flex items-start justify-end p-4">
 <span class="bg-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-md">Destacado</span>
@@ -96,8 +126,7 @@
 </div>
 </div>
 <!-- Main Content Area -->
-<div class="w-full px-4 md:px-10 lg:px-40 py-8 flex-1">
-<div class="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full gap-8">
+<div class="w-full flex flex-col gap-8">
 <!-- Page Heading & Search -->
 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
 <div class="flex flex-col gap-2">
@@ -106,7 +135,7 @@
 </div>
 <div class="w-full lg:w-auto lg:min-w-[400px]">
 <label class="flex flex-col h-12 w-full">
-<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-[#1e232e] border border-[#282d39] focus-within:border-primary transition-colors">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-card-dark border border-[#282d39] focus-within:border-primary transition-colors">
 <div class="text-[#9da6b9] flex items-center justify-center pl-4 pr-2">
 <span class="material-symbols-outlined">search</span>
 </div>
@@ -140,7 +169,7 @@
 <!-- Raffles Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 <!-- Card 1 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="Modern smartphone with colorful screen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwAteQmSypGlj9rSJ2j8n67Um8qCfT0urHKQWggVYR2cnoUFNnLWz-dGV7qYF10it_zdMasYWluSGMVYQdUNQyZE3KWtAvxAveYl5nZwURTXZfPeflDRyId90eHL8A26eUtXRFMySbpjoDaZ7V4cMQ0M5uvKDjBxP8mR-3SWfov41dT9pCJshLRbhyh7j2Qg8kAflsEmjL7Ql4ntewUh7oJWn_oT8rRQdiuYtDyQdlrGrGpXdxwisJ7Yt487kUdH_GU3mzz66yI70");'>
 <div class="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     NUEVO
@@ -173,7 +202,7 @@
 </div>
 </div>
 <!-- Card 2 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="Playstation 5 console with controller" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCcO2dR5Fdg9m2KqgG183uyb2umz475hYy-yTJR5KEpvO5oDC-FWcZ_DiEANzBJzKzFC8qptcOn__j-LUvhz0nQZaXVvtGH3QywOs2VWZzzJ6h4raEVt8Iz2WDnKq5zweGni-aT6furgSfHfoqXbwIEzgtsK_Qhr-ZhBHExOgld_Wc67QrYwyy6Puh0wDsKrdn8liqFv1Zl7_qSc7-eplab4OryXdIA-PXbeK3b2jZGdKoDUOj3wpCd_huPq8oEjzZ54ZiGJSZ1m0");'>
 <div class="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     POPULAR
@@ -206,7 +235,7 @@
 </div>
 </div>
 <!-- Card 3 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="Stack of cash money" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBni1zSCl1SpVKwv0Qzm2qy0axrUNGSlJoyeLynnw4JXMvqQzI8GAx1M8zjD1GEJUVpbLE5wqHnKtrg320kCXMdIC7WxRYlhlIw5YagaaQ8KQy9kj6bNM0vGj996zk-egNCej6aVw1WvVXqw_P7UpgzlwoxP86l-7HjmB2qxduMOMjxGBjme2Jdz_AuIFhr5kHtbnJ__Am9OZcEgcmwPFkFfT-gKR5nGLbO1A6W1C39FLnSwzIL35ckKnwIcHRBs0U5uKBSAB8FtBg");'>
 <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
 <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $100.00 / boleto
@@ -236,7 +265,7 @@
 </div>
 </div>
 <!-- Card 4 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="Modern motorcycle on display" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAU2WNCPMJw0aGIUeAuwgz1ZtHOcl46nPPEtFilClUQyWD3IpJP4IsC50QJlcR2jbcLLVlXJI6RKrYiYOlJuG-PHcTKm7vahl3WDBzS_g5vYNmO4BmSdBeBUHYdUxv-PCRTHphG137xvV6rd9ISxjNaKtsnKybQND6FvSzHturGw0IgV4qhm1coXPsFz_8kHiM2-zJRq3yD_Q7CJ117JKUjVRdHmleKjY50m0Qe4NVinX4eoxVTGVEq-9ZbUbnctsS-mYsN2uedePA");'>
 <div class="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     ÚLTIMOS BOLETOS
@@ -269,7 +298,7 @@
 </div>
 </div>
 <!-- Card 5 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="High end luxury watch" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7pgaFepp8kfDhmtFNHSgQjDgnZ0uhmGyqg6LNTbHk013102sQnnoX2twAiYlfOjcCcscK9gpQmt-0m3PnS3eMJHvZylYdgxRpuA7I2uCL9BKIQssDk0fALe8f9cFZSQvOF7UZBQOYz9k_qbTLd37IxWdJbaRIKG1lAEsGbtrXw8-_ODIxGE_Q5CoTKQr0yRsXQzxcxPlNxDLX6qbX9oisn0cj-TXfPNuo_j8ofLCiVZfrKDpeVAaDnTocyO7DbkbxTYhaJIh2Mw");'>
 <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
 <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $80.00 / boleto
@@ -299,7 +328,7 @@
 </div>
 </div>
 <!-- Card 6 -->
-<div class="group flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
 <div class="relative h-48 bg-cover bg-center" data-alt="Modern 4k television in living room" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACRCLZG71i-ihavDRhf86fUjF-0WB0zzedmL8K5XMX752FJg2Jq3oTONdd4dsYV3xv6afZiRyxz3oG6gctvCiTw0v8uTxF5lZXRN8qFxqYaB7CZgE3bBKQeP4LtSqiBkK38IVMGVuTY1V1gffzPvpzFOpzWPmklIZL8fFi0yc5CLCnlYYU1MDYgbc_nS5ZgG4KdEs-KzlUiHXimNbu-IdpxvD_OifXTwRqwHR1rk1qSLpaZv-NVKu0dNF5uaja0Sca9touPX5LTlM");'>
 <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
 <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $15.00 / boleto
@@ -331,15 +360,28 @@
 </div>
 <!-- Pagination / Load More -->
 <div class="flex justify-center mt-8 mb-8">
-<button class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-[#282d39] bg-surface-dark text-white hover:bg-[#282d39] transition-colors font-medium text-sm">
+<button class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-[#282d39] bg-card-dark text-white hover:bg-[#282d39] transition-colors font-medium text-sm">
 <span class="material-symbols-outlined text-xl">refresh</span>
                             Cargar más sorteos
                         </button>
 </div>
 </div>
 </div>
-</main>
 </div>
+</main>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'sorteos' como página activa
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+});
+</script>
+
 </body></html>
 
-//pagina para ver los sorteos activos como cliente
+<!-- Página para ver los sorteos activos como cliente -->
