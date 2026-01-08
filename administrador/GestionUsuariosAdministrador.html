@@ -21,57 +21,119 @@
                     colors: {
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
-                        "background-dark": "#111318", // Matching the component's dark bg
-                        "surface-dark": "#1c1f27", // Matching component's secondary dark bg
-                        "border-dark": "#282d39", // Matching component's border
+                        "background-dark": "#111621",
+                        "card-dark": "#1e2433", // Slightly lighter than bg-dark for contrast
+                        "border-dark": "#2a3241",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"],
-                        "body": ["Inter", "sans-serif"]
+                        "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                 },
             },
         }
     </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-white antialiased overflow-x-hidden">
-<div class="relative flex min-h-screen w-full flex-col group/design-root">
-<!-- Top Navigation -->
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark bg-background-dark px-10 py-3 sticky top-0 z-50">
-<div class="flex items-center gap-4 text-white">
-<div class="size-8 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined !text-3xl">casino</span>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
 </div>
-<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sorteos Admin</h2>
 </div>
-<div class="flex flex-1 justify-end gap-8 items-center">
-<div class="flex gap-4 items-center">
-<button class="text-[#9da6b9] hover:text-white transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="text-[#9da6b9] hover:text-white transition-colors">
-<span class="material-symbols-outlined">settings</span>
-</button>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.html">
+<span class="material-symbols-outlined">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
 </div>
-<div class="h-6 w-px bg-border-dark"></div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
 <div class="flex items-center gap-3">
-<div class="text-right hidden sm:block">
-<p class="text-sm font-medium text-white">Admin User</p>
-<p class="text-xs text-[#9da6b9]">Super Admin</p>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-border-dark" data-alt="Avatar de usuario administrador" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwPyHKB4teON5JhTcrcFXt6CSkFbeU2MLWeEdGgNG_Wkn1YiLlq149-kc4ajBzPkNoxsLXytSsYdCzH9dfqxzBS4bJj5O8E1ahEqntkKnald5ts1j12XIB2DODOlnfOI66ABT7R2JQPws6YSIBb_YYsF3ExrPMZ25X-8t9Km0_5q6Zw9c_BYWXmOFWr2GPs5v5oJ8oNAWWViWawiEVZIuTy8ZdShzN-d6nDelizptO5HfpLv_L4VxIyQx8eaIQ2ven8QrtM4E5UPM");'></div>
 </div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Gestión de Usuarios</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
 </div>
 </header>
-<div class="layout-container flex h-full grow flex-col">
-<div class="flex flex-1 justify-center py-5 px-4 md:px-10 lg:px-20 xl:px-40">
-<div class="layout-content-container flex flex-col w-full max-w-[1200px] flex-1">
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="max-w-[1200px] mx-auto w-full">
 <!-- Breadcrumbs -->
 <div class="flex flex-wrap gap-2 px-4 py-2">
 <a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="#">
@@ -143,8 +205,8 @@
 </thead>
 <tbody class="divide-y divide-border-dark">
 <!-- Row 1 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
-<td class="p-4 text-center">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8293" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8293'">
+<td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
@@ -172,7 +234,7 @@
                                             </span>
 </td>
 <td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
 <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
@@ -183,8 +245,8 @@
 </td>
 </tr>
 <!-- Row 2 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
-<td class="p-4 text-center">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8294" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8294'">
+<td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
@@ -216,15 +278,15 @@
 <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta" onclick="event.stopPropagation()">
 <span class="material-symbols-outlined !text-[20px]">check_circle</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 3 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
-<td class="p-4 text-center">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8295" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8295'">
+<td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
@@ -252,7 +314,7 @@
                                             </span>
 </td>
 <td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
 <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
@@ -263,8 +325,8 @@
 </td>
 </tr>
 <!-- Row 4 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
-<td class="p-4 text-center">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8296" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8296'">
+<td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
@@ -296,15 +358,15 @@
 <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta" onclick="event.stopPropagation()">
 <span class="material-symbols-outlined !text-[20px]">check</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 5 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
-<td class="p-4 text-center">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8297" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8297'">
+<td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
@@ -332,7 +394,7 @@
                                             </span>
 </td>
 <td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
 <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
@@ -368,7 +430,6 @@
 </nav>
 </div>
 </div>
-</div>
-</div>
+</main>
 </div>
 </body></html>

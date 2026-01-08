@@ -15,11 +15,10 @@
                 extend: {
                     colors: {
                         "primary": "#2463eb",
-                        "primary-hover": "#1d4ed8",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111621",
-                        "surface-dark": "#1c212c",
-                        "border-dark": "#2d3748",
+                        "card-dark": "#1e2433", // Slightly lighter than bg-dark for contrast
+                        "border-dark": "#2a3241",
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
@@ -33,46 +32,103 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom scrollbar for tables */
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: #111621; 
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #2d3748; 
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
             border-radius: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4a5568; 
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased min-h-screen flex flex-col">
-<!-- Navbar -->
-<header class="sticky top-0 z-30 flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 shadow-sm">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="CrudGestionSorteo.html">
+<span class="material-symbols-outlined">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<div class="size-8 text-primary flex items-center justify-center">
-<span class="material-symbols-outlined text-3xl">casino</span>
-</div>
-<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">Sorteos Admin</h2>
-</div>
-<div class="flex gap-4 items-center">
-<button class="flex items-center justify-center rounded-full size-10 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors">
-<span class="material-symbols-outlined">notifications</span>
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
 </button>
-<button class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-1 pr-3 transition-colors">
-<div class="size-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 overflow-hidden" data-alt="User Avatar Abstract Gradient"></div>
-<div class="flex flex-col items-start hidden sm:flex">
-<span class="text-xs font-bold text-slate-900 dark:text-white">Admin User</span>
-<span class="text-[10px] text-gray-500 dark:text-gray-400">Super Admin</span>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Gestión de Sorteos</h1>
 </div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
 </button>
 </div>
 </header>
-<main class="flex-1 flex flex-col p-4 md:p-8 max-w-[1400px] mx-auto w-full">
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="max-w-[1400px] mx-auto w-full">
 <!-- Page Header & Actions -->
 <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
 <div class="flex flex-col gap-2">
@@ -112,10 +168,10 @@
 </div>
 </div>
 <!-- Data Table Card -->
-<div class="flex-1 bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden flex flex-col shadow-sm">
+<div class="flex-1 bg-white dark:bg-[#151a23] rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden flex flex-col shadow-sm">
 <div class="overflow-x-auto custom-scrollbar flex-1">
 <table class="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
-<thead class="bg-gray-50 dark:bg-[#151a23]">
+<thead class="bg-gray-50 dark:bg-[#111621]">
 <tr>
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24" scope="col">ID</th>
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" scope="col">Nombre del Sorteo</th>
@@ -126,9 +182,9 @@
 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32" scope="col">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-surface-dark">
+<tbody class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-[#151a23]">
 <!-- Row 1: Active -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#252b36] transition-colors group">
+<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1024</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Gran Rifa de Navidad</div>
@@ -172,7 +228,7 @@
 </td>
 </tr>
 <!-- Row 2: Finished -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#252b36] transition-colors group">
+<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1023</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Pro-Fondos</div>
@@ -213,7 +269,7 @@
 </td>
 </tr>
 <!-- Row 3: Inactive -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#252b36] transition-colors group">
+<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1025</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa de Verano</div>
@@ -257,7 +313,7 @@
 </td>
 </tr>
 <!-- Row 4: Active -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#252b36] transition-colors group">
+<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1026</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Flash Fin de Mes</div>
@@ -301,7 +357,7 @@
 </td>
 </tr>
 <!-- Row 5: Active Low Stock -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#252b36] transition-colors group">
+<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1027</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa Solidaria Animalista</div>
@@ -348,7 +404,7 @@
 </table>
 </div>
 <!-- Pagination -->
-<div class="bg-white dark:bg-surface-dark px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-border-dark sm:px-6">
+<div class="bg-white dark:bg-[#151a23] px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-border-dark sm:px-6">
 <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
 <div>
 <p class="text-sm text-gray-700 dark:text-gray-400">
@@ -357,23 +413,23 @@
 </div>
 <div>
 <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-<a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
+<a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
 <span class="sr-only">Anterior</span>
 <span class="material-symbols-outlined text-sm">chevron_left</span>
 </a>
 <a aria-current="page" class="z-10 bg-primary/10 border-primary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-bold" href="#">
                                 1
                             </a>
-<a class="bg-white dark:bg-surface-dark border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
+<a class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
                                 2
                             </a>
-<a class="bg-white dark:bg-surface-dark border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
+<a class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
                                 3
                             </a>
-<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-sm font-medium text-gray-700 dark:text-gray-400">
+<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-700 dark:text-gray-400">
                                 ...
                             </span>
-<a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
+<a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
 <span class="sr-only">Siguiente</span>
 <span class="material-symbols-outlined text-sm">chevron_right</span>
 </a>
@@ -459,6 +515,8 @@
 </div>
 </div>
 </div>
+</div>
+</main>
 </div>
 </body></html>
 
