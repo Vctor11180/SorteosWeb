@@ -20,20 +20,20 @@
         theme: {
           extend: {
             colors: {
-              "primary": "#2764e7",
+              "primary": "#2463eb",
               "background-light": "#f6f6f8",
-              "background-dark": "#111621",
-              "surface-dark": "#1a2233",
+              "background-dark": "#111318",
+              "card-dark": "#282d39",
+              "text-secondary": "#9da6b9",
             },
             fontFamily: {
               "display": ["Inter", "sans-serif"],
               "body": ["Noto Sans", "sans-serif"]
             },
             borderRadius: {
-              "DEFAULT": "0.25rem", 
-              "lg": "0.5rem", 
-              "xl": "0.75rem", 
-              "2xl": "1rem",
+              "DEFAULT": "0.5rem",
+              "lg": "0.75rem",
+              "xl": "1rem",
               "full": "9999px"
             },
           },
@@ -46,14 +46,14 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #111621; 
+            background: #111318; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #2d3748; 
+            background: #282d39; 
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4a5568; 
+            background: #3b4254; 
         }
         
         .material-symbols-outlined {
@@ -69,65 +69,58 @@
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased min-h-screen flex flex-col">
-<!-- Top Navigation -->
-<header class="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-[#111621]/90 backdrop-blur-md">
-<div class="px-4 md:px-10 py-3 flex items-center justify-between">
-<div class="flex items-center gap-8">
-<!-- Logo -->
-<div class="flex items-center gap-3">
-<div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-<span class="material-symbols-outlined text-2xl">confirmation_number</span>
-</div>
-<h2 class="text-lg font-bold leading-tight tracking-tight dark:text-white text-gray-900 hidden sm:block">Sorteos Web</h2>
-</div>
-<!-- Nav Links -->
-<nav class="hidden md:flex items-center gap-6">
-<a class="text-sm font-medium text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors" href="#">Inicio</a>
-<a class="text-sm font-medium text-primary dark:text-white transition-colors" href="#">Sorteos Activos</a>
-<a class="text-sm font-medium text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors" href="#">Mis Boletos</a>
-</nav>
-</div>
-<div class="flex items-center gap-4 md:gap-6">
-<!-- Search Bar -->
-<div class="hidden md:flex items-center bg-gray-100 dark:bg-surface-dark rounded-lg h-10 w-64 border border-transparent focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-<span class="material-symbols-outlined px-3 text-gray-400">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm w-full text-gray-900 dark:text-white placeholder-gray-500 h-full p-0 pr-3" placeholder="Buscar sorteo..." type="text"/>
-</div>
-<!-- User Actions -->
-<div class="flex items-center gap-3">
-<button class="relative p-2 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full border-2 border-white dark:border-[#111621]"></span>
+<body class="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex">
+<!-- Sidebar Container - Layout reutilizable -->
+<div id="client-sidebar-container"></div>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
 </button>
-<div class="size-9 rounded-full bg-cover bg-center border-2 border-gray-200 dark:border-gray-700 cursor-pointer" data-alt="User profile picture placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6hNYQh9pQnMp7neTwh0lCcXiJgnqBP4RikMAeV9AXu1_IilY9iAdirqDML3eoXhDMHvokguOZhu01z1rfRpPKZz3hub9KXzgheqfyPhf5oAll00EDXY7-cCTKZ4yIIlMG0kUOG_w-oIC_gO3fbeWWEf8CFL9PEjNJpia1Bdm7GlLNXyQFJAFBwXXUAFSuMsp-eSv4-2T19dY7XE6RaUEitUImavCxOW5K7rdSRmFM05rx_nVKREit0rQxLgvbzvvitTFvBCsxA_I');">
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos..." type="text"/>
 </div>
 </div>
-</div>
-</div>
-<!-- Mobile Search (Visible only on small screens) -->
-<div class="md:hidden px-4 pb-3">
-<div class="flex items-center bg-gray-100 dark:bg-surface-dark rounded-lg h-10 border border-transparent">
-<span class="material-symbols-outlined px-3 text-gray-400">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm w-full text-gray-900 dark:text-white placeholder-gray-500 h-full p-0 pr-3" placeholder="Buscar..." type="text"/>
-</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+</button>
 </div>
 </header>
-<main class="flex-grow layout-container flex flex-col items-center py-6 md:py-10 px-4 md:px-8">
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+<div class="w-full max-w-[1200px] mx-auto">
 <!-- Breadcrumbs -->
-<div class="w-full max-w-[1200px] mb-6 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-<a class="hover:text-primary dark:hover:text-white" href="#">Inicio</a>
+<div class="mb-6 flex items-center gap-2 text-sm text-text-secondary">
+<a class="hover:text-white transition-colors" href="DashboardCliente.html">Inicio</a>
 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-<a class="hover:text-primary dark:hover:text-white" href="#">Sorteos</a>
+<a class="hover:text-white transition-colors" href="ListadoSorteosActivos.html">Sorteos</a>
 <span class="material-symbols-outlined text-[16px]">chevron_right</span>
-<span class="text-gray-900 dark:text-white font-medium">Gran Sorteo de Verano</span>
+<span class="text-white font-medium" id="breadcrumb-title">Gran Sorteo de Verano</span>
 </div>
-<div class="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 <!-- Left Column: Visuals & Detailed Info (7 cols) -->
 <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
 <!-- Hero Image -->
-<div class="w-full relative group rounded-2xl overflow-hidden shadow-2xl bg-surface-dark aspect-video">
-<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="High performance dark blue sports car in a studio setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBSThToNJgK8_ebirDUoyudrls3AYTANGq9M7Zs9ix3l8WlMm_iwssMcgcBKtbPqip5f7LCFIqfkHZEYAgosO1pXgUgY-odysLX9t_CMGNLHE6DVzjSA616V4V4d5G3EAG4p4beU1iktaix9DpdKy4WkFUzJqAQ7pU_Dj4DGa6m6Yhiys5YpRrcuf2hPWh6-cQ6hHdLRK54xyf5ZwlJx4PzuBLOLqV0yLu6X3Pl-4TYDmjte2U-sf3aAZ3uDIaa7aiEDTZ_xY_bJXA');">
+<div class="w-full relative group rounded-2xl overflow-hidden shadow-2xl bg-card-dark aspect-video">
+<div id="sorteo-hero-image" class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Sorteo image" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBSThToNJgK8_ebirDUoyudrls3AYTANGq9M7Zs9ix3l8WlMm_iwssMcgcBKtbPqip5f7LCFIqfkHZEYAgosO1pXgUgY-odysLX9t_CMGNLHE6DVzjSA616V4V4d5G3EAG4p4beU1iktaix9DpdKy4WkFUzJqAQ7pU_Dj4DGa6m6Yhiys5YpRrcuf2hPWh6-cQ6hHdLRK54xyf5ZwlJx4PzuBLOLqV0yLu6X3Pl-4TYDmjte2U-sf3aAZ3uDIaa7aiEDTZ_xY_bJXA');">
 </div>
 <!-- Badges on image -->
 <div class="absolute top-4 left-4 flex gap-2">
@@ -136,22 +129,22 @@
 </div>
 <!-- Mobile only: Title overlay for better space usage -->
 <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-6 lg:hidden">
-<h1 class="text-2xl font-black text-white leading-tight mb-2">Gran Sorteo de Verano: Auto Deportivo 2024</h1>
-<p class="text-gray-300 text-sm">Participa y gana el auto de tus sueños con todas las comodidades.</p>
+<h1 id="sorteo-title-mobile" class="text-2xl font-black text-white leading-tight mb-2">Gran Sorteo de Verano: Auto Deportivo 2024</h1>
+<p id="sorteo-desc-mobile" class="text-gray-300 text-sm">Participa y gana el auto de tus sueños con todas las comodidades.</p>
 </div>
 </div>
 <!-- Tabs & Content -->
 <div class="flex flex-col gap-6">
 <!-- Tab Navigation -->
-<div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-800 pb-1 scrollbar-hide">
+<div class="flex overflow-x-auto border-b border-[#282d39] pb-1 scrollbar-hide">
 <button class="px-6 py-3 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap">Descripción</button>
-<button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 whitespace-nowrap">Reglas de Juego</button>
-<button class="px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 whitespace-nowrap">Premios Secundarios</button>
+<button class="px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Reglas de Juego</button>
+<button class="px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Premios Secundarios</button>
 </div>
 <!-- Description Content -->
 <div class="prose prose-slate dark:prose-invert max-w-none">
-<h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Sobre este premio</h3>
-<p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+<h3 class="text-xl font-bold mb-3 text-white">Sobre este premio</h3>
+<p class="text-text-secondary leading-relaxed mb-4">
                             Experimenta la máxima potencia con el nuevo modelo deportivo 2024. Este vehículo no es solo un medio de transporte, es una declaración de estilo y rendimiento. Equipado con un motor V8 biturbo, interiores de cuero italiano cosido a mano y un sistema de sonido envolvente de última generación.
                         </p>
 <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
@@ -159,32 +152,32 @@
                         </p>
 <!-- Features Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-<div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-surface-dark/50 border border-gray-100 dark:border-gray-800">
+<div class="flex items-start gap-3 p-4 rounded-xl bg-card-dark border border-[#282d39]">
 <span class="material-symbols-outlined text-primary mt-1">speed</span>
 <div>
-<h4 class="font-bold text-gray-900 dark:text-white text-sm">Velocidad Máxima</h4>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">320 km/h en pista</p>
+<h4 class="font-bold text-white text-sm">Velocidad Máxima</h4>
+<p class="text-xs text-text-secondary mt-1">320 km/h en pista</p>
 </div>
 </div>
-<div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-surface-dark/50 border border-gray-100 dark:border-gray-800">
+<div class="flex items-start gap-3 p-4 rounded-xl bg-card-dark border border-[#282d39]">
 <span class="material-symbols-outlined text-primary mt-1">settings</span>
 <div>
-<h4 class="font-bold text-gray-900 dark:text-white text-sm">Motorización</h4>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">V8 Biturbo 4.0L</p>
+<h4 class="font-bold text-white text-sm">Motorización</h4>
+<p class="text-xs text-text-secondary mt-1">V8 Biturbo 4.0L</p>
 </div>
 </div>
-<div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-surface-dark/50 border border-gray-100 dark:border-gray-800">
+<div class="flex items-start gap-3 p-4 rounded-xl bg-card-dark border border-[#282d39]">
 <span class="material-symbols-outlined text-primary mt-1">calendar_month</span>
 <div>
-<h4 class="font-bold text-gray-900 dark:text-white text-sm">Modelo</h4>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Edición Especial 2024</p>
+<h4 class="font-bold text-white text-sm">Modelo</h4>
+<p class="text-xs text-text-secondary mt-1">Edición Especial 2024</p>
 </div>
 </div>
-<div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-surface-dark/50 border border-gray-100 dark:border-gray-800">
+<div class="flex items-start gap-3 p-4 rounded-xl bg-card-dark border border-[#282d39]">
 <span class="material-symbols-outlined text-primary mt-1">verified_user</span>
 <div>
-<h4 class="font-bold text-gray-900 dark:text-white text-sm">Garantía</h4>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">3 años extendida</p>
+<h4 class="font-bold text-white text-sm">Garantía</h4>
+<p class="text-xs text-text-secondary mt-1">3 años extendida</p>
 </div>
 </div>
 </div>
@@ -193,30 +186,30 @@
 <div class="mt-8">
 <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Preguntas Frecuentes</h3>
 <div class="flex flex-col gap-3">
-<details class="group bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-gray-900 dark:text-white select-none">
+<details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden">
+<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-white select-none">
 <span>¿Cómo se elige al ganador?</span>
 <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-gray-400">expand_more</span>
 </summary>
-<div class="px-4 pb-4 pt-0 text-sm text-gray-600 dark:text-gray-400 border-t border-transparent group-open:border-gray-100 dark:group-open:border-gray-700 mt-2 pt-2">
+<div class="px-4 pb-4 pt-0 text-sm text-text-secondary border-t border-transparent group-open:border-[#282d39] mt-2 pt-2">
                                     El sorteo se realiza en vivo a través de nuestras redes sociales utilizando un sistema certificado de selección aleatoria (RNG).
                                 </div>
 </details>
-<details class="group bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-gray-900 dark:text-white select-none">
+<details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden">
+<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-white select-none">
 <span>¿Puedo comprar boletos desde otro país?</span>
 <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-gray-400">expand_more</span>
 </summary>
-<div class="px-4 pb-4 pt-0 text-sm text-gray-600 dark:text-gray-400 border-t border-transparent group-open:border-gray-100 dark:group-open:border-gray-700 mt-2 pt-2">
+<div class="px-4 pb-4 pt-0 text-sm text-text-secondary border-t border-transparent group-open:border-[#282d39] mt-2 pt-2">
                                     Sí, el sorteo es internacional. Sin embargo, los gastos de aduana adicionales pueden correr por cuenta del ganador si reside fuera de las zonas especificadas.
                                 </div>
 </details>
-<details class="group bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-gray-900 dark:text-white select-none">
+<details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden">
+<summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-white select-none">
 <span>¿Cuándo recibo mis boletos?</span>
 <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 text-gray-400">expand_more</span>
 </summary>
-<div class="px-4 pb-4 pt-0 text-sm text-gray-600 dark:text-gray-400 border-t border-transparent group-open:border-gray-100 dark:group-open:border-gray-700 mt-2 pt-2">
+<div class="px-4 pb-4 pt-0 text-sm text-text-secondary border-t border-transparent group-open:border-[#282d39] mt-2 pt-2">
                                     Inmediatamente después de confirmar tu pago, recibirás un correo electrónico con tus números de boleto digitales y la factura de compra.
                                 </div>
 </details>
@@ -228,11 +221,11 @@
 <div class="lg:col-span-5 xl:col-span-4">
 <div class="sticky top-24 flex flex-col gap-6">
 <!-- Main Card -->
-<div class="bg-white dark:bg-surface-dark rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-xl dark:shadow-none">
+<div class="bg-card-dark rounded-2xl p-6 border border-[#282d39] shadow-xl">
 <!-- Desktop Title (Hidden on mobile) -->
 <div class="hidden lg:block mb-6">
-<h1 class="text-3xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">Gran Sorteo de Verano</h1>
-<p class="text-gray-500 dark:text-gray-400 mt-2">Auto Deportivo 2024 - Edición Limitada</p>
+<h1 id="sorteo-title" class="text-3xl font-black text-white leading-tight tracking-tight">Gran Sorteo de Verano</h1>
+<p id="sorteo-subtitle" class="text-text-secondary mt-2">Auto Deportivo 2024 - Edición Limitada</p>
 </div>
 <!-- Timer -->
 <div class="mb-8">
@@ -240,95 +233,193 @@
 <span class="material-symbols-outlined text-sm">timer</span> Cierra en:
                             </p>
 <div class="flex gap-2 justify-between">
-<div class="flex flex-col items-center bg-gray-50 dark:bg-[#111621] p-3 rounded-lg flex-1 border border-gray-100 dark:border-gray-700">
-<span class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">03</span>
-<span class="text-[10px] uppercase text-gray-500 dark:text-gray-400">Días</span>
+<div class="flex flex-col items-center bg-[#111318] p-3 rounded-lg flex-1 border border-[#282d39]">
+<span id="timer-dias" class="text-2xl font-bold text-white tabular-nums">03</span>
+<span class="text-[10px] uppercase text-text-secondary">Días</span>
 </div>
 <div class="text-xl font-bold text-gray-300 self-start mt-2">:</div>
-<div class="flex flex-col items-center bg-gray-50 dark:bg-[#111621] p-3 rounded-lg flex-1 border border-gray-100 dark:border-gray-700">
-<span class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">12</span>
-<span class="text-[10px] uppercase text-gray-500 dark:text-gray-400">Hrs</span>
+<div class="flex flex-col items-center bg-[#111318] p-3 rounded-lg flex-1 border border-[#282d39]">
+<span id="timer-horas" class="text-2xl font-bold text-white tabular-nums">12</span>
+<span class="text-[10px] uppercase text-text-secondary">Hrs</span>
 </div>
 <div class="text-xl font-bold text-gray-300 self-start mt-2">:</div>
-<div class="flex flex-col items-center bg-gray-50 dark:bg-[#111621] p-3 rounded-lg flex-1 border border-gray-100 dark:border-gray-700">
-<span class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">45</span>
-<span class="text-[10px] uppercase text-gray-500 dark:text-gray-400">Min</span>
+<div class="flex flex-col items-center bg-[#111318] p-3 rounded-lg flex-1 border border-[#282d39]">
+<span id="timer-minutos" class="text-2xl font-bold text-white tabular-nums">45</span>
+<span class="text-[10px] uppercase text-text-secondary">Min</span>
 </div>
 <div class="text-xl font-bold text-gray-300 self-start mt-2">:</div>
-<div class="flex flex-col items-center bg-gray-50 dark:bg-[#111621] p-3 rounded-lg flex-1 border border-gray-100 dark:border-gray-700">
-<span class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">30</span>
-<span class="text-[10px] uppercase text-gray-500 dark:text-gray-400">Seg</span>
+<div class="flex flex-col items-center bg-[#111318] p-3 rounded-lg flex-1 border border-[#282d39]">
+<span id="timer-segundos" class="text-2xl font-bold text-white tabular-nums">30</span>
+<span class="text-[10px] uppercase text-text-secondary">Seg</span>
 </div>
 </div>
 </div>
 <!-- Progress -->
 <div class="mb-8">
 <div class="flex justify-between items-end mb-2">
-<span class="text-sm font-medium text-gray-700 dark:text-gray-300">Boletos vendidos</span>
-<span class="text-sm font-bold text-primary">75%</span>
+<span class="text-sm font-medium text-white">Boletos vendidos</span>
+<span id="porcentaje-vendido" class="text-sm font-bold text-primary">75%</span>
 </div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-<div class="bg-primary h-2.5 rounded-full relative" style="width: 75%">
+<div class="w-full bg-[#111318] rounded-full h-2.5 overflow-hidden">
+<div id="progress-bar" class="bg-primary h-2.5 rounded-full relative" style="width: 75%">
 <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
 </div>
 </div>
-<p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-right">Quedan 250 boletos disponibles</p>
+<p id="boletos-restantes" class="text-xs text-text-secondary mt-2 text-right">Quedan 250 boletos disponibles</p>
 </div>
 <!-- Price & Action -->
-<div class="pt-6 border-t border-gray-100 dark:border-gray-700">
+<div class="pt-6 border-t border-[#282d39]">
 <div class="flex items-baseline justify-between mb-4">
-<span class="text-gray-600 dark:text-gray-400 text-sm">Precio por boleto</span>
-<span class="text-3xl font-black text-gray-900 dark:text-white">$50.00 <span class="text-sm font-normal text-gray-500">MXN</span></span>
+<span class="text-text-secondary text-sm">Precio por boleto</span>
+<span id="precio-boleto" class="text-3xl font-black text-white">$50.00 <span class="text-sm font-normal text-text-secondary">MXN</span></span>
 </div>
 <!-- Ticket Selector -->
-<div class="flex items-center justify-between bg-gray-50 dark:bg-[#111621] rounded-lg p-1 mb-4 border border-gray-200 dark:border-gray-700">
-<button class="size-10 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-white transition-colors">
+<div class="flex items-center justify-between bg-[#111318] rounded-lg p-1 mb-4 border border-[#282d39]">
+<button class="size-10 flex items-center justify-center rounded-md hover:bg-[#353b4b] text-white transition-colors">
 <span class="material-symbols-outlined">remove</span>
 </button>
-<input class="w-12 bg-transparent text-center border-none focus:ring-0 text-gray-900 dark:text-white font-bold" max="100" min="1" type="number" value="1"/>
-<button class="size-10 flex items-center justify-center rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-white transition-colors">
+<input class="w-12 bg-transparent text-center border-none focus:ring-0 text-white font-bold" max="100" min="1" type="number" value="1"/>
+<button class="size-10 flex items-center justify-center rounded-md hover:bg-[#353b4b] text-white transition-colors">
 <span class="material-symbols-outlined">add</span>
 </button>
 </div>
-<button class="w-full bg-primary hover:bg-blue-600 text-white font-bold text-lg py-4 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+<a href="SeleccionBoletos.html" id="btn-seleccionar" onclick="saveCurrentSorteo()" class="w-full bg-primary hover:bg-blue-600 text-white font-bold text-lg py-4 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
 <span>Seleccionar Boletos</span>
 <span class="material-symbols-outlined">arrow_forward</span>
-</button>
-<p class="text-center mt-4 text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center gap-1">
+</a>
+<p class="text-center mt-4 text-xs text-text-secondary flex items-center justify-center gap-1">
 <span class="material-symbols-outlined text-[14px]">lock</span> Pago 100% Seguro
                             </p>
 </div>
 </div>
 <!-- Trust Badges (Optional) -->
 <div class="grid grid-cols-3 gap-3">
-<div class="flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-surface-dark/50 border border-gray-200 dark:border-gray-800 text-center">
+<div class="flex flex-col items-center justify-center p-3 rounded-lg bg-card-dark border border-[#282d39] text-center">
 <span class="material-symbols-outlined text-primary mb-1 text-2xl">verified</span>
-<span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Sorteo Verificado</span>
+<span class="text-[10px] text-text-secondary leading-tight">Sorteo Verificado</span>
 </div>
 <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-surface-dark/50 border border-gray-200 dark:border-gray-800 text-center">
 <span class="material-symbols-outlined text-primary mb-1 text-2xl">support_agent</span>
-<span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Soporte 24/7</span>
+<span class="text-[10px] text-text-secondary leading-tight">Soporte 24/7</span>
 </div>
 <div class="flex flex-col items-center justify-center p-3 rounded-lg bg-white dark:bg-surface-dark/50 border border-gray-200 dark:border-gray-800 text-center">
 <span class="material-symbols-outlined text-primary mb-1 text-2xl">redeem</span>
-<span class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">Premio Garantizado</span>
+<span class="text-[10px] text-text-secondary leading-tight">Premio Garantizado</span>
 </div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Spacing -->
+<div class="h-10"></div>
 </div>
 </div>
 </main>
-<!-- Simple Footer -->
-<footer class="w-full border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111621] py-8 mt-auto">
-<div class="layout-container px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
-<p class="text-sm text-gray-500 dark:text-gray-400">© 2024 Sorteos Web. Todos los derechos reservados.</p>
-<div class="flex gap-6">
-<a class="text-sm text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white" href="#">Términos</a>
-<a class="text-sm text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white" href="#">Privacidad</a>
-<a class="text-sm text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white" href="#">Contacto</a>
-</div>
-</div>
-</footer>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'sorteos' como página activa
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+    
+    // Cargar información del sorteo seleccionado
+    loadSorteoDetails();
+});
+
+// Función para cargar los detalles del sorteo desde localStorage
+function loadSorteoDetails() {
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    
+    // Actualizar título
+    document.getElementById('sorteo-title').textContent = sorteoData.titulo;
+    document.getElementById('sorteo-title-mobile').textContent = sorteoData.titulo;
+    document.getElementById('breadcrumb-title').textContent = sorteoData.titulo;
+    document.getElementById('sorteo-subtitle').textContent = sorteoData.subtitulo;
+    document.getElementById('sorteo-desc-mobile').textContent = sorteoData.descripcion;
+    
+    // Actualizar imagen
+    const heroImage = document.getElementById('sorteo-hero-image');
+    if (heroImage && sorteoData.imagen) {
+        heroImage.style.backgroundImage = `url('${sorteoData.imagen}')`;
+    }
+    
+    // Actualizar precio
+    document.getElementById('precio-boleto').innerHTML = `$${sorteoData.precio.toFixed(2)} <span class="text-sm font-normal text-text-secondary">MXN</span>`;
+    
+    // Actualizar progreso
+    const porcentaje = (sorteoData.boletosVendidos / sorteoData.boletosTotales) * 100;
+    document.getElementById('progress-bar').style.width = `${porcentaje}%`;
+    document.getElementById('porcentaje-vendido').textContent = `${Math.round(porcentaje)}%`;
+    document.getElementById('boletos-restantes').textContent = `Quedan ${sorteoData.boletosTotales - sorteoData.boletosVendidos} boletos disponibles`;
+    
+    // Actualizar timer (si viene en los datos)
+    if (sorteoData.tiempoRestante) {
+        updateTimer(sorteoData.tiempoRestante);
+    }
+    
+    // Actualizar descripción en el contenido
+    const descParagraphs = document.querySelectorAll('.prose p');
+    if (descParagraphs.length > 1 && sorteoData.descripcionCompleta) {
+        // Dividir la descripción completa en dos párrafos si tiene un punto medio
+        const partes = sorteoData.descripcionCompleta.split('. ');
+        if (partes.length > 1) {
+            descParagraphs[0].textContent = partes.slice(0, Math.floor(partes.length / 2)).join('. ') + '.';
+            descParagraphs[1].textContent = partes.slice(Math.floor(partes.length / 2)).join('. ');
+        } else {
+            descParagraphs[0].textContent = sorteoData.descripcionCompleta;
+            if (descParagraphs[1]) {
+                descParagraphs[1].textContent = 'El ganador recibirá el premio con todos los gastos de envío e impuestos cubiertos. Además, incluimos garantía y soporte completo.';
+            }
+        }
+    } else if (descParagraphs.length > 0 && sorteoData.descripcionCompleta) {
+        descParagraphs[0].textContent = sorteoData.descripcionCompleta;
+    }
+}
+
+// Función para obtener datos por defecto si no hay sorteo seleccionado
+function getDefaultSorteoData() {
+    return {
+        id: 'default',
+        titulo: 'Gran Sorteo de Verano',
+        subtitulo: 'Auto Deportivo 2024 - Edición Limitada',
+        descripcion: 'Participa y gana el auto de tus sueños con todas las comodidades.',
+        descripcionCompleta: 'Experimenta la máxima potencia con el nuevo modelo deportivo 2024. Este vehículo no es solo un medio de transporte, es una declaración de estilo y rendimiento. Equipado con un motor V8 biturbo, interiores de cuero italiano cosido a mano y un sistema de sonido envolvente de última generación.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSThToNJgK8_ebirDUoyudrls3AYTANGq9M7Zs9ix3l8WlMm_iwssMcgcBKtbPqip5f7LCFIqfkHZEYAgosO1pXgUgY-odysLX9t_CMGNLHE6DVzjSA616V4V4d5G3EAG4p4beU1iktaix9DpdKy4WkFUzJqAQ7pU_Dj4DGa6m6Yhiys5YpRrcuf2hPWh6-cQ6hHdLRK54xyf5ZwlJx4PzuBLOLqV0yLu6X3Pl-4TYDmjte2U-sf3aAZ3uDIaa7aiEDTZ_xY_bJXA',
+        precio: 50.00,
+        boletosVendidos: 375,
+        boletosTotales: 500,
+        tiempoRestante: { dias: 3, horas: 12, minutos: 45, segundos: 30 }
+    };
+}
+
+// Función para actualizar el timer
+function updateTimer(tiempo) {
+    if (tiempo) {
+        document.getElementById('timer-dias').textContent = String(tiempo.dias || 0).padStart(2, '0');
+        document.getElementById('timer-horas').textContent = String(tiempo.horas || 0).padStart(2, '0');
+        document.getElementById('timer-minutos').textContent = String(tiempo.minutos || 0).padStart(2, '0');
+        document.getElementById('timer-segundos').textContent = String(tiempo.segundos || 0).padStart(2, '0');
+    }
+}
+
+// Guardar datos del sorteo seleccionado (llamado desde ListadoSorteosActivos.html)
+window.saveSorteoData = function(sorteoData) {
+    localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+};
+
+// Función para guardar el sorteo actual antes de ir a SeleccionBoletos
+function saveCurrentSorteo() {
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+}
+</script>
+
 </body></html>
 
 <!-- Después de seleccionar un sorteo como cliente, se ve esta página para los detalles del sorteo -->

@@ -22,13 +22,14 @@
                     colors: {
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
-                        "background-dark": "#111621",
-                        "card-dark": "#1a202c",
+                        "background-dark": "#111318",
+                        "card-dark": "#282d39",
+                        "text-secondary": "#9da6b9",
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
                 },
             },
         }
@@ -39,45 +40,55 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #111621; 
+            background: #111318; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #2d3748; 
+            background: #282d39; 
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4a5568; 
+            background: #3b4254; 
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-[#111318] dark:text-white min-h-screen flex flex-col">
-<!-- Top Navigation -->
-<header class="sticky top-0 z-40 w-full border-b border-[#f0f1f4] dark:border-gray-800 bg-white/95 dark:bg-[#111621]/95 backdrop-blur">
-<div class="px-4 md:px-10 py-3 flex items-center justify-between max-w-[1280px] mx-auto w-full">
-<div class="flex items-center gap-3 text-[#111318] dark:text-white">
-<div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-<span class="material-symbols-outlined text-2xl">confirmation_number</span>
-</div>
-<h2 class="text-lg font-bold leading-tight tracking-tight">Sorteos Web</h2>
-</div>
-<nav class="hidden md:flex flex-1 justify-center gap-8">
-<a class="text-sm font-medium hover:text-primary transition-colors text-gray-600 dark:text-gray-300" href="#">Inicio</a>
-<a class="text-sm font-medium text-primary" href="#">Sorteos Activos</a>
-<a class="text-sm font-medium hover:text-primary transition-colors text-gray-600 dark:text-gray-300" href="#">Cómo Jugar</a>
-<a class="text-sm font-medium hover:text-primary transition-colors text-gray-600 dark:text-gray-300" href="#">Contacto</a>
-</nav>
-<div class="flex items-center gap-4">
-<button class="hidden sm:flex p-2 text-gray-500 hover:text-white transition-colors">
-<span class="material-symbols-outlined">notifications</span>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex">
+<!-- Sidebar Container - Layout reutilizable -->
+<div id="client-sidebar-container"></div>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
 </button>
-<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border border-gray-300 dark:border-gray-600">
-<img alt="Profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVX-U8e3PmkBjUqADGEYc0u49Bw10ocDGixNZ9cmmecYxHP0dgbBuRCUWWzRlIB-z6KlDHkWSL3LZPDElBsD0lZ5C-IZSjKrZ6lDYSsgC9jWl0Dx8GaPqkYwWBQkp8agxN3pqIV1pi_QJq_iZQRB8jjmztu6lXwK_qOMF57PUSgI7osmYMY2RGlCY17pxGNI-w-veu0YeMcCVObVCZbouaieU-zi2kq9BnrH7dsFtnY13mHrufKyGIItbbTjg4W3PVZgMF6NzoWcs"/>
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos..." type="text"/>
 </div>
 </div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+</button>
 </div>
 </header>
-<!-- Main Content -->
-<main class="flex-grow w-full max-w-[1280px] mx-auto px-4 md:px-10 py-8 pb-32">
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+<div class="w-full max-w-[1280px] mx-auto">
 <!-- Raffle Header & Info -->
 <div class="flex flex-col lg:flex-row gap-8 mb-10">
 <!-- Raffle Details -->
@@ -87,68 +98,68 @@
 <span class="material-symbols-outlined text-[18px]">verified</span>
 <span class="text-xs font-bold uppercase tracking-wide">Sorteo Verificado</span>
 </div>
-<h1 class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
-                        Gran Sorteo Anual: <span class="text-primary">Automóvil 0km</span>
+<h1 id="sorteo-title" class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white">
+                        <span class="text-primary" id="sorteo-title-text">Gran Sorteo Anual</span>
 </h1>
-<p class="text-gray-500 dark:text-gray-400 text-lg max-w-2xl">
-                        Modelo 2024, Full Equipo, Color a elección. Selecciona tus números de la suerte a continuación.
+<p id="sorteo-description" class="text-text-secondary text-lg max-w-2xl">
+                        Selecciona tus números de la suerte a continuación.
                     </p>
 </div>
 <!-- Prize Card (Mini) -->
-<div class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-gray-800 shadow-sm max-w-md">
-<div class="w-24 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0 relative">
-<div class="absolute inset-0 bg-cover bg-center" data-alt="Red sports car side profile" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDRMuzrAXL--DD2OYYkEHpL3KLV0FdXTo0VroieJsLUFusCP9MGVyfcNL9--Fp_PRm-DyD--iJZnjkBYgKidLczZayxDOGGJmJOlkcpchUE3W8oPajPiN7LJ36LNJ6UBDbKgQmCqFTpQS4T5AP3R5f2luOg8Zi9NeQnOdFNe7uRT7qDQ8U2emjEjaeuaHlILJkwxKx7xOEVivB_7JT19eibh04Byfgsuw-tG7HXyK6OdHZuU_CN7W4tJ5soA4R6H8LiGYeMD6c9Zho");'></div>
+<div class="flex items-center gap-4 p-4 rounded-xl bg-card-dark border border-[#282d39] shadow-sm max-w-md">
+<div id="sorteo-mini-image" class="w-24 h-16 rounded-lg bg-[#111318] overflow-hidden flex-shrink-0 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Sorteo image"></div>
 </div>
 <div class="flex-1">
-<p class="text-sm text-gray-500 dark:text-gray-400">Precio del boleto</p>
-<p class="text-xl font-bold text-[#111318] dark:text-white">$5.00 USD</p>
+<p class="text-sm text-text-secondary">Precio del boleto</p>
+<p id="precio-boleto-display" class="text-xl font-bold text-white">$50.00 MXN</p>
 </div>
 </div>
 </div>
 <!-- Countdown Timer -->
 <div class="flex flex-col justify-center items-center lg:items-end">
-<div class="bg-white dark:bg-[#1a202c] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-<p class="text-sm text-center text-gray-500 dark:text-gray-400 mb-4 font-medium uppercase tracking-widest">Cierra en</p>
+<div class="bg-card-dark border border-[#282d39] rounded-xl p-6 shadow-sm">
+<p class="text-sm text-center text-text-secondary mb-4 font-medium uppercase tracking-widest">Cierra en</p>
 <div class="flex gap-3">
 <div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#f0f1f4] dark:bg-[#111621] border dark:border-gray-800">
-<span class="text-2xl font-bold text-primary">02</span>
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-dias" class="text-2xl font-bold text-primary">03</span>
 </div>
-<span class="text-xs text-gray-500">Días</span>
-</div>
-<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
-<div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#f0f1f4] dark:bg-[#111621] border dark:border-gray-800">
-<span class="text-2xl font-bold text-primary">14</span>
-</div>
-<span class="text-xs text-gray-500">Horas</span>
+<span class="text-xs text-text-secondary">Días</span>
 </div>
 <span class="text-2xl font-bold text-gray-300 pt-4">:</span>
 <div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#f0f1f4] dark:bg-[#111621] border dark:border-gray-800">
-<span class="text-2xl font-bold text-primary">30</span>
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-horas" class="text-2xl font-bold text-primary">12</span>
 </div>
-<span class="text-xs text-gray-500">Mins</span>
+<span class="text-xs text-text-secondary">Horas</span>
+</div>
+<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
+<div class="flex flex-col items-center gap-1">
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-minutos" class="text-2xl font-bold text-primary">45</span>
+</div>
+<span class="text-xs text-text-secondary">Mins</span>
 </div>
 </div>
 </div>
 </div>
 </div>
 <!-- Toolbar: Search & Legend -->
-<div class="sticky top-20 z-30 bg-background-light dark:bg-background-dark py-4 mb-6 border-b border-gray-200 dark:border-gray-800 flex flex-col md:flex-row gap-4 justify-between items-center">
+<div class="sticky top-20 z-30 bg-[#111318] py-4 mb-6 border-b border-[#282d39] flex flex-col md:flex-row gap-4 justify-between items-center">
 <!-- Search -->
 <div class="w-full md:w-96">
 <div class="relative group">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+<span class="material-symbols-outlined text-text-secondary group-focus-within:text-primary transition-colors">search</span>
 </div>
-<input class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-white dark:bg-[#1a202c] text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número (ej. 45)..." type="text"/>
+<input class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número (ej. 45)..." type="text"/>
 </div>
 </div>
 <!-- Legend -->
-<div class="flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+<div class="flex flex-wrap justify-center gap-4 text-sm font-medium text-text-secondary">
 <div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-[#111621] border border-emerald-500"></span>
+<span class="w-3 h-3 rounded-full bg-card-dark border border-emerald-500"></span>
 <span>Disponible</span>
 </div>
 <div class="flex items-center gap-2">
@@ -177,7 +188,7 @@
 <span class="font-mono font-bold text-red-700 decoration-red-500/50 line-through">002</span>
 </button>
 <!-- Available -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
 <span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">003</span>
 </button>
 <!-- Selected -->
@@ -187,7 +198,7 @@
 <span class="absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5">check</span>
 </button>
 <!-- Available -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
 <span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">005</span>
 </button>
 <!-- Pending -->
@@ -196,12 +207,12 @@
 <span class="font-mono font-bold text-yellow-600 relative z-10">006</span>
 </button>
 <!-- Available Loop -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">007</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">008</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">009</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">010</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">011</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">012</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">007</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">008</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">009</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">010</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">011</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">012</span></button>
 <!-- Selected -->
 <button class="h-12 rounded-lg border border-primary bg-primary shadow-[0_0_15px_rgba(36,99,235,0.4)] flex items-center justify-center relative overflow-hidden">
 <span class="font-mono font-bold text-white z-10">013</span>
@@ -209,10 +220,10 @@
 </button>
 <!-- More grid items simulation -->
 <button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">014</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">015</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">016</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">017</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">018</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">015</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">016</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">017</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">018</span></button>
 <button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">019</span></button>
 <button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">020</span></button>
 <button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">021</span></button>
@@ -220,7 +231,7 @@
 <!-- Generate a block of available for visual density -->
 <!-- Using a pattern to fill space without too much repetition -->
 <div class="contents text-emerald-400">
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">023</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-card-dark flex items-center justify-center font-mono font-bold">023</button>
 <button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">024</button>
 <button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">025</button>
 <button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">026</button>
@@ -247,34 +258,133 @@
 </main>
 <!-- Sticky Cart Footer -->
 <div class="fixed bottom-4 left-4 right-4 z-50">
-<div class="max-w-[1280px] mx-auto bg-white dark:bg-[#1a202c] rounded-xl shadow-[0_4px_25px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-gray-700 p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-slide-up">
+<div class="max-w-[1280px] mx-auto bg-card-dark rounded-xl shadow-[0_4px_25px_rgba(0,0,0,0.5)] border border-[#282d39] p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-slide-up">
 <!-- Reservation Timer & Summary -->
 <div class="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto text-center md:text-left">
 <div class="flex items-center gap-3 text-red-500 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
 <span class="material-symbols-outlined text-[20px] animate-pulse">timer</span>
-<span class="font-mono font-bold">14:59</span>
+<span id="reservation-timer" class="font-mono font-bold">14:59</span>
 </div>
 <div class="flex flex-col">
-<span class="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold tracking-wider">Tus Boletos</span>
-<div class="flex gap-2 mt-1">
+<span class="text-xs text-text-secondary uppercase font-semibold tracking-wider">Tus Boletos</span>
+<div id="selected-tickets-container" class="flex gap-2 mt-1">
 <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#004</span>
 <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#013</span>
 </div>
 </div>
 </div>
 <!-- Actions -->
-<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-gray-200 dark:border-gray-700 pt-4 md:pt-0">
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-[#282d39] pt-4 md:pt-0">
 <div class="flex flex-col items-end">
-<span class="text-xs text-gray-500 dark:text-gray-400">Total a Pagar</span>
-<span class="text-2xl font-bold text-[#111318] dark:text-white">$10.00</span>
+<span class="text-xs text-text-secondary">Total a Pagar</span>
+<span id="total-pagar" class="text-2xl font-bold text-white">$10.00</span>
 </div>
-<button class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
+<a href="FinalizarPagoBoletos.html" onclick="saveSelectedTickets()" class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
 <span>Proceder al Pago</span>
 <span class="material-symbols-outlined">arrow_forward</span>
-</button>
+</a>
 </div>
 </div>
 </div>
+</div>
+</main>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'sorteos' como página activa
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+    
+    // Cargar información del sorteo seleccionado
+    loadSorteoData();
+});
+
+// Función para cargar los datos del sorteo desde localStorage
+function loadSorteoData() {
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    
+    // Actualizar título
+    const titleElement = document.getElementById('sorteo-title-text');
+    if (titleElement) {
+        titleElement.textContent = sorteoData.titulo || 'Gran Sorteo Anual';
+    }
+    
+    // Actualizar descripción
+    const descElement = document.getElementById('sorteo-description');
+    if (descElement && sorteoData.subtitulo) {
+        descElement.textContent = sorteoData.subtitulo + '. Selecciona tus números de la suerte a continuación.';
+    }
+    
+    // Actualizar imagen mini
+    const miniImage = document.querySelector('#sorteo-mini-image div');
+    if (miniImage && sorteoData.imagen) {
+        miniImage.style.backgroundImage = `url('${sorteoData.imagen}')`;
+    }
+    
+    // Actualizar precio
+    const precioElement = document.getElementById('precio-boleto-display');
+    if (precioElement) {
+        precioElement.textContent = `$${sorteoData.precio.toFixed(2)} MXN`;
+    }
+    
+    // Actualizar timer
+    if (sorteoData.tiempoRestante) {
+        updateTimer(sorteoData.tiempoRestante);
+    }
+    
+    // Guardar el precio del boleto para calcular el total
+    window.currentTicketPrice = sorteoData.precio || 50.00;
+    updateTotalPrice();
+}
+
+// Función para obtener datos por defecto
+function getDefaultSorteoData() {
+    return {
+        id: 'default',
+        titulo: 'Gran Sorteo Anual',
+        subtitulo: 'Automóvil 0km - Modelo 2024',
+        precio: 50.00,
+        tiempoRestante: { dias: 3, horas: 12, minutos: 45 }
+    };
+}
+
+// Función para actualizar el timer
+function updateTimer(tiempo) {
+    if (tiempo) {
+        const diasElement = document.getElementById('timer-dias');
+        const horasElement = document.getElementById('timer-horas');
+        const minutosElement = document.getElementById('timer-minutos');
+        
+        if (diasElement) diasElement.textContent = String(tiempo.dias || 0).padStart(2, '0');
+        if (horasElement) horasElement.textContent = String(tiempo.horas || 0).padStart(2, '0');
+        if (minutosElement) minutosElement.textContent = String(tiempo.minutos || 0).padStart(2, '0');
+    }
+}
+
+// Función para actualizar el precio total (se puede expandir cuando se implemente la selección de boletos)
+function updateTotalPrice() {
+    const totalElement = document.getElementById('total-pagar');
+    if (totalElement && window.currentTicketPrice) {
+        // Por ahora muestra el precio de 2 boletos como ejemplo
+        const selectedCount = 2; // Esto debería venir de la selección real
+        const total = window.currentTicketPrice * selectedCount;
+        totalElement.textContent = `$${total.toFixed(2)}`;
+    }
+}
+
+// Función para guardar los boletos seleccionados antes de ir al pago
+function saveSelectedTickets() {
+    // Por ahora, guardar los boletos de ejemplo (#004 y #013)
+    // En el futuro, esto vendría de la selección real del usuario
+    const selectedTickets = [4, 13];
+    localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
+}
+</script>
+
 </body></html>
 
 <!-- Luego del sorteo -->

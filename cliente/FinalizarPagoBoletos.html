@@ -22,7 +22,7 @@
               "primary": "#2463eb",
               "background-light": "#f6f6f8",
               "background-dark": "#111318",
-              "surface-dark": "#1c1f27",
+              "card-dark": "#282d39",
               "border-dark": "#282d39",
               "input-border": "#3b4354",
               "text-secondary": "#9da6b9",
@@ -32,10 +32,9 @@
               "body": ["Noto Sans", "sans-serif"],
             },
             borderRadius: {
-              "DEFAULT": "0.25rem", 
-              "lg": "0.5rem", 
-              "xl": "0.75rem", 
-              "2xl": "1rem",
+              "DEFAULT": "0.5rem",
+              "lg": "0.75rem",
+              "xl": "1rem",
               "full": "9999px"
             },
           },
@@ -43,34 +42,44 @@
       }
     </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
-<!-- Top Navbar -->
-<div class="w-full border-b border-solid border-border-dark bg-[#111318]">
-<div class="flex items-center justify-between whitespace-nowrap px-4 py-3 max-w-7xl mx-auto w-full">
-<div class="flex items-center gap-3 text-white">
-<div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-<span class="material-symbols-outlined text-2xl">confirmation_number</span>
+<body class="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex selection:bg-primary selection:text-white">
+<!-- Sidebar Container - Layout reutilizable -->
+<div id="client-sidebar-container"></div>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
 </div>
-<h2 class="text-white text-lg font-bold leading-tight tracking-tight">Sorteos Web</h2>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos..." type="text"/>
 </div>
-<div class="hidden md:flex flex-1 justify-end gap-8">
-<div class="flex items-center gap-9">
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Inicio</a>
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Sorteos</a>
-<a class="text-white text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Mis Boletos</a>
 </div>
-<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
-<span class="truncate">Iniciar Sesión</span>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
 </button>
 </div>
-<!-- Mobile Menu Icon -->
-<div class="md:hidden text-white">
-<span class="material-symbols-outlined">menu</span>
-</div>
-</div>
-</div>
-<!-- Main Content -->
-<main class="flex-1 w-full max-w-7xl mx-auto px-4 py-8 lg:py-12">
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+<div class="w-full max-w-7xl mx-auto">
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 <!-- Left Column: Form Area (8 cols) -->
 <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
@@ -78,9 +87,10 @@
 <div class="flex flex-col gap-2">
 <h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Finalizar Compra</h1>
 <p class="text-text-secondary text-base font-normal">Completa el formulario para asegurar tus boletos seleccionados.</p>
+<p id="sorteo-name-summary" class="text-primary text-sm font-medium mt-1">Sorteo: <span id="sorteo-name-text">Gran Sorteo Anual</span></p>
 </div>
 <!-- Step 1: Contact Info -->
-<div class="bg-surface-dark border border-border-dark rounded-xl p-6 md:p-8">
+<div class="bg-card-dark border border-[#282d39] rounded-xl p-6 md:p-8">
 <div class="flex items-center gap-3 mb-6">
 <div class="flex items-center justify-center size-8 rounded-full bg-primary/20 text-primary font-bold">1</div>
 <h3 class="text-xl font-bold text-white">Información de Contacto</h3>
@@ -103,7 +113,7 @@
 </div>
 </div>
 <!-- Step 2: Payment Instructions -->
-<div class="bg-surface-dark border border-border-dark rounded-xl p-6 md:p-8">
+<div class="bg-card-dark border border-[#282d39] rounded-xl p-6 md:p-8">
 <div class="flex items-center gap-3 mb-6">
 <div class="flex items-center justify-center size-8 rounded-full bg-primary/20 text-primary font-bold">2</div>
 <h3 class="text-xl font-bold text-white">Método de Pago</h3>
@@ -157,7 +167,7 @@
 <div class="lg:col-span-5 xl:col-span-4 w-full">
 <div class="sticky top-6 flex flex-col gap-6">
 <!-- Timer Card -->
-<div class="bg-surface-dark border border-border-dark rounded-xl p-5 shadow-lg relative overflow-hidden">
+<div class="bg-card-dark border border-[#282d39] rounded-xl p-5 shadow-lg relative overflow-hidden">
 <!-- Gradient accent top -->
 <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
 <div class="flex items-center justify-between mb-4">
@@ -166,15 +176,15 @@
 </div>
 <div class="flex gap-3 justify-center">
 <div class="flex flex-col items-center gap-1">
-<div class="flex h-12 w-14 items-center justify-center rounded-lg bg-[#111318] border border-input-border">
-<p class="text-white text-2xl font-bold font-mono">09</p>
+<div class="flex h-12 w-14 items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<p id="timer-minutos" class="text-white text-2xl font-bold font-mono">09</p>
 </div>
 <span class="text-[10px] text-text-secondary uppercase">Min</span>
 </div>
 <div class="flex items-center pb-5 text-text-secondary text-xl font-bold">:</div>
 <div class="flex flex-col items-center gap-1">
-<div class="flex h-12 w-14 items-center justify-center rounded-lg bg-[#111318] border border-input-border">
-<p class="text-white text-2xl font-bold font-mono text-primary">55</p>
+<div class="flex h-12 w-14 items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<p id="timer-segundos" class="text-white text-2xl font-bold font-mono text-primary">55</p>
 </div>
 <span class="text-[10px] text-text-secondary uppercase">Seg</span>
 </div>
@@ -182,41 +192,42 @@
 <p class="text-center text-xs text-text-secondary mt-3">Tus boletos se liberarán si el tiempo expira.</p>
 </div>
 <!-- Summary Card -->
-<div class="bg-surface-dark border border-border-dark rounded-xl overflow-hidden shadow-lg">
-<div class="p-6 border-b border-border-dark">
+<div class="bg-card-dark border border-[#282d39] rounded-xl overflow-hidden shadow-lg">
+<div class="p-6 border-b border-[#282d39]">
 <h3 class="text-lg font-bold text-white mb-4">Resumen del Pedido</h3>
 <!-- Ticket List -->
-<div class="flex flex-col gap-3 mb-6 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-<div class="flex justify-between items-center p-3 rounded-lg bg-[#111318] border border-input-border">
+<div id="tickets-container" class="flex flex-col gap-3 mb-6 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Los boletos se cargarán dinámicamente aquí -->
+<div class="flex justify-between items-center p-3 rounded-lg bg-[#111318] border border-[#282d39]">
 <div class="flex items-center gap-3">
 <div class="bg-primary/20 p-2 rounded text-primary">
 <span class="material-symbols-outlined text-lg">confirmation_number</span>
 </div>
 <div>
-<p class="text-white font-medium text-sm">Boleto #1024</p>
-<p class="text-xs text-text-secondary">Sorteo Gran Premio</p>
+<p class="text-white font-medium text-sm">Boleto #004</p>
+<p id="sorteo-name-1" class="text-xs text-text-secondary">Sorteo Gran Premio</p>
 </div>
 </div>
-<p class="text-white font-bold text-sm">$5.00</p>
+<p id="ticket-price-1" class="text-white font-bold text-sm">$50.00</p>
 </div>
-<div class="flex justify-between items-center p-3 rounded-lg bg-[#111318] border border-input-border">
+<div class="flex justify-between items-center p-3 rounded-lg bg-[#111318] border border-[#282d39]">
 <div class="flex items-center gap-3">
 <div class="bg-primary/20 p-2 rounded text-primary">
 <span class="material-symbols-outlined text-lg">confirmation_number</span>
 </div>
 <div>
-<p class="text-white font-medium text-sm">Boleto #1025</p>
-<p class="text-xs text-text-secondary">Sorteo Gran Premio</p>
+<p class="text-white font-medium text-sm">Boleto #013</p>
+<p id="sorteo-name-2" class="text-xs text-text-secondary">Sorteo Gran Premio</p>
 </div>
 </div>
-<p class="text-white font-bold text-sm">$5.00</p>
+<p id="ticket-price-2" class="text-white font-bold text-sm">$50.00</p>
 </div>
 </div>
 <!-- Calculations -->
-<div class="flex flex-col gap-2 pt-2 border-t border-border-dark/50">
+<div class="flex flex-col gap-2 pt-2 border-t border-[#282d39]/50">
 <div class="flex justify-between text-sm">
 <span class="text-text-secondary">Subtotal</span>
-<span class="text-white">$10.00</span>
+<span id="subtotal-amount" class="text-white">$100.00</span>
 </div>
 <div class="flex justify-between text-sm">
 <span class="text-text-secondary">Comisión de servicio</span>
@@ -228,7 +239,7 @@
 <div class="p-6 bg-[#161920]">
 <div class="flex justify-between items-end mb-6">
 <span class="text-white font-medium">Total a Pagar</span>
-<span class="text-3xl font-black text-white tracking-tight">$10.00</span>
+<span id="total-amount" class="text-3xl font-black text-white tracking-tight">$100.00</span>
 </div>
 <button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 active:scale-[0.98] transition-all text-white font-bold py-4 rounded-lg shadow-lg shadow-primary/25">
 <span class="material-symbols-outlined">payments</span>
@@ -243,7 +254,9 @@
 </div>
 </div>
 </div>
-</main>
+</div>
+</div>
+</div>
 <!-- Optional CSS for scrollbar in summary list -->
 <style>
         .custom-scrollbar::-webkit-scrollbar {
@@ -253,13 +266,141 @@
             background: #111318; 
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #3b4354; 
+            background: #282d39; 
             border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #4b5563; 
+            background: #3b4254; 
+        }
+        
+        /* Custom scrollbar for main body */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254;
         }
     </style>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'sorteos' como página activa
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+    
+    // Cargar información del sorteo y boletos seleccionados
+    loadPaymentData();
+    
+    // Iniciar timer de reserva
+    startReservationTimer();
+});
+
+// Función para cargar los datos del sorteo y boletos desde localStorage
+function loadPaymentData() {
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    const selectedTickets = JSON.parse(localStorage.getItem('selectedTickets')) || getDefaultTickets();
+    
+    // Actualizar nombre del sorteo
+    const sorteoNameElement = document.getElementById('sorteo-name-text');
+    if (sorteoNameElement) {
+        sorteoNameElement.textContent = sorteoData.titulo || 'Gran Sorteo Anual';
+    }
+    
+    // Actualizar nombres del sorteo en los boletos
+    const sorteoName1 = document.getElementById('sorteo-name-1');
+    const sorteoName2 = document.getElementById('sorteo-name-2');
+    if (sorteoName1) sorteoName1.textContent = sorteoData.titulo || 'Sorteo Gran Premio';
+    if (sorteoName2) sorteoName2.textContent = sorteoData.titulo || 'Sorteo Gran Premio';
+    
+    // Actualizar precios de los boletos
+    const ticketPrice = sorteoData.precio || 50.00;
+    const ticketPrice1 = document.getElementById('ticket-price-1');
+    const ticketPrice2 = document.getElementById('ticket-price-2');
+    if (ticketPrice1) ticketPrice1.textContent = `$${ticketPrice.toFixed(2)}`;
+    if (ticketPrice2) ticketPrice2.textContent = `$${ticketPrice.toFixed(2)}`;
+    
+    // Actualizar números de boletos si están disponibles
+    if (selectedTickets.length >= 1) {
+        const ticket1 = document.querySelector('#tickets-container > div:first-child p.text-white');
+        if (ticket1) ticket1.textContent = `Boleto #${String(selectedTickets[0]).padStart(3, '0')}`;
+    }
+    if (selectedTickets.length >= 2) {
+        const ticket2 = document.querySelector('#tickets-container > div:last-child p.text-white');
+        if (ticket2) ticket2.textContent = `Boleto #${String(selectedTickets[1]).padStart(3, '0')}`;
+    }
+    
+    // Calcular y actualizar totales
+    const ticketCount = selectedTickets.length || 2; // Por defecto 2 boletos
+    const subtotal = ticketPrice * ticketCount;
+    const total = subtotal;
+    
+    const subtotalElement = document.getElementById('subtotal-amount');
+    const totalElement = document.getElementById('total-amount');
+    if (subtotalElement) subtotalElement.textContent = `$${subtotal.toFixed(2)}`;
+    if (totalElement) totalElement.textContent = `$${total.toFixed(2)}`;
+    
+    // Guardar el precio unitario para el timer
+    window.ticketPrice = ticketPrice;
+    window.ticketCount = ticketCount;
+}
+
+// Función para obtener datos por defecto del sorteo
+function getDefaultSorteoData() {
+    return {
+        id: 'default',
+        titulo: 'Gran Sorteo Anual',
+        precio: 50.00
+    };
+}
+
+// Función para obtener boletos por defecto
+function getDefaultTickets() {
+    return [4, 13]; // Boletos #004 y #013 como ejemplo
+}
+
+// Timer de reserva (14:59 minutos)
+let reservationTime = 14 * 60 + 59; // 14 minutos y 59 segundos en segundos totales
+
+function startReservationTimer() {
+    const timerInterval = setInterval(function() {
+        const minutes = Math.floor(reservationTime / 60);
+        const seconds = reservationTime % 60;
+        
+        const minutosElement = document.getElementById('timer-minutos');
+        const segundosElement = document.getElementById('timer-segundos');
+        
+        if (minutosElement) minutosElement.textContent = String(minutes).padStart(2, '0');
+        if (segundosElement) segundosElement.textContent = String(seconds).padStart(2, '0');
+        
+        if (reservationTime <= 0) {
+            clearInterval(timerInterval);
+            // Aquí se podría liberar los boletos o mostrar un mensaje
+            alert('El tiempo de reserva ha expirado. Los boletos han sido liberados.');
+            window.location.href = 'ListadoSorteosActivos.html';
+        }
+        
+        reservationTime--;
+    }, 1000);
+}
+</script>
+
+</div>
+</div>
+</div>
+</div>
+</main>
+
 </body></html>
 
 <!-- Estos son los pasos para finalizar el pago de los boletos como cliente después de seleccionar

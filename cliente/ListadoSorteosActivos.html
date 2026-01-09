@@ -113,12 +113,12 @@
 </div>
 </div>
 <div class="flex flex-wrap gap-4">
-<button class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
+<a href="SeleccionBoletos.html" onclick="viewSorteoDetails('auto-deportivo'); return true;" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
 <span class="truncate">Participar Ahora</span>
-</button>
-<button class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
+</a>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('auto-deportivo')" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
 <span class="truncate">Ver Detalles</span>
-</button>
+</a>
 </div>
 </div>
 </div>
@@ -169,7 +169,7 @@
 <!-- Raffles Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 <!-- Card 1 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('iphone15'); window.location.href='SorteoClienteDetalles.html';">
 <div class="relative h-48 bg-cover bg-center" data-alt="Modern smartphone with colorful screen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwAteQmSypGlj9rSJ2j8n67Um8qCfT0urHKQWggVYR2cnoUFNnLWz-dGV7qYF10it_zdMasYWluSGMVYQdUNQyZE3KWtAvxAveYl5nZwURTXZfPeflDRyId90eHL8A26eUtXRFMySbpjoDaZ7V4cMQ0M5uvKDjBxP8mR-3SWfov41dT9pCJshLRbhyh7j2Qg8kAflsEmjL7Ql4ntewUh7oJWn_oT8rRQdiuYtDyQdlrGrGpXdxwisJ7Yt487kUdH_GU3mzz66yI70");'>
 <div class="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     NUEVO
@@ -197,12 +197,12 @@
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span class="text-sm font-medium tabular-nums">15d 04h 22m</span>
 </div>
-<button class="text-primary text-sm font-bold hover:underline">Ver Detalles</button>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('iphone15'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
 </div>
 </div>
 </div>
 <!-- Card 2 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('ps5'); window.location.href='SorteoClienteDetalles.html';">
 <div class="relative h-48 bg-cover bg-center" data-alt="Playstation 5 console with controller" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCcO2dR5Fdg9m2KqgG183uyb2umz475hYy-yTJR5KEpvO5oDC-FWcZ_DiEANzBJzKzFC8qptcOn__j-LUvhz0nQZaXVvtGH3QywOs2VWZzzJ6h4raEVt8Iz2WDnKq5zweGni-aT6furgSfHfoqXbwIEzgtsK_Qhr-ZhBHExOgld_Wc67QrYwyy6Puh0wDsKrdn8liqFv1Zl7_qSc7-eplab4OryXdIA-PXbeK3b2jZGdKoDUOj3wpCd_huPq8oEjzZ54ZiGJSZ1m0");'>
 <div class="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     POPULAR
@@ -230,12 +230,12 @@
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span class="text-sm font-medium tabular-nums">02d 11h 05m</span>
 </div>
-<button class="text-primary text-sm font-bold hover:underline">Ver Detalles</button>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('ps5'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
 </div>
 </div>
 </div>
 <!-- Card 3 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('efectivo50k'); window.location.href='SorteoClienteDetalles.html';">
 <div class="relative h-48 bg-cover bg-center" data-alt="Stack of cash money" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBni1zSCl1SpVKwv0Qzm2qy0axrUNGSlJoyeLynnw4JXMvqQzI8GAx1M8zjD1GEJUVpbLE5wqHnKtrg320kCXMdIC7WxRYlhlIw5YagaaQ8KQy9kj6bNM0vGj996zk-egNCej6aVw1WvVXqw_P7UpgzlwoxP86l-7HjmB2qxduMOMjxGBjme2Jdz_AuIFhr5kHtbnJ__Am9OZcEgcmwPFkFfT-gKR5nGLbO1A6W1C39FLnSwzIL35ckKnwIcHRBs0U5uKBSAB8FtBg");'>
 <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
 <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $100.00 / boleto
@@ -260,12 +260,12 @@
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span class="text-sm font-medium tabular-nums">25d 10h 00m</span>
 </div>
-<button class="text-primary text-sm font-bold hover:underline">Ver Detalles</button>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('efectivo50k'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
 </div>
 </div>
 </div>
 <!-- Card 4 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('moto'); window.location.href='SorteoClienteDetalles.html';">
 <div class="relative h-48 bg-cover bg-center" data-alt="Modern motorcycle on display" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAU2WNCPMJw0aGIUeAuwgz1ZtHOcl46nPPEtFilClUQyWD3IpJP4IsC50QJlcR2jbcLLVlXJI6RKrYiYOlJuG-PHcTKm7vahl3WDBzS_g5vYNmO4BmSdBeBUHYdUxv-PCRTHphG137xvV6rd9ISxjNaKtsnKybQND6FvSzHturGw0IgV4qhm1coXPsFz_8kHiM2-zJRq3yD_Q7CJ117JKUjVRdHmleKjY50m0Qe4NVinX4eoxVTGVEq-9ZbUbnctsS-mYsN2uedePA");'>
 <div class="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                                     ÚLTIMOS BOLETOS
@@ -293,12 +293,12 @@
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span class="text-sm font-bold tabular-nums">04h 30m 15s</span>
 </div>
-<button class="text-primary text-sm font-bold hover:underline">Ver Detalles</button>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('moto'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
 </div>
 </div>
 </div>
 <!-- Card 5 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
+<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('reloj'); window.location.href='SorteoClienteDetalles.html';">
 <div class="relative h-48 bg-cover bg-center" data-alt="High end luxury watch" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7pgaFepp8kfDhmtFNHSgQjDgnZ0uhmGyqg6LNTbHk013102sQnnoX2twAiYlfOjcCcscK9gpQmt-0m3PnS3eMJHvZylYdgxRpuA7I2uCL9BKIQssDk0fALe8f9cFZSQvOF7UZBQOYz9k_qbTLd37IxWdJbaRIKG1lAEsGbtrXw8-_ODIxGE_Q5CoTKQr0yRsXQzxcxPlNxDLX6qbX9oisn0cj-TXfPNuo_j8ofLCiVZfrKDpeVAaDnTocyO7DbkbxTYhaJIh2Mw");'>
 <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
 <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $80.00 / boleto
@@ -323,7 +323,7 @@
 <span class="material-symbols-outlined text-[18px]">timer</span>
 <span class="text-sm font-medium tabular-nums">12d 08h 45m</span>
 </div>
-<button class="text-primary text-sm font-bold hover:underline">Ver Detalles</button>
+<a href="SorteoClienteDetalles.html" onclick="viewSorteoDetails('reloj'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
 </div>
 </div>
 </div>
@@ -380,6 +380,96 @@ document.addEventListener('DOMContentLoaded', function() {
         ClientLayout.init('sorteos');
     }
 });
+
+// Datos de los sorteos disponibles
+const sorteosData = {
+    'auto-deportivo': {
+        id: 'auto-deportivo',
+        titulo: 'Gran Sorteo de Verano: Auto Deportivo 2024',
+        subtitulo: 'Auto Deportivo 2024 - Edición Limitada',
+        descripcion: 'Participa y gana el auto de tus sueños con todas las comodidades.',
+        descripcionCompleta: 'Experimenta la máxima potencia con el nuevo modelo deportivo 2024. Este vehículo no es solo un medio de transporte, es una declaración de estilo y rendimiento. Equipado con un motor V8 biturbo, interiores de cuero italiano cosido a mano y un sistema de sonido envolvente de última generación. El ganador recibirá el vehículo con todos los gastos de envío e impuestos cubiertos. Además, incluimos un año de seguro completo y mantenimiento preventivo gratuito.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSThToNJgK8_ebirDUoyudrls3AYTANGq9M7Zs9ix3l8WlMm_iwssMcgcBKtbPqip5f7LCFIqfkHZEYAgosO1pXgUgY-odysLX9t_CMGNLHE6DVzjSA616V4V4d5G3EAG4p4beU1iktaix9DpdKy4WkFUzJqAQ7pU_Dj4DGa6m6Yhiys5YpRrcuf2hPWh6-cQ6hHdLRK54xyf5ZwlJx4PzuBLOLqV0yLu6X3Pl-4TYDmjte2U-sf3aAZ3uDIaa7aiEDTZ_xY_bJXA',
+        precio: 50.00,
+        boletosVendidos: 375,
+        boletosTotales: 500,
+        tiempoRestante: { dias: 3, horas: 12, minutos: 45, segundos: 30 },
+        badge: 'Premium'
+    },
+    'iphone15': {
+        id: 'iphone15',
+        titulo: 'iPhone 15 Pro Max',
+        subtitulo: 'Smartphone de última generación - 1TB',
+        descripcion: 'Participa para ganar el último modelo de smartphone con 1TB de almacenamiento.',
+        descripcionCompleta: 'Gana el iPhone 15 Pro Max con 1TB de almacenamiento. Incluye chip A17 Pro, cámara de 48MP, pantalla Super Retina XDR de 6.7 pulgadas, y resistencia al agua IP68. El ganador recibirá el dispositivo nuevo y sellado con todos los accesorios originales y un año de garantía Apple.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDwAteQmSypGlj9rSJ2j8n67Um8qCfT0urHKQWggVYR2cnoUFNnLWz-dGV7qYF10it_zdMasYWluSGMVYQdUNQyZE3KWtAvxAveYl5nZwURTXZfPeflDRyId90eHL8A26eUtXRFMySbpjoDaZ7V4cMQ0M5uvKDjBxP8mR-3SWfov41dT9pCJshLRbhyh7j2Qg8kAflsEmjL7Ql4ntewUh7oJWn_oT8rRQdiuYtDyQdlrGrGpXdxwisJ7Yt487kUdH_GU3mzz66yI70',
+        precio: 50.00,
+        boletosVendidos: 125,
+        boletosTotales: 500,
+        tiempoRestante: { dias: 15, horas: 4, minutos: 22, segundos: 0 },
+        badge: 'NUEVO'
+    },
+    'ps5': {
+        id: 'ps5',
+        titulo: 'Pack Gamer PS5',
+        subtitulo: 'Consola PS5 + 2 Controles + 3 Juegos',
+        descripcion: 'Consola PS5, 2 controles DualSense y 3 juegos a elección.',
+        descripcionCompleta: 'Pack completo gamer con consola PlayStation 5, 2 controles DualSense inalámbricos, 3 juegos a elección de nuestro catálogo disponible, y suscripción de 3 meses a PlayStation Plus. Incluye cable HDMI 2.1, cable de carga para controles, y garantía extendida de 2 años.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDCcO2dR5Fdg9m2KqgG183uyb2umz475hYy-yTJR5KEpvO5oDC-FWcZ_DiEANzBJzKzFC8qptcOn__j-LUvhz0nQZaXVvtGH3QywOs2VWZzzJ6h4raEVt8Iz2WDnKq5zweGni-aT6furgSfHfoqXbwIEzgtsK_Qhr-ZhBHExOgld_Wc67QrYwyy6Puh0wDsKrdn8liqFv1Zl7_qSc7-eplab4OryXdIA-PXbeK3b2jZGdKoDUOj3wpCd_huPq8oEjzZ54ZiGJSZ1m0',
+        precio: 25.00,
+        boletosVendidos: 850,
+        boletosTotales: 1000,
+        tiempoRestante: { dias: 2, horas: 11, minutos: 5, segundos: 0 },
+        badge: 'POPULAR'
+    },
+    'efectivo50k': {
+        id: 'efectivo50k',
+        titulo: 'Premio en Efectivo $50k',
+        subtitulo: '$50,000 USD - Libre de impuestos',
+        descripcion: 'Participa por un premio de $50,000 USD libre de impuestos.',
+        descripcionCompleta: 'Gana $50,000 USD en efectivo, libre de impuestos. El premio se entregará mediante transferencia bancaria directa o cheque certificado según prefiera el ganador. No hay restricciones sobre el uso del premio y se entregará dentro de 7 días hábiles después del sorteo.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBni1zSCl1SpVKwv0Qzm2qy0axrUNGSlJoyeLynnw4JXMvqQzI8GAx1M8zjD1GEJUVpbLE5wqHnKtrg320kCXMdIC7WxRYlhlIw5YagaaQ8KQy9kj6bNM0vGj996zk-egNCej6aVw1WvVXqw_P7UpgzlwoxP86l-7HjmB2qxduMOMjxGBjme2Jdz_AuIFhr5kHtbnJ__Am9OZcEgcmwPFkFfT-gKR5nGLbO1A6W1C39FLnSwzIL35ckKnwIcHRBs0U5uKBSAB8FtBg',
+        precio: 100.00,
+        boletosVendidos: 45,
+        boletosTotales: 200,
+        tiempoRestante: { dias: 25, horas: 10, minutos: 0, segundos: 0 },
+        badge: null
+    },
+    'moto': {
+        id: 'moto',
+        titulo: 'Moto Deportiva 2024',
+        subtitulo: 'Moto de Alta Gama - Modelo 2024',
+        descripcion: 'Siente la velocidad con esta increíble motocicleta de alta gama.',
+        descripcionCompleta: 'Moto deportiva de última generación modelo 2024. Incluye motor de alto rendimiento, sistema de frenos ABS, suspensión ajustable, y todos los equipos de seguridad. El ganador recibirá la moto nueva con todos los documentos en regla, placa, y un curso de manejo seguro incluido.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAU2WNCPMJw0aGIUeAuwgz1ZtHOcl46nPPEtFilClUQyWD3IpJP4IsC50QJlcR2jbcLLVlXJI6RKrYiYOlJuG-PHcTKm7vahl3WDBzS_g5vYNmO4BmSdBeBUHYdUxv-PCRTHphG137xvV6rd9ISxjNaKtsnKybQND6FvSzHturGw0IgV4qhm1coXPsFz_8kHiM2-zJRq3yD_Q7CJ117JKUjVRdHmleKjY50m0Qe4NVinX4eoxVTGVEq-9ZbUbnctsS-mYsN2uedePA',
+        precio: 35.00,
+        boletosVendidos: 290,
+        boletosTotales: 300,
+        tiempoRestante: { dias: 0, horas: 4, minutos: 30, segundos: 15 },
+        badge: 'ÚLTIMOS BOLETOS'
+    },
+    'reloj': {
+        id: 'reloj',
+        titulo: 'Reloj de Lujo',
+        subtitulo: 'Edición Limitada - Precisión Suiza',
+        descripcion: 'Elegancia y precisión en tu muñeca. Edición limitada.',
+        descripcionCompleta: 'Reloj de lujo de edición limitada con mecanismo suizo de precisión. Incluye caja de presentación exclusiva, certificado de autenticidad, y garantía internacional de 5 años. El diseño elegante combina funcionalidad y estilo para ocasiones especiales.',
+        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7pgaFepp8kfDhmtFNHSgQjDgnZ0uhmGyqg6LNTbHk013102sQnnoX2twAiYlfOjcCcscK9gpQmt-0m3PnS3eMJHvZylYdgxRpuA7I2uCL9BKIQssDk0fALe8f9cFZSQvOF7UZBQOYz9k_qbTLd37IxWdJbaRIKG1lAEsGbtrXw8-_ODIxGE_Q5CoTKQr0yRsXQzxcxPlNxDLX6qbX9oisn0cj-TXfPNuo_j8ofLCiVZfrKDpeVAaDnTocyO7DbkbxTYhaJIh2Mw',
+        precio: 80.00,
+        boletosVendidos: 40,
+        boletosTotales: 100,
+        tiempoRestante: { dias: 12, horas: 8, minutos: 45, segundos: 0 },
+        badge: null
+    }
+};
+
+// Función para ver detalles del sorteo
+function viewSorteoDetails(sorteoId) {
+    const sorteo = sorteosData[sorteoId];
+    if (sorteo) {
+        localStorage.setItem('selectedSorteo', JSON.stringify(sorteo));
+    }
+}
 </script>
 
 </body></html>
