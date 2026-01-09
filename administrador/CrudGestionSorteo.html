@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sorteos Admin Dashboard</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sorteos Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -18,8 +17,13 @@
                         "primary-hover": "#1d4ed8",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111621",
+<<<<<<< Updated upstream
                         "surface-dark": "#1c212c",
                         "border-dark": "#2d3748",
+=======
+                        "card-dark": "#1e2433",
+                        "border-dark": "#2a3241",
+>>>>>>> Stashed changes
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
@@ -29,6 +33,7 @@
             },
         }
     </script>
+<<<<<<< Updated upstream
 <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -461,6 +466,483 @@
 </div>
 </div>
 </body></html>
+=======
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #111621; }
+        ::-webkit-scrollbar-thumb { background: #2a3241; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b4657; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+    <aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+            <div class="flex items-center gap-2 text-primary">
+                <span class="material-symbols-outlined text-3xl">confirmation_number</span>
+                <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span> Dashboard
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="CrudGestionSorteo.html">
+                <span class="material-symbols-outlined">confirmation_number</span> Gestión de Sorteos
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span> Validación de Pagos
+                <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span> Generación de Ganadores
+            </a>
+            <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span> Usuarios
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span> Auditoría
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+                <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span> Informes
+            </a>
+        </div>
+        <div class="p-4 border-t border-gray-200 dark:border-border-dark">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://ui-avatars.com/api/?name=Admin+User&background=2463eb&color=fff');"></div>
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+                    <span class="text-xs text-gray-500">admin@sorteos.web</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <button class="lg:hidden text-gray-500"><span class="material-symbols-outlined">menu</span></button>
+                <h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Gestión de Sorteos</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative hidden md:block w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <span class="material-symbols-outlined text-[20px]">search</span>
+                    </span>
+                    <input id="topSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar..." type="text"/>
+                </div>
+                <button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div class="max-w-[1400px] mx-auto w-full">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+                    <div class="flex flex-col gap-2">
+                        <h1 class="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">Gestión de Sorteos</h1>
+                        <p class="text-gray-500 dark:text-gray-400 text-base">Administra, crea y monitorea todos tus eventos activos y pasados.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                        <button id="openModalBtn" class="flex items-center justify-center gap-2 h-11 px-5 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all active:scale-95 w-full sm:w-auto">
+                            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                            <span>Crear Nuevo Sorteo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+                    <div class="md:col-span-5 lg:col-span-4 relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                            <span class="material-symbols-outlined">search</span>
+                        </div>
+                        <input id="searchInput" class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-border-dark rounded-lg leading-5 bg-white dark:bg-surface-dark text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="Buscar por nombre, ID o premio..." type="text"/>
+                    </div>
+                    <div class="md:col-span-3 lg:col-span-2">
+                        <div class="relative">
+                            <select id="statusFilter" class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-surface-dark text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                <option value="todos">Todos los Estados</option>
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                                <option value="finalizado">Finalizado</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 lg:col-span-6 flex justify-end items-center gap-2">
+                        <span id="resultsCount" class="text-sm text-gray-500 dark:text-gray-400 hidden lg:inline-block">Mostrando 5 de 5 resultados</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 bg-white dark:bg-[#151a23] rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden flex flex-col shadow-sm">
+                    <div class="overflow-x-auto flex-1">
+                        <table id="sorteosTable" class="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
+                            <thead class="bg-gray-50 dark:bg-[#111621]">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">ID</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nombre del Sorteo</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Periodo</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Premio Principal</th>
+                                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Estado</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-48">Boletos</th>
+                                    <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-[#151a23]">
+                                <tr data-status="activo" class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">Gran Rifa de Navidad</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Creado por Admin</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-300">01 Dic - 25 Dic</div>
+                                        <div class="text-xs text-gray-500">2023</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="material-symbols-outlined text-yellow-500 mr-2 text-lg">emoji_events</span>
+                                            <span class="text-sm text-gray-900 dark:text-gray-300">Auto 0km Toyota Yaris</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-full">
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-900 dark:text-white font-medium">750</span>
+                                                <span class="text-gray-500">de 1000</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button class="text-gray-400 hover:text-primary p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                            <button class="btn-delete text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-status="finalizado" class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Pro-Fondos</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Beneficencia Local</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-300">15 Nov - 30 Nov</div>
+                                        <div class="text-xs text-gray-500">2023</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="material-symbols-outlined text-gray-400 mr-2 text-lg">laptop_mac</span>
+                                            <span class="text-sm text-gray-900 dark:text-gray-300">MacBook Pro M3</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">Finalizado</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-full">
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-900 dark:text-white font-medium">500</span>
+                                                <span class="text-gray-500">de 500</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-gray-400 h-1.5 rounded-full" style="width: 100%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button class="text-gray-400 hover:text-primary p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-status="inactivo" class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa de Verano</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Borrador</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-300">01 Ene - 31 Ene</div>
+                                        <div class="text-xs text-gray-500">2024</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="material-symbols-outlined text-blue-400 mr-2 text-lg">flight_takeoff</span>
+                                            <span class="text-sm text-gray-900 dark:text-gray-300">Viaje a Cancún (2 pers)</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Inactivo</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-full">
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-900 dark:text-white font-medium">0</span>
+                                                <span class="text-gray-500">de 2000</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-primary h-1.5 rounded-full" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button class="text-gray-400 hover:text-primary p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                            <button class="btn-delete text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-status="activo" class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1026</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Flash Fin de Mes</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Marketing</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-300">28 Feb - 29 Feb</div>
+                                        <div class="text-xs text-gray-500">2024</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="material-symbols-outlined text-purple-400 mr-2 text-lg">smartphone</span>
+                                            <span class="text-sm text-gray-900 dark:text-gray-300">iPhone 15 Pro</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-full">
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-900 dark:text-white font-medium">120</span>
+                                                <span class="text-gray-500">de 200</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button class="text-gray-400 hover:text-primary p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                            <button class="btn-delete text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-status="activo" class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1027</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa Solidaria Animalista</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">ONG Vida</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-300">01 Mar - 15 Mar</div>
+                                        <div class="text-xs text-gray-500">2024</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <span class="material-symbols-outlined text-green-400 mr-2 text-lg">shopping_basket</span>
+                                            <span class="text-sm text-gray-900 dark:text-gray-300">Canasta de Productos</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-full">
+                                            <div class="flex justify-between text-xs mb-1">
+                                                <span class="text-slate-900 dark:text-white font-medium">98</span>
+                                                <span class="text-gray-500">de 100</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                                <div class="bg-amber-500 h-1.5 rounded-full" style="width: 98%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <button class="text-gray-400 hover:text-primary p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+                                            <button class="btn-delete text-gray-400 hover:text-red-500 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-white dark:bg-[#151a23] px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-border-dark sm:px-6">
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div><p class="text-sm text-gray-700 dark:text-gray-400">Mostrando <span class="font-medium">1</span> a <span class="font-medium">5</span> de <span class="font-medium">24</span> resultados</p></div>
+                            <div>
+                                <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                    <a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50" href="#"><span class="material-symbols-outlined text-sm">chevron_left</span></a>
+                                    <a aria-current="page" class="z-10 bg-primary/10 border-primary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-bold" href="#">1</a>
+                                    <a class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">2</a>
+                                    <a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50" href="#"><span class="material-symbols-outlined text-sm">chevron_right</span></a>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="hidden fixed inset-0 z-50 overflow-y-auto" id="modal-backdrop">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div id="closeModalBg" class="fixed inset-0 transition-opacity cursor-pointer">
+                <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+                <form id="createSorteoForm">
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
+                                <span class="material-symbols-outlined text-primary">edit_document</span>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white">Crear Nuevo Sorteo</h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre del Sorteo</label>
+                                        <input required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-primary focus:border-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="sorteo-name" type="text" placeholder="Ej. Gran Rifa Navideña"/>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha Inicio</label>
+                                            <input required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-primary focus:border-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="start-date" type="date"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fecha Fin</label>
+                                            <input required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-primary focus:border-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="end-date" type="date"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Premio Principal</label>
+                                        <div class="mt-1 flex rounded-md shadow-sm">
+                                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 text-sm">
+                                                <span class="material-symbols-outlined text-sm">emoji_events</span>
+                                            </span>
+                                            <input required class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prize" type="text" placeholder="Descripción del premio"/>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cantidad Boletos</label>
+                                            <input required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-primary focus:border-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="tickets" type="number" placeholder="1000"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
+                                            <select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="status">
+                                                <option value="inactivo">Borrador</option>
+                                                <option value="activo" selected>Activo</option>
+                                                <option value="finalizado">Finalizado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">Guardar Sorteo</button>
+                        <button id="cancelModalBtn" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Referencias
+    const searchInput = document.getElementById('searchInput');
+    const topSearchInput = document.getElementById('topSearchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const tableBody = document.querySelector('#sorteosTable tbody');
+    const modal = document.getElementById('modal-backdrop');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const closeModalBg = document.getElementById('closeModalBg');
+    const createForm = document.getElementById('createSorteoForm');
+    const resultsCount = document.getElementById('resultsCount');
+
+    // --- FILTRADO ---
+    function filterTable() {
+        const query = searchInput.value.toLowerCase();
+        const topQuery = topSearchInput.value.toLowerCase();
+        const status = statusFilter.value;
+        const rows = tableBody.querySelectorAll('tr');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowStatus = row.getAttribute('data-status');
+            
+            const matchesSearch = text.includes(query) && text.includes(topQuery);
+            const matchesStatus = (status === 'todos' || rowStatus === status);
+
+            if (matchesSearch && matchesStatus) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        resultsCount.innerText = `Mostrando ${visibleCount} de ${rows.length} resultados`;
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    topSearchInput.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+
+    // --- MODAL ---
+    const toggleModal = (show) => {
+        modal.classList.toggle('hidden', !show);
+        if (!show) createForm.reset();
+    };
+
+    openModalBtn.addEventListener('click', () => toggleModal(true));
+    cancelModalBtn.addEventListener('click', () => toggleModal(false));
+    closeModalBg.addEventListener('click', () => toggleModal(false));
+
+    createForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('sorteo-name').value;
+        alert(`¡Sorteo "${name}" guardado exitosamente!`);
+        toggleModal(false);
+    });
+
+    // --- ACCIONES DE FILA ---
+    tableBody.addEventListener('click', (e) => {
+        // Eliminar fila
+        const deleteBtn = e.target.closest('.btn-delete');
+        if (deleteBtn) {
+            if (confirm('¿Estás seguro de que deseas eliminar este sorteo?')) {
+                deleteBtn.closest('tr').remove();
+                filterTable();
+            }
+        }
+    });
+</script>
+</body>
+</html>
+>>>>>>> Stashed changes
 
 //pagina para gestionar los sorteos como administrador despues de iniciar sesion
 //Se ve esta pagina para gestionar los sorteos, crear nuevos sorteos, editar sorteos existentes y eliminar sorteos.
