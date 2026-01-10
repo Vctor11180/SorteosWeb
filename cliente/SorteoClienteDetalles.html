@@ -330,6 +330,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Cargar información del sorteo seleccionado
     loadSorteoDetails();
+    
+    // Asegurar que los contadores se inicialicen (igual que DashboardCliente)
+    setTimeout(function() {
+        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+        if (sorteoData.tiempoRestante) {
+            initSorteoCountdown(sorteoData.tiempoRestante);
+        } else {
+            initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 30 });
+        }
+    }, 100);
+    
+    // Inicializar funcionalidades de botones
+    initSorteoDetailsButtons();
 });
 
 // Función para cargar los detalles del sorteo desde localStorage
@@ -358,9 +371,11 @@ function loadSorteoDetails() {
     document.getElementById('porcentaje-vendido').textContent = `${Math.round(porcentaje)}%`;
     document.getElementById('boletos-restantes').textContent = `Quedan ${sorteoData.boletosTotales - sorteoData.boletosVendidos} boletos disponibles`;
     
-    // Actualizar timer (si viene en los datos)
+    // Inicializar contador regresivo del sorteo (igual que DashboardCliente)
     if (sorteoData.tiempoRestante) {
-        updateTimer(sorteoData.tiempoRestante);
+        initSorteoCountdown(sorteoData.tiempoRestante);
+    } else {
+        initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 30 });
     }
     
     // Actualizar descripción en el contenido
@@ -398,13 +413,85 @@ function getDefaultSorteoData() {
     };
 }
 
-// Función para actualizar el timer
+// Almacenar intervalos activos para poder limpiarlos si es necesario
+const activeCountdownIntervals = new Map();
+
+// Función para inicializar el contador regresivo del sorteo (EXACTO COMO DashboardCliente)
+function initSorteoCountdown(tiempo) {
+    // Obtener elementos del DOM
+    const diasElement = document.getElementById('timer-dias');
+    const horasElement = document.getElementById('timer-horas');
+    const minutosElement = document.getElementById('timer-minutos');
+    const segundosElement = document.getElementById('timer-segundos');
+    
+    if (!diasElement || !horasElement || !minutosElement || !segundosElement) {
+        console.warn('Elementos del timer no encontrados, reintentando...');
+        setTimeout(function() {
+            initSorteoCountdown(tiempo);
+        }, 200);
+        return;
+    }
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('sorteo-timer')) {
+        clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+        activeCountdownIntervals.delete('sorteo-timer');
+    }
+    
+    if (!tiempo) {
+        tiempo = { dias: 3, horas: 12, minutos: 45, segundos: 30 };
+    }
+    
+    // Convertir tiempo a segundos totales (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = (tiempo.dias || 0) * 86400 + 
+                          (tiempo.horas || 0) * 3600 + 
+                          (tiempo.minutos || 0) * 60 + 
+                          (tiempo.segundos || 0);
+    
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            diasElement.textContent = '00';
+            horasElement.textContent = '00';
+            minutosElement.textContent = '00';
+            segundosElement.textContent = '00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('sorteo-timer')) {
+                clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+                activeCountdownIntervals.delete('sorteo-timer');
+            }
+            return;
+        }
+        
+        // Calcular días, horas, minutos y segundos con el tiempo actual
+        const dias = Math.floor(remainingSeconds / 86400);
+        const horas = Math.floor((remainingSeconds % 86400) / 3600);
+        const minutos = Math.floor((remainingSeconds % 3600) / 60);
+        const segundos = remainingSeconds % 60;
+        
+        // Actualizar la visualización
+        diasElement.textContent = String(dias).padStart(2, '0');
+        horasElement.textContent = String(horas).padStart(2, '0');
+        minutosElement.textContent = String(minutos).padStart(2, '0');
+        segundosElement.textContent = String(segundos).padStart(2, '0');
+        
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateCountdown();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateCountdown, 1000);
+    activeCountdownIntervals.set('sorteo-timer', intervalId);
+}
+
+// Función para actualizar el timer (compatibilidad con código existente)
 function updateTimer(tiempo) {
     if (tiempo) {
-        document.getElementById('timer-dias').textContent = String(tiempo.dias || 0).padStart(2, '0');
-        document.getElementById('timer-horas').textContent = String(tiempo.horas || 0).padStart(2, '0');
-        document.getElementById('timer-minutos').textContent = String(tiempo.minutos || 0).padStart(2, '0');
-        document.getElementById('timer-segundos').textContent = String(tiempo.segundos || 0).padStart(2, '0');
+        initSorteoCountdown(tiempo);
     }
 }
 
@@ -413,10 +500,101 @@ window.saveSorteoData = function(sorteoData) {
     localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
 };
 
+// Función para inicializar funcionalidades de botones en detalles del sorteo
+function initSorteoDetailsButtons() {
+    // Botones de cantidad (+ y -)
+    const quantityInput = document.querySelector('input[type="number"]');
+    const decreaseBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+        btn.querySelector('.material-symbols-outlined')?.textContent === 'remove'
+    );
+    const increaseBtn = Array.from(document.querySelectorAll('button')).find(btn => 
+        btn.querySelector('.material-symbols-outlined')?.textContent === 'add'
+    );
+    
+    if (quantityInput && decreaseBtn && increaseBtn) {
+        // Botón disminuir cantidad
+        decreaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value) || 1;
+            if (currentValue > 1) {
+                currentValue--;
+                quantityInput.value = currentValue;
+                updateTotalPrice();
+            }
+        });
+        
+        // Botón aumentar cantidad
+        increaseBtn.addEventListener('click', function() {
+            let currentValue = parseInt(quantityInput.value) || 1;
+            const maxValue = parseInt(quantityInput.max) || 100;
+            if (currentValue < maxValue) {
+                currentValue++;
+                quantityInput.value = currentValue;
+                updateTotalPrice();
+            }
+        });
+        
+        // Validar input manual
+        quantityInput.addEventListener('change', function() {
+            let value = parseInt(this.value) || 1;
+            const min = parseInt(this.min) || 1;
+            const max = parseInt(this.max) || 100;
+            
+            if (value < min) value = min;
+            if (value > max) value = max;
+            
+            this.value = value;
+            updateTotalPrice();
+        });
+        
+        // Actualizar precio total cuando cambia la cantidad
+        quantityInput.addEventListener('input', function() {
+            updateTotalPrice();
+        });
+    }
+    
+    // Botón "Seleccionar Boletos"
+    const selectBtn = document.getElementById('btn-seleccionar');
+    if (selectBtn) {
+        selectBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            saveCurrentSorteo();
+            // Redirigir a SeleccionBoletos.html
+            window.location.href = 'SeleccionBoletos.html';
+        });
+    }
+}
+
+// Función para actualizar el precio total en la página de detalles
+function updateTotalPrice() {
+    const quantityInput = document.querySelector('input[type="number"]');
+    const precioBoleto = document.getElementById('precio-boleto');
+    
+    if (quantityInput && precioBoleto) {
+        const quantity = parseInt(quantityInput.value) || 1;
+        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+        const precioUnitario = sorteoData.precio || 50.00;
+        const total = precioUnitario * quantity;
+        
+        // Actualizar el precio en el botón o mostrar en algún lugar si existe
+        // Por ahora solo guardamos la cantidad en el sorteoData
+        sorteoData.cantidadBoletos = quantity;
+        sorteoData.totalPrecio = total;
+        localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    }
+}
+
 // Función para guardar el sorteo actual antes de ir a SeleccionBoletos
 function saveCurrentSorteo() {
     const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    
+    // Guardar cantidad de boletos seleccionada
+    const quantityInput = document.querySelector('input[type="number"]');
+    if (quantityInput) {
+        sorteoData.cantidadBoletos = parseInt(quantityInput.value) || 1;
+    }
+    
     localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    return true;
 }
 </script>
 

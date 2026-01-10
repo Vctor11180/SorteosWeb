@@ -306,12 +306,353 @@
 </main>
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('perfil');
     }
+    
+    // Inicializar todas las funcionalidades
+    initProfileFunctionality();
 });
+
+// Función para inicializar todas las funcionalidades del perfil
+function initProfileFunctionality() {
+    // Funcionalidad de avatar
+    initAvatarUpload();
+    
+    // Funcionalidad de formularios
+    initSavePersonalInfo();
+    initChangePassword();
+    initSavePreferences();
+    
+    // Funcionalidad de navegación lateral
+    initSidebarNavigation();
+}
+
+// Función para manejar la subida y eliminación de avatar
+function initAvatarUpload() {
+    // Click en el avatar para subir
+    const avatarContainer = document.querySelector('.group.cursor-pointer');
+    const uploadBtn = document.querySelector('button:contains("Subir Nueva")') || 
+                     Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Subir Nueva'));
+    const deleteBtn = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.includes('Eliminar'));
+    
+    // Input de archivo oculto
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+    
+    // Función para subir nueva foto
+    function handleUploadPhoto() {
+        fileInput.click();
+    }
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                customAlert('La imagen no puede ser mayor a 5MB', 'Archivo Demasiado Grande', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const avatarElements = document.querySelectorAll('[data-alt*="avatar"]');
+                avatarElements.forEach(element => {
+                    element.style.backgroundImage = `url('${event.target.result}')`;
+                });
+                showToast('Foto de perfil actualizada exitosamente', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Agregar event listeners
+    if (avatarContainer) {
+        avatarContainer.addEventListener('click', handleUploadPhoto);
+    }
+    
+    const uploadButton = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.trim().includes('Subir Nueva')
+    );
+    if (uploadButton) {
+        uploadButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            handleUploadPhoto();
+        });
+    }
+    
+    // Función para eliminar foto
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            customConfirm('¿Estás seguro de que deseas eliminar tu foto de perfil?', 'Eliminar Foto de Perfil', 'warning').then(confirmed => {
+                if (confirmed) {
+                    const defaultAvatar = 'https://via.placeholder.com/150/282d39/9da6b9?text=Usuario';
+                    const avatarElements = document.querySelectorAll('[data-alt*="avatar"]');
+                    avatarElements.forEach(element => {
+                        element.style.backgroundImage = `url('${defaultAvatar}')`;
+                    });
+                    customToast('Foto de perfil eliminada', 'success');
+                }
+            });
+        });
+    }
+}
+
+// Función para guardar información personal
+function initSavePersonalInfo() {
+    const saveBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Guardar Información')
+    );
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            const nombre = document.querySelector('input[type="text"][value*="Juan"]').value.trim();
+            const email = document.querySelector('input[type="email"]').value.trim();
+            const telefono = document.querySelector('input[type="tel"]').value.trim();
+            const direccion = Array.from(document.querySelectorAll('input[type="text"]'))
+                .find(input => input.placeholder && input.placeholder.includes('dirección'))?.value.trim() || '';
+            
+            // Validaciones
+            if (!nombre || nombre.length < 3) {
+                showToast('El nombre debe tener al menos 3 caracteres', 'error');
+                return;
+            }
+            
+            if (!email || !email.includes('@')) {
+                showToast('Por favor ingresa un correo electrónico válido', 'error');
+                return;
+            }
+            
+            // Simular guardado (aquí iría la llamada al servidor)
+            console.log('Guardando información:', { nombre, email, telefono, direccion });
+            
+            // Guardar en localStorage
+            const profileData = {
+                nombre,
+                email,
+                telefono,
+                direccion,
+                fechaActualizacion: new Date().toISOString()
+            };
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
+            showToast('Información personal guardada exitosamente', 'success');
+        });
+    }
+}
+
+// Función para cambiar contraseña
+function initChangePassword() {
+    const changePasswordBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Actualizar Contraseña')
+    );
+    
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            const passwordInputs = Array.from(document.querySelectorAll('input[type="password"]'));
+            const actualPassword = passwordInputs[0]?.value.trim();
+            const nuevaPassword = passwordInputs[1]?.value.trim();
+            const confirmarPassword = passwordInputs[2]?.value.trim();
+            
+            // Validaciones
+            if (!actualPassword || !nuevaPassword || !confirmarPassword) {
+                showToast('Por favor completa todos los campos', 'error');
+                return;
+            }
+            
+            if (nuevaPassword.length < 8) {
+                showToast('La nueva contraseña debe tener al menos 8 caracteres', 'error');
+                return;
+            }
+            
+            if (nuevaPassword !== confirmarPassword) {
+                showToast('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            if (actualPassword === nuevaPassword) {
+                showToast('La nueva contraseña debe ser diferente a la actual', 'error');
+                return;
+            }
+            
+            // Simular actualización (aquí iría la llamada al servidor)
+            console.log('Actualizando contraseña...');
+            
+            // Limpiar campos
+            passwordInputs.forEach(input => input.value = '');
+            
+            showToast('Contraseña actualizada exitosamente', 'success');
+        });
+    }
+}
+
+// Función para guardar preferencias de notificación
+function initSavePreferences() {
+    const savePreferencesBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Guardar Preferencias')
+    );
+    
+    if (savePreferencesBtn) {
+        savePreferencesBtn.addEventListener('click', function() {
+            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+            const preferences = {};
+            
+            checkboxes.forEach((checkbox, index) => {
+                const label = checkbox.closest('label');
+                const text = label ? label.textContent.trim() : `Preferencia ${index + 1}`;
+                preferences[text] = checkbox.checked;
+            });
+            
+            // Guardar en localStorage
+            localStorage.setItem('notificationPreferences', JSON.stringify(preferences));
+            
+            console.log('Preferencias guardadas:', preferences);
+            showToast('Preferencias de notificación guardadas exitosamente', 'success');
+        });
+    }
+}
+
+// Función para navegación lateral (secciones)
+function initSidebarNavigation() {
+    // Solo seleccionar enlaces del sidebar interno de la página (dentro del contenedor de contenido principal)
+    // NO incluir el sidebar principal del layout (#client-sidebar)
+    const pageContentContainer = document.querySelector('.max-w-\\[1440px\\]');
+    if (!pageContentContainer) return;
+    
+    const pageSidebar = pageContentContainer.querySelector('aside nav');
+    if (!pageSidebar) return;
+    
+    const navLinks = pageSidebar.querySelectorAll('a');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Solo prevenir default si es un enlace de ancla (#) o enlace vacío
+            // Permitir que los enlaces a otras páginas funcionen normalmente
+            const href = this.getAttribute('href');
+            if (href === '#' || !href || href.startsWith('#')) {
+                e.preventDefault();
+            } else {
+                // Si es un enlace a otra página HTML, permitir navegación normal
+                // No hacer nada, dejar que el navegador maneje la navegación
+                return;
+            }
+            
+            // Remover clase activa de todos
+            navLinks.forEach(l => {
+                l.classList.remove('bg-primary/10', 'text-primary', 'border-l-4', 'border-primary');
+                l.classList.add('text-text-secondary', 'hover:bg-[#282d39]', 'hover:text-white');
+            });
+            
+            // Agregar clase activa al clickeado
+            this.classList.remove('text-text-secondary', 'hover:bg-[#282d39]', 'hover:text-white');
+            this.classList.add('bg-primary/10', 'text-primary', 'border-l-4', 'border-primary');
+            
+            // Scroll a la sección correspondiente
+            const sectionText = this.textContent.trim();
+            let targetId = '';
+            
+            if (sectionText.includes('Personal')) {
+                // Ya estamos en información personal
+                return;
+            } else if (sectionText.includes('Seguridad')) {
+                targetId = 'security-section';
+            } else if (sectionText.includes('Notificaciones')) {
+                targetId = 'notifications-section';
+            } else if (sectionText.includes('Pago')) {
+                customAlert('Funcionalidad de métodos de pago: Aquí se mostrarían los métodos de pago guardados.', 'Métodos de Pago', 'info');
+                return;
+            } else if (sectionText.includes('Historial')) {
+                customAlert('Funcionalidad de historial: Aquí se mostraría el historial de sorteos.', 'Historial', 'info');
+                return;
+            }
+            
+            if (targetId) {
+                const section = document.getElementById(targetId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    });
+}
+
+// Función para mostrar toasts/notificaciones
+function showToast(message, type = 'success') {
+    // Crear elemento toast
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-6 right-6 z-50 animate-slide-in`;
+    toast.style.animation = 'slideIn 0.3s ease-out';
+    
+    const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+    const icon = type === 'success' ? 'check_circle' : 'error';
+    
+    toast.innerHTML = `
+        <div class="bg-card-dark border-l-4 ${type === 'success' ? 'border-green-500' : 'border-red-500'} text-white px-6 py-4 rounded shadow-xl flex items-center gap-3 min-w-[300px]">
+            <span class="material-symbols-outlined text-${type === 'success' ? 'green' : 'red'}-500">${icon}</span>
+            <div class="flex-1">
+                <p class="font-bold text-sm">${message}</p>
+            </div>
+            <span class="material-symbols-outlined text-gray-500 cursor-pointer text-sm ml-4 close-toast">close</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Cerrar toast
+    const closeBtn = toast.querySelector('.close-toast');
+    closeBtn.addEventListener('click', () => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    });
+    
+    // Auto cerrar después de 5 segundos
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Agregar estilos para animaciones si no existen
+if (!document.getElementById('toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+    `;
+    document.head.appendChild(style);
+}
 </script>
 </body></html>
 

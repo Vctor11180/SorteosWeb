@@ -372,6 +372,7 @@
 
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
@@ -379,6 +380,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('sorteos');
     }
+    
+    // Inicializar funcionalidades de botones
+    initListadoButtons();
+    
+    // Inicializar contadores de tiempo
+    initRaffleCardTimers();
 });
 
 // Datos de los sorteos disponibles
@@ -468,6 +475,197 @@ function viewSorteoDetails(sorteoId) {
     const sorteo = sorteosData[sorteoId];
     if (sorteo) {
         localStorage.setItem('selectedSorteo', JSON.stringify(sorteo));
+    }
+}
+
+// Función para inicializar funcionalidades de botones
+function initListadoButtons() {
+    // Buscador
+    initSorteosSearch();
+    
+    // Filtros
+    initFilters();
+    
+    // Botón Depositar Fondos
+    initDepositFunds();
+    
+    // Botón Notificaciones
+    initNotificationsButton();
+    
+    // Botón Cargar más sorteos
+    initLoadMoreButton();
+    
+    // Botón Ver Ganador (para sorteos finalizados)
+    initViewWinnerButton();
+}
+
+// Función para inicializar búsqueda de sorteos
+function initSorteosSearch() {
+    const searchInputs = document.querySelectorAll('input[placeholder*="Buscar"]');
+    
+    searchInputs.forEach(searchInput => {
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim().toLowerCase();
+            
+            searchTimeout = setTimeout(() => {
+                searchSorteos(query);
+            }, 300);
+        });
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                searchSorteos(e.target.value.trim().toLowerCase());
+            }
+        });
+    });
+}
+
+// Función para buscar sorteos
+function searchSorteos(query) {
+    const sorteoCards = document.querySelectorAll('.grid > div');
+    
+    if (!query) {
+        // Mostrar todos
+        sorteoCards.forEach(card => {
+            card.style.display = '';
+        });
+        return;
+    }
+    
+    sorteoCards.forEach(card => {
+        const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const description = card.querySelector('p')?.textContent.toLowerCase() || '';
+        
+        if (title.includes(query) || description.includes(query)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Función para inicializar filtros
+function initFilters() {
+    const filterButtons = document.querySelectorAll('.flex-wrap.gap-3 button');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remover clase activa de todos
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-primary');
+                btn.classList.add('bg-[#282d39]', 'hover:bg-[#323846]');
+            });
+            
+            // Agregar clase activa al clickeado
+            this.classList.remove('bg-[#282d39]', 'hover:bg-[#323846]');
+            this.classList.add('bg-primary');
+            
+            // Filtrar sorteos
+            const filterText = this.textContent.trim().toLowerCase();
+            filterSorteos(filterText);
+        });
+    });
+}
+
+// Función para filtrar sorteos
+function filterSorteos(filter) {
+    const sorteoCards = document.querySelectorAll('.grid > div');
+    
+    if (filter === 'todos') {
+        sorteoCards.forEach(card => {
+            card.style.display = '';
+        });
+        return;
+    }
+    
+    // Filtrar por categoría
+    sorteoCards.forEach(card => {
+        const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const description = card.querySelector('p')?.textContent.toLowerCase() || '';
+        const text = title + ' ' + description;
+        
+        let show = false;
+        
+        if (filter === 'electrónica' && (text.includes('iphone') || text.includes('ps5') || text.includes('tv') || text.includes('smartphone') || text.includes('gamer'))) {
+            show = true;
+        } else if (filter === 'vehículos' && (text.includes('auto') || text.includes('moto') || text.includes('vehículo'))) {
+            show = true;
+        } else if (filter === 'efectivo' && (text.includes('efectivo') || text.includes('premio') || text.includes('$'))) {
+            show = true;
+        } else if (filter === 'inmuebles' && (text.includes('inmueble') || text.includes('casa') || text.includes('apartamento'))) {
+            show = true;
+        }
+        
+        card.style.display = show ? '' : 'none';
+    });
+}
+
+// Función para botón Depositar Fondos
+function initDepositFunds() {
+    const depositBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Depositar Fondos') || (btn.textContent.includes('+') && btn.closest('header'))
+    );
+    
+    if (depositBtn) {
+        depositBtn.addEventListener('click', function() {
+            customAlert('Funcionalidad de depósito: Aquí se abriría el formulario o página para depositar fondos.\n\nPuedes depositar fondos desde tu dashboard principal.', 'Depositar Fondos', 'info');
+        });
+    }
+}
+
+// Función para botón Notificaciones
+function initNotificationsButton() {
+    const notificationsBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.querySelector('.material-symbols-outlined')?.textContent === 'notifications'
+    );
+    
+    if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', function() {
+            customAlert('Panel de notificaciones: Aquí se mostrarían tus notificaciones recientes.\n\nPuedes ver todas tus notificaciones desde el dashboard.', 'Notificaciones', 'info');
+        });
+    }
+}
+
+// Función para botón Cargar más sorteos
+function initLoadMoreButton() {
+    const loadMoreBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Cargar más sorteos')
+    );
+    
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            // Simular carga de más sorteos
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<span class="material-symbols-outlined text-xl animate-spin">refresh</span> Cargando...';
+            
+            setTimeout(() => {
+                customToast('Se cargaron más sorteos. En una implementación real, esto cargaría sorteos adicionales desde el servidor.', 'success', 3000);
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+            }, 1500);
+        });
+    }
+}
+
+// Función para botón Ver Ganador
+function initViewWinnerButton() {
+    const viewWinnerBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Ver Ganador')
+    );
+    
+    if (viewWinnerBtn && !viewWinnerBtn.classList.contains('cursor-not-allowed')) {
+        viewWinnerBtn.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            
+            customAlert(`Ganador del sorteo "${sorteoName}"\n\nBoleto ganador: #245\nGanador: Juan Pérez\nFecha del sorteo: 15 Oct, 2023\n\n¡Felicidades al ganador!`, 'Ganador del Sorteo', 'success');
+        });
     }
 }
 </script>

@@ -279,7 +279,7 @@
 <span class="text-xs text-text-secondary">Total a Pagar</span>
 <span id="total-pagar" class="text-2xl font-bold text-white">$10.00</span>
 </div>
-<a href="FinalizarPagoBoletos.html" onclick="saveSelectedTickets()" class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
+<a href="FinalizarPagoBoletos.html" onclick="return handleProceedToPayment()" class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
 <span>Proceder al Pago</span>
 <span class="material-symbols-outlined">arrow_forward</span>
 </a>
@@ -291,6 +291,7 @@
 
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
@@ -301,6 +302,38 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Cargar información del sorteo seleccionado
     loadSorteoData();
+    
+    // Asegurar que los contadores se inicialicen (igual que DashboardCliente)
+    setTimeout(function() {
+        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+        if (sorteoData.tiempoRestante) {
+            initSorteoCountdown(sorteoData.tiempoRestante);
+        } else {
+            initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+        }
+        startReservationTimer();
+    }, 100);
+    
+    // Inicializar funcionalidad de selección de boletos
+    initTicketSelection();
+    initTicketSearch();
+    
+    // Cargar boletos previamente seleccionados
+    const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+    if (savedTickets.length > 0) {
+        savedTickets.forEach(num => {
+            selectedTickets.add(num);
+            const button = Array.from(document.querySelectorAll('.grid button:not([disabled])')).find(btn => {
+                const btnNum = parseInt(btn.textContent.trim());
+                return btnNum === num;
+            });
+            if (button) {
+                markTicketAsSelected(button);
+            }
+        });
+        updateSelectedTicketsDisplay();
+        updateTotalPrice();
+    }
 });
 
 // Función para cargar los datos del sorteo desde localStorage
@@ -331,10 +364,15 @@ function loadSorteoData() {
         precioElement.textContent = `$${sorteoData.precio.toFixed(2)} MXN`;
     }
     
-    // Actualizar timer
+    // Inicializar contador regresivo del sorteo (igual que DashboardCliente)
     if (sorteoData.tiempoRestante) {
-        updateTimer(sorteoData.tiempoRestante);
+        initSorteoCountdown(sorteoData.tiempoRestante);
+    } else {
+        initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
     }
+    
+    // Iniciar timer de reserva
+    startReservationTimer();
     
     // Guardar el precio del boleto para calcular el total
     window.currentTicketPrice = sorteoData.precio || 50.00;
@@ -352,36 +390,352 @@ function getDefaultSorteoData() {
     };
 }
 
-// Función para actualizar el timer
+// Almacenar intervalos activos para poder limpiarlos si es necesario
+const activeCountdownIntervals = new Map();
+
+// Función para inicializar el contador regresivo del sorteo (EXACTO COMO DashboardCliente)
+function initSorteoCountdown(tiempo) {
+    // Obtener elementos del DOM
+    const diasElement = document.getElementById('timer-dias');
+    const horasElement = document.getElementById('timer-horas');
+    const minutosElement = document.getElementById('timer-minutos');
+    
+    if (!diasElement || !horasElement || !minutosElement) {
+        console.warn('Elementos del timer no encontrados, reintentando...');
+        setTimeout(function() {
+            initSorteoCountdown(tiempo);
+        }, 200);
+        return;
+    }
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('sorteo-timer')) {
+        clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+        activeCountdownIntervals.delete('sorteo-timer');
+    }
+    
+    if (!tiempo) {
+        tiempo = { dias: 3, horas: 12, minutos: 45, segundos: 0 };
+    }
+    
+    // Convertir tiempo a segundos totales (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = (tiempo.dias || 0) * 86400 + 
+                          (tiempo.horas || 0) * 3600 + 
+                          (tiempo.minutos || 0) * 60 + 
+                          (tiempo.segundos || 0);
+    
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            diasElement.textContent = '00';
+            horasElement.textContent = '00';
+            minutosElement.textContent = '00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('sorteo-timer')) {
+                clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+                activeCountdownIntervals.delete('sorteo-timer');
+            }
+            return;
+        }
+        
+        // Calcular días, horas, minutos con el tiempo actual
+        const dias = Math.floor(remainingSeconds / 86400);
+        const horas = Math.floor((remainingSeconds % 86400) / 3600);
+        const minutos = Math.floor((remainingSeconds % 3600) / 60);
+        
+        // Actualizar la visualización
+        diasElement.textContent = String(dias).padStart(2, '0');
+        horasElement.textContent = String(horas).padStart(2, '0');
+        minutosElement.textContent = String(minutos).padStart(2, '0');
+        
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateCountdown();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateCountdown, 1000);
+    activeCountdownIntervals.set('sorteo-timer', intervalId);
+}
+
+// Función para actualizar el timer (compatibilidad con código existente)
 function updateTimer(tiempo) {
     if (tiempo) {
-        const diasElement = document.getElementById('timer-dias');
-        const horasElement = document.getElementById('timer-horas');
-        const minutosElement = document.getElementById('timer-minutos');
-        
-        if (diasElement) diasElement.textContent = String(tiempo.dias || 0).padStart(2, '0');
-        if (horasElement) horasElement.textContent = String(tiempo.horas || 0).padStart(2, '0');
-        if (minutosElement) minutosElement.textContent = String(tiempo.minutos || 0).padStart(2, '0');
+        initSorteoCountdown(tiempo);
     }
 }
 
-// Función para actualizar el precio total (se puede expandir cuando se implemente la selección de boletos)
+// Timer de reserva (14:59 minutos) - EXACTO COMO DashboardCliente
+function startReservationTimer() {
+    const timerElement = document.getElementById('reservation-timer');
+    if (!timerElement) return;
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('reservation-timer')) {
+        clearInterval(activeCountdownIntervals.get('reservation-timer'));
+        activeCountdownIntervals.delete('reservation-timer');
+    }
+    
+    // Tiempo inicial: 14 minutos y 59 segundos (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = 14 * 60 + 59;
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateReservationTimer() {
+        if (remainingSeconds <= 0) {
+            timerElement.textContent = '00:00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('reservation-timer')) {
+                clearInterval(activeCountdownIntervals.get('reservation-timer'));
+                activeCountdownIntervals.delete('reservation-timer');
+            }
+            // Aquí se podría liberar los boletos o mostrar un mensaje
+            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
+            window.location.href = 'ListadoSorteosActivos.html';
+            return;
+        }
+        
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateReservationTimer();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateReservationTimer, 1000);
+    activeCountdownIntervals.set('reservation-timer', intervalId);
+}
+
+// Función para actualizar el precio total basado en boletos seleccionados
 function updateTotalPrice() {
     const totalElement = document.getElementById('total-pagar');
     if (totalElement && window.currentTicketPrice) {
-        // Por ahora muestra el precio de 2 boletos como ejemplo
-        const selectedCount = 2; // Esto debería venir de la selección real
+        const selectedCount = selectedTickets.size;
         const total = window.currentTicketPrice * selectedCount;
         totalElement.textContent = `$${total.toFixed(2)}`;
     }
 }
 
-// Función para guardar los boletos seleccionados antes de ir al pago
+// Variables globales para la selección de boletos
+let selectedTickets = new Set(); // Usar Set para evitar duplicados
+const maxTickets = 100; // Límite máximo de boletos
+
+// Función para inicializar la funcionalidad de selección de boletos
+function initTicketSelection() {
+    // Obtener todos los botones de boletos disponibles
+    const ticketButtons = document.querySelectorAll('.grid button:not([disabled])');
+    
+    ticketButtons.forEach(button => {
+        // Obtener el número del boleto desde el texto del botón
+        const ticketNumber = parseInt(button.textContent.trim());
+        
+        if (isNaN(ticketNumber)) return;
+        
+        // Agregar evento de clic
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleTicketSelection(ticketNumber, button);
+        });
+        
+        // Verificar si el boleto ya está seleccionado (desde localStorage)
+        const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+        if (savedTickets.includes(ticketNumber)) {
+            selectedTickets.add(ticketNumber);
+            markTicketAsSelected(button);
+        }
+    });
+    
+    // Actualizar la visualización inicial
+    updateSelectedTicketsDisplay();
+    updateTotalPrice();
+}
+
+// Función para alternar la selección de un boleto
+function toggleTicketSelection(ticketNumber, button) {
+    if (selectedTickets.has(ticketNumber)) {
+        // Deseleccionar
+        selectedTickets.delete(ticketNumber);
+        markTicketAsAvailable(button);
+    } else {
+        // Verificar límite
+        if (selectedTickets.size >= maxTickets) {
+            customAlert(`Solo puedes seleccionar hasta ${maxTickets} boletos a la vez.`, 'Límite de Boletos', 'warning');
+            return;
+        }
+        
+        // Seleccionar
+        selectedTickets.add(ticketNumber);
+        markTicketAsSelected(button);
+    }
+    
+    // Actualizar visualización
+    updateSelectedTicketsDisplay();
+    updateTotalPrice();
+}
+
+// Función para marcar un boleto como seleccionado
+function markTicketAsSelected(button) {
+    button.classList.remove('border-emerald-500/30', 'bg-card-dark', 'bg-[#1a202c]', 'hover:bg-emerald-500/10', 'hover:border-emerald-500');
+    button.classList.add('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
+    
+    const span = button.querySelector('span');
+    if (span) {
+        span.classList.remove('text-emerald-400');
+        span.classList.add('text-white', 'z-10');
+    }
+    
+    // Agregar checkmark si no existe
+    if (!button.querySelector('.checkmark-icon')) {
+        const checkmark = document.createElement('span');
+        checkmark.className = 'checkmark-icon absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5';
+        checkmark.textContent = 'check';
+        button.appendChild(checkmark);
+    }
+    
+    // Agregar overlay si no existe
+    if (!button.querySelector('.ticket-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'ticket-overlay absolute inset-0 bg-white/10';
+        button.appendChild(overlay);
+    }
+}
+
+// Función para marcar un boleto como disponible
+function markTicketAsAvailable(button) {
+    button.classList.remove('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
+    button.classList.add('border-emerald-500/30', 'bg-card-dark', 'hover:bg-emerald-500/10', 'hover:border-emerald-500', 'group');
+    
+    const span = button.querySelector('span');
+    if (span) {
+        span.classList.remove('text-white', 'z-10');
+        span.classList.add('text-emerald-400', 'group-hover:scale-110', 'transition-transform');
+    }
+    
+    // Remover checkmark y overlay
+    const checkmark = button.querySelector('.checkmark-icon');
+    const overlay = button.querySelector('.ticket-overlay');
+    if (checkmark) checkmark.remove();
+    if (overlay) overlay.remove();
+}
+
+// Función para actualizar la visualización de boletos seleccionados
+function updateSelectedTicketsDisplay() {
+    const container = document.getElementById('selected-tickets-container');
+    if (!container) return;
+    
+    if (selectedTickets.size === 0) {
+        container.innerHTML = '<span class="text-xs text-text-secondary">No hay boletos seleccionados</span>';
+        return;
+    }
+    
+    // Ordenar los boletos y mostrar solo los primeros 5, si hay más mostrar "+X más"
+    const sortedTickets = Array.from(selectedTickets).sort((a, b) => a - b);
+    const displayTickets = sortedTickets.slice(0, 5);
+    const remaining = sortedTickets.length - 5;
+    
+    container.innerHTML = displayTickets.map(num => 
+        `<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#${String(num).padStart(3, '0')}</span>`
+    ).join('');
+    
+    if (remaining > 0) {
+        const moreBadge = document.createElement('span');
+        moreBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20';
+        moreBadge.textContent = `+${remaining} más`;
+        container.appendChild(moreBadge);
+    }
+}
+
+// Función para inicializar la búsqueda de boletos
+function initTicketSearch() {
+    const searchInput = document.querySelector('input[placeholder*="Buscar número"]');
+    if (!searchInput) return;
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        searchTimeout = setTimeout(() => {
+            searchTickets(query);
+        }, 300);
+    });
+    
+    // Buscar con Enter
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            searchTickets(e.target.value.trim());
+        }
+    });
+}
+
+// Función para buscar boletos
+function searchTickets(query) {
+    if (!query) {
+        // Mostrar todos los boletos
+        const allButtons = document.querySelectorAll('.grid button');
+        allButtons.forEach(btn => {
+            btn.style.display = '';
+        });
+        return;
+    }
+    
+    const ticketNumber = parseInt(query);
+    if (isNaN(ticketNumber)) return;
+    
+    // Ocultar todos los botones excepto el buscado
+    const allButtons = document.querySelectorAll('.grid button');
+    allButtons.forEach(btn => {
+        const btnNumber = parseInt(btn.textContent.trim());
+        if (!isNaN(btnNumber)) {
+            btn.style.display = btnNumber === ticketNumber ? '' : 'none';
+        }
+    });
+    
+    // Scroll al boleto encontrado
+    const foundButton = Array.from(allButtons).find(btn => {
+        const btnNumber = parseInt(btn.textContent.trim());
+        return btnNumber === ticketNumber;
+    });
+    
+    if (foundButton) {
+        foundButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Resaltar temporalmente
+        foundButton.style.animation = 'pulse 0.5s ease-in-out 3';
+    }
+}
+
+// Función para manejar el botón "Proceder al Pago"
+function handleProceedToPayment() {
+    if (selectedTickets.size === 0) {
+        customAlert('Por favor selecciona al menos un boleto antes de proceder al pago.', 'Boletos Requeridos', 'warning');
+        return false;
+    }
+    
+    // Guardar los boletos seleccionados
+    const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
+    localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
+    
+    // Guardar también información del sorteo si no está guardada
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    
+    console.log('Boletos guardados:', ticketsArray);
+    return true;
+}
+
+// Función para guardar los boletos seleccionados (compatibilidad)
 function saveSelectedTickets() {
-    // Por ahora, guardar los boletos de ejemplo (#004 y #013)
-    // En el futuro, esto vendría de la selección real del usuario
-    const selectedTickets = [4, 13];
-    localStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
+    return handleProceedToPayment();
 }
 </script>
 

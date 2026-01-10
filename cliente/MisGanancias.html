@@ -267,12 +267,238 @@
 </main>
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('ganadores');
     }
+    
+    // Inicializar funcionalidades de botones
+    initMisGananciasButtons();
 });
+
+// Función para inicializar todas las funcionalidades de Mis Ganancias
+function initMisGananciasButtons() {
+    // Filtros
+    initGananciasFilters();
+    
+    // Select de ordenamiento
+    initSortSelect();
+    
+    // Botones de acciones en la tabla
+    initGananciasActions();
+    
+    // Paginación
+    initPagination();
+    
+    // Botón del estado vacío
+    initEmptyStateButton();
+}
+
+// Función para inicializar filtros (Todos, Pendientes, Entregados)
+function initGananciasFilters() {
+    const filterButtons = document.querySelectorAll('.flex.gap-2.p-1 button');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remover clases activas de todos
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-[#282d39]', 'text-white');
+                btn.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]');
+            });
+            
+            // Agregar clases activas al clickeado
+            this.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]');
+            this.classList.add('bg-[#282d39]', 'text-white');
+            
+            // Filtrar ganancias
+            const filterText = this.textContent.trim().toLowerCase();
+            filterGanancias(filterText);
+        });
+    });
+}
+
+// Función para filtrar ganancias
+function filterGanancias(filter) {
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    if (filter === 'todos') {
+        tableRows.forEach(row => {
+            row.style.display = '';
+        });
+        return;
+    }
+    
+    tableRows.forEach(row => {
+        const estadoBadge = row.querySelector('.inline-flex')?.textContent.toLowerCase() || '';
+        
+        if (filter === 'pendientes') {
+            if (estadoBadge.includes('pendiente')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        } else if (filter === 'entregados') {
+            if (estadoBadge.includes('entregado')) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Función para inicializar select de ordenamiento
+function initSortSelect() {
+    const sortSelect = document.querySelector('select');
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const sortOption = this.value.toLowerCase();
+            sortGanancias(sortOption);
+        });
+    }
+}
+
+// Función para ordenar ganancias
+function sortGanancias(sortOption) {
+    const tableBody = document.querySelector('tbody');
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    rows.sort((a, b) => {
+        if (sortOption.includes('recientes')) {
+            // Ordenar por fecha (más recientes primero)
+            const dateA = a.querySelector('td:nth-child(2) span')?.textContent || '';
+            const dateB = b.querySelector('td:nth-child(2) span')?.textContent || '';
+            // Asumiendo formato "DD MMM YYYY", necesitaríamos parsear las fechas
+            // Por ahora, solo ordenamos visualmente
+            return 0;
+        } else if (sortOption.includes('antiguos')) {
+            // Ordenar por fecha (más antiguos primero)
+            return 0;
+        } else if (sortOption.includes('valor')) {
+            // Ordenar por valor (mayor primero)
+            // Esto requeriría tener el valor en los datos
+            return 0;
+        }
+        return 0;
+    });
+    
+    // Reordenar filas en el DOM
+    rows.forEach(row => tableBody.appendChild(row));
+    
+    customToast(`Ganancias ordenadas por: ${document.querySelector('select').value}`, 'info', 2000);
+}
+
+// Función para inicializar botones de acciones en la tabla
+function initGananciasActions() {
+    // Botón "Reclamar"
+    const reclamarButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.textContent.includes('Reclamar')
+    );
+    
+    reclamarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const sorteoName = row.querySelector('p.text-white')?.textContent || 'Sorteo';
+            const premioName = row.querySelector('p.text-text-secondary')?.textContent || 'Premio';
+            const fecha = row.querySelector('td:nth-child(2) span')?.textContent || 'N/A';
+            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent || 'N/A';
+            
+            customConfirm(`¿Deseas reclamar el premio "${premioName}" del sorteo "${sorteoName}"?\n\nFecha ganada: ${fecha}\n${ticketNumber}\n\nSe te pedirá que proporciones información de contacto para coordinar la entrega.`, 'Reclamar Premio', 'help').then(confirmed => {
+                if (confirmed) {
+                    customAlert('Solicitud de reclamación enviada. Nuestro equipo se pondrá en contacto contigo pronto para coordinar la entrega del premio.\n\n¡Felicidades por tu victoria!', 'Reclamación Enviada', 'success');
+                    // Aquí se podría actualizar el estado del premio o redirigir a un formulario
+                }
+            });
+        });
+    });
+    
+    // Botones "Ver Detalles"
+    const verDetallesButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.textContent.includes('Ver Detalles')
+    );
+    
+    verDetallesButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const sorteoName = row.querySelector('p.text-white')?.textContent || 'Sorteo';
+            const premioName = row.querySelector('p.text-text-secondary')?.textContent || 'Premio';
+            const fecha = row.querySelector('td:nth-child(2) span')?.textContent || 'N/A';
+            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent || 'N/A';
+            const estado = row.querySelector('.inline-flex')?.textContent || 'N/A';
+            
+            customAlert(`Sorteo: ${sorteoName}\n` +
+                  `Premio: ${premioName}\n` +
+                  `Fecha ganada: ${fecha}\n` +
+                  `${ticketNumber}\n` +
+                  `Estado: ${estado}\n\n` +
+                  `Aquí se mostrarían más detalles como:\n` +
+                  `- Información de entrega\n` +
+                  `- Fecha de entrega\n` +
+                  `- Comprobante\n` +
+                  `- Contacto del equipo de entrega`, 'Detalles del Premio', 'info');
+            
+            // Aquí se podría abrir un modal con más detalles o redirigir a una página de detalles
+        });
+    });
+}
+
+// Función para inicializar paginación
+function initPagination() {
+    const paginationButtons = document.querySelectorAll('.flex.gap-2 button');
+    
+    paginationButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            const buttonContent = this.innerHTML.trim();
+            const isChevronLeft = buttonContent.includes('chevron_left');
+            const isChevronRight = buttonContent.includes('chevron_right');
+            const isNumber = !isNaN(parseInt(this.textContent.trim()));
+            
+            if (isChevronLeft) {
+                // Página anterior
+                customToast('Cargando página anterior...', 'info', 1500);
+            } else if (isChevronRight) {
+                // Página siguiente
+                customToast('Cargando página siguiente...', 'info', 1500);
+            } else if (isNumber) {
+                // Número de página
+                const pageNum = parseInt(this.textContent.trim());
+                
+                // Remover clase activa de todos los botones numéricos
+                paginationButtons.forEach(btn => {
+                    if (!isNaN(parseInt(btn.textContent.trim()))) {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-[#282d39]', 'text-text-secondary', 'hover:text-white', 'hover:bg-[#323846]');
+                    }
+                });
+                
+                // Agregar clase activa al clickeado
+                this.classList.remove('bg-[#282d39]', 'text-text-secondary', 'hover:text-white', 'hover:bg-[#323846]');
+                this.classList.add('bg-primary', 'text-white');
+                
+                customToast(`Cargando página ${pageNum}...`, 'info', 1500);
+            }
+        });
+    });
+}
+
+// Función para inicializar botón del estado vacío
+function initEmptyStateButton() {
+    const emptyStateButton = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Ver Sorteos Activos')
+    );
+    
+    if (emptyStateButton) {
+        emptyStateButton.addEventListener('click', function() {
+            // Redirigir a la página de sorteos activos
+            window.location.href = 'ListadoSorteosActivos.html';
+        });
+    }
+}
 </script>
 </body></html>
 

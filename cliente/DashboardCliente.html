@@ -38,7 +38,7 @@
             },
         }
     </script>
-<style>
+    <style>
         /* Custom Scrollbar for dark theme */
         ::-webkit-scrollbar {
             width: 8px;
@@ -53,6 +53,48 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #3b4254; 
+        }
+        
+        /* Transiciones suaves para contadores regresivos */
+        [id*="countdown"] {
+            transition: opacity 0.3s ease, color 0.2s ease;
+            display: inline-block;
+        }
+        
+        /* Estado cuando el contador termina */
+        [id*="countdown"].opacity-50 {
+            opacity: 0.5;
+        }
+        
+        /* Ocultar scrollbar pero mantener funcionalidad */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Estilos para menú contextual */
+        .ticket-context-menu {
+            animation: slideDown 0.2s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Panel de notificaciones en header */
+        #notifications-panel {
+            max-height: 500px;
         }
     </style>
 </head>
@@ -75,20 +117,32 @@
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos, boletos..." type="text"/>
+<input id="search-input" class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos, boletos..." type="text"/>
 </div>
 </div>
 <!-- Right Actions -->
-<div class="flex items-center gap-4 ml-auto">
-<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<div class="flex items-center gap-4 ml-auto relative">
+<button id="deposit-funds-btn" class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
 <span class="hidden sm:inline">Depositar Fondos</span>
 <span class="sm:hidden">+</span>
 </button>
 <div class="h-6 w-px bg-[#282d39] mx-2"></div>
-<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<button id="notifications-btn" class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
 <span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+<span id="notifications-badge" class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
 </button>
+<!-- Notifications Dropdown Panel -->
+<div id="notifications-panel" class="absolute top-full right-0 mt-2 w-80 bg-card-dark rounded-xl border border-[#282d39] shadow-xl z-50 hidden max-h-96 overflow-y-auto">
+<div class="p-4 border-b border-[#282d39] flex items-center justify-between">
+<h3 class="text-white font-bold text-sm">Notificaciones</h3>
+<button id="close-notifications-panel" class="text-text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div id="notifications-list" class="p-2">
+<!-- Las notificaciones se mostrarán aquí -->
+</div>
+</div>
 <div class="flex items-center gap-3 pl-2">
 <div class="text-right hidden sm:block">
 <p class="text-xs text-text-secondary">Saldo Actual</p>
@@ -110,14 +164,14 @@
 <h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
                         ¡Gana el nuevo <span class="text-primary">iPhone 15 Pro</span>!
                     </h1>
-<p class="text-gray-300 text-lg mb-8 max-w-lg">
-                        El sorteo cierra en <span class="text-white font-mono font-bold bg-card-dark px-2 py-0.5 rounded">04:23:10</span>. No te quedes sin tu oportunidad de ganar tecnología de punta.
+                    <p class="text-gray-300 text-lg mb-8 max-w-lg">
+                        El sorteo cierra en <span id="countdown-hero" class="text-white font-mono font-bold bg-card-dark px-2 py-0.5 rounded" data-seconds="15490">04:23:10</span>. No te quedes sin tu oportunidad de ganar tecnología de punta.
                     </p>
 <div class="flex flex-wrap gap-4">
-<button class="bg-primary hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5">
+<button id="buy-tickets-hero-btn" class="bg-primary hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-bold text-base shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5">
                             Comprar Boletos Ahora
                         </button>
-<button class="bg-card-dark hover:bg-[#353b4b] text-white px-6 py-3 rounded-lg font-medium text-base border border-[#3b4254] transition-colors">
+<button id="view-details-hero-btn" class="bg-card-dark hover:bg-[#353b4b] text-white px-6 py-3 rounded-lg font-medium text-base border border-[#3b4254] transition-colors">
                             Ver Detalles
                         </button>
 </div>
@@ -204,8 +258,8 @@
                                                 Aprobado
                                             </span>
 </td>
-<td class="px-6 py-4 text-right">
-<button class="text-text-secondary hover:text-white transition-colors">
+<td class="px-6 py-4 text-right relative">
+<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="009-221" data-ticket-name="Tesla Model 3">
 <span class="material-symbols-outlined text-[20px]">more_vert</span>
 </button>
 </td>
@@ -223,8 +277,8 @@
                                                 Pendiente
                                             </span>
 </td>
-<td class="px-6 py-4 text-right">
-<button class="text-text-secondary hover:text-white transition-colors">
+<td class="px-6 py-4 text-right relative">
+<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="882-104" data-ticket-name="Gran Pozo Semanal">
 <span class="material-symbols-outlined text-[20px]">more_vert</span>
 </button>
 </td>
@@ -242,8 +296,8 @@
                                                 Aprobado
                                             </span>
 </td>
-<td class="px-6 py-4 text-right">
-<button class="text-text-secondary hover:text-white transition-colors">
+<td class="px-6 py-4 text-right relative">
+<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="114-552" data-ticket-name="PS5 Bundle">
 <span class="material-symbols-outlined text-[20px]">more_vert</span>
 </button>
 </td>
@@ -259,7 +313,7 @@
 <div class="bg-card-dark rounded-xl border border-[#282d39] p-2">
 <div class="flex flex-col gap-1">
 <!-- Notification Item -->
-<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer relative">
+<div class="notification-item flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer relative" data-notification-id="sorteo-finalizado" data-notification-type="winner">
 <div class="relative flex-shrink-0">
 <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
 <span class="material-symbols-outlined text-[20px]">emoji_events</span>
@@ -273,7 +327,7 @@
 </div>
 </div>
 <!-- Notification Item -->
-<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer">
+<div class="notification-item flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer" data-notification-id="deposito-confirmado" data-notification-type="payment">
 <div class="flex-shrink-0">
 <div class="size-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
 <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
@@ -286,7 +340,7 @@
 </div>
 </div>
 <!-- Notification Item -->
-<div class="flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer">
+<div class="notification-item flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer" data-notification-id="boletos-pendientes" data-notification-type="ticket">
 <div class="flex-shrink-0">
 <div class="size-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
 <span class="material-symbols-outlined text-[20px]">confirmation_number</span>
@@ -299,7 +353,7 @@
 </div>
 </div>
 </div>
-<button class="w-full text-center py-3 text-xs font-semibold text-text-secondary hover:text-white transition-colors border-t border-[#282d39] mt-1">
+<button id="view-all-notifications-btn" class="w-full text-center py-3 text-xs font-semibold text-text-secondary hover:text-white transition-colors border-t border-[#282d39] mt-1">
                             Ver todas las notificaciones
                         </button>
 </div>
@@ -327,19 +381,19 @@ Ver Preguntas Frecuentes
 <h3 class="text-xl font-bold text-white">Sorteos Destacados</h3>
 <div class="flex items-center gap-4">
 <a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="ListadoSorteosActivos.html">Ver todos los sorteos</a>
-<div class="flex gap-2">
-<button class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
+<div class="flex gap-2 lg:hidden">
+<button id="prev-raffles-btn" class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
 <span class="material-symbols-outlined text-[20px]">chevron_left</span>
 </button>
-<button class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
+<button id="next-raffles-btn" class="size-8 flex items-center justify-center rounded-full bg-card-dark text-white hover:bg-primary transition-colors">
 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
 </button>
 </div>
 </div>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div id="raffles-container" class="flex gap-6 overflow-x-auto scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible" style="scroll-behavior: smooth;">
 <!-- Raffle Card 1 -->
-<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="ducati-panigale">
 <div class="h-40 bg-cover bg-center relative" data-alt="Red motorcycle parked in a studio setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmoyYDhgLhe24sBQ_d4ZJKBG2B6w0Ml47veU2fB8l9ENOIJ9RkWIGLTF9hDp8i9lt1Oag8-NoZd5RSJu3JO0Yd2AoZKNXkOVpCIzsGVskrWydzG361Xfg18f4KMG_8whDRs1deQoc6gYBxhU24OcSx6urh588_06I930OoNOsLg0IeZf5yvU94zBoRIB-lsau2zlrDTsa3wtI_pNy5DsdvORYv4-Ejx2jVrCFOkWLULvNSigNDr_eaM1_agBK2aYy5XpkkXoW-D34");'>
 <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
                                 $5.00 / boleto
@@ -347,20 +401,20 @@ Ver Preguntas Frecuentes
 </div>
 <div class="p-4">
 <h4 class="text-lg font-bold text-white mb-1 truncate">Ducati Panigale V4</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 150 boletos</span>
-<span class="text-xs font-mono text-yellow-500">23:59:00</span>
-</div>
+                            <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-text-secondary">Quedan 150 boletos</span>
+                            <span id="countdown-card-1" class="text-xs font-mono text-yellow-500" data-seconds="86340">23:59:00</span>
+                            </div>
 <div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
 <div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
 </div>
-<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="ducati-panigale" data-raffle-name="Ducati Panigale V4">
                                 Participar
                             </button>
 </div>
 </div>
 <!-- Raffle Card 2 -->
-<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="macbook-pro">
 <div class="h-40 bg-cover bg-center relative" data-alt="High-end laptop on a desk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhHqy8PUURfhnrtv6fmG5RhuYNK1sMtZ7tObgDNGTVF-8W0La1xgRdmmBK3uHl9KRm08mHzfCx4O5XE3mvC__xPjPeKX7MnZVjo-CRWOoPViOxAXz00ALd5InieV9AbWPL5HCkX2vvZxIcBvkpOaxIUbC2lgRX0pBgs8umcZoPSmhYyVEvbb7s7A2VBkrA9lA-O7YC46xSaUBetbQng8aVjjYdo-lB7PzfthfKw00h-nP7aZikTcRrbJ7b61VOmKQrte9ODM5fTvM");'>
 <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
                                 $2.00 / boleto
@@ -375,13 +429,13 @@ Ver Preguntas Frecuentes
 <div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
 <div class="bg-primary h-1.5 rounded-full" style="width: 35%"></div>
 </div>
-<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="macbook-pro" data-raffle-name="MacBook Pro M3">
                                 Participar
                             </button>
 </div>
 </div>
 <!-- Raffle Card 3 -->
-<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="cash-prize">
 <div class="h-40 bg-cover bg-center relative" data-alt="Stack of gold coins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdrq7HXprS3_eVeuYorN_bZSnRy8yWQNV0RCwllNYlD-3hBNHLSCs2B4RrvhF6i3_qx9XeY0cwDo3Px0L734oW3YIK_EgaHSFCyI-IXItFOY8mZTk1L4tCYBd5eLUtMhHH1-9GzKQ2jyDRm8rcxh_W5Z2ulz5zrOz697rgfT84RoqF6UQgwMy46ENlmNQ9u0tMQbDx1XsicWJ8qcU-6ADkFjX-1_QZISnkcLzPCNURQ1gReLf3019_EXUKEX7601K1khjV_AdaPhw");'>
 <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
                                 $10.00 / boleto
@@ -389,20 +443,20 @@ Ver Preguntas Frecuentes
 </div>
 <div class="p-4">
 <h4 class="text-lg font-bold text-white mb-1 truncate">$5,000 en Efectivo</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 20 boletos</span>
-<span class="text-xs font-mono text-red-400 animate-pulse">00:45:12</span>
-</div>
+                            <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs text-text-secondary">Quedan 20 boletos</span>
+                            <span id="countdown-card-3" class="text-xs font-mono text-red-400 animate-pulse" data-seconds="2712">00:45:12</span>
+                            </div>
 <div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
 <div class="bg-primary h-1.5 rounded-full" style="width: 92%"></div>
 </div>
-<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="cash-prize" data-raffle-name="$5,000 en Efectivo">
                                 Participar
                             </button>
 </div>
 </div>
 <!-- Raffle Card 4 -->
-<div class="bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="rolex-submariner">
 <div class="h-40 bg-cover bg-center relative" data-alt="Luxury watch on a dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA_X34U5RwE868OA2ZDc3-KIuFL0HO1RhC4iYcu30MaouU6wEzcOcUvPyOwNjz-uh9fg45dA7mqhN7FnULIkt8hpUUM7NOIIg_c_Rhr5UptB7OH77OdNLigqKfGN38JTJUR6E0485v_9gJg4f7JwiKo-1BesqigVP9ZL8ZxBBo3uuYW5mVzKWfFDQVrw3DzeITMldCi7H1ReUEy1gAA4YASsN3YC2VZKXqjJIwpxAvwmZU2pen8U_ssmba0vgNZEGBtiJkcPGIVkf4");'>
 <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
                                 $15.00 / boleto
@@ -417,7 +471,7 @@ Ver Preguntas Frecuentes
 <div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
 <div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
 </div>
-<button class="w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors">
+<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="rolex-submariner" data-raffle-name="Rolex Submariner">
                                 Participar
                             </button>
 </div>
@@ -431,6 +485,7 @@ Ver Preguntas Frecuentes
 
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
@@ -594,9 +649,489 @@ function setClientData(nombre, tipoUsuario, fotoPerfil, saldo, boletosActivos, g
     updateDashboard(clientData);
 }
 
+// Función para formatear segundos a formato HH:MM:SS
+function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// Función para convertir formato HH:MM:SS a segundos
+function timeToSeconds(timeString) {
+    const parts = timeString.split(':');
+    if (parts.length !== 3) return 0;
+    
+    const hours = parseInt(parts[0]) || 0;
+    const minutes = parseInt(parts[1]) || 0;
+    const seconds = parseInt(parts[2]) || 0;
+    
+    return hours * 3600 + minutes * 60 + seconds;
+}
+
+// Almacenar intervalos activos para poder limpiarlos si es necesario
+const activeCountdownIntervals = new Map();
+
+// Función para inicializar un contador regresivo
+function initCountdown(elementId, initialSeconds) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has(elementId)) {
+        clearInterval(activeCountdownIntervals.get(elementId));
+        activeCountdownIntervals.delete(elementId);
+    }
+
+    // Si no se proporcionan segundos, intentar leer del atributo data-seconds
+    let remainingSeconds = initialSeconds;
+    if (remainingSeconds === undefined || remainingSeconds === null) {
+        const dataSeconds = element.getAttribute('data-seconds');
+        if (dataSeconds) {
+            remainingSeconds = parseInt(dataSeconds);
+        } else {
+            // Si no hay data-seconds, leer del texto actual del elemento
+            const currentText = element.textContent.trim();
+            remainingSeconds = timeToSeconds(currentText);
+        }
+    }
+    
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            element.textContent = '00:00:00';
+            // Agregar clase cuando termine
+            if (!element.classList.contains('opacity-50')) {
+                element.classList.add('opacity-50');
+            }
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has(elementId)) {
+                clearInterval(activeCountdownIntervals.get(elementId));
+                activeCountdownIntervals.delete(elementId);
+            }
+            return;
+        }
+
+        // Actualizar el texto con formato
+        element.textContent = formatTime(remainingSeconds);
+        remainingSeconds--;
+    }
+
+    // Actualizar inmediatamente
+    updateCountdown();
+
+    // Iniciar intervalo que se actualiza cada segundo
+    const intervalId = setInterval(updateCountdown, 1000);
+    activeCountdownIntervals.set(elementId, intervalId);
+}
+
+// Función para inicializar todos los contadores
+function initAllCountdowns() {
+    // Buscar todos los elementos con atributo data-seconds o con ID que contenga "countdown"
+    const countdownElements = document.querySelectorAll('[data-seconds], [id*="countdown"]');
+    
+    countdownElements.forEach(element => {
+        const elementId = element.id;
+        if (!elementId) return;
+        
+        const dataSeconds = element.getAttribute('data-seconds');
+        const initialSeconds = dataSeconds ? parseInt(dataSeconds) : null;
+        
+        initCountdown(elementId, initialSeconds);
+    });
+}
+
+// Limpiar todos los intervalos cuando la página se descargue
+window.addEventListener('beforeunload', function() {
+    activeCountdownIntervals.forEach(intervalId => {
+        clearInterval(intervalId);
+    });
+    activeCountdownIntervals.clear();
+});
+
+// ==================== FUNCIONALIDADES DE BOTONES ====================
+
+// Función para manejar el botón de depositar fondos
+function initDepositFunds() {
+    const depositBtn = document.getElementById('deposit-funds-btn');
+    if (depositBtn) {
+        depositBtn.addEventListener('click', function() {
+            // Aquí puedes redirigir a una página de depósito o abrir un modal
+            customConfirm('¿Deseas ir a la página de depósito de fondos?', 'Depositar Fondos', 'help').then(confirmed => {
+                if (confirmed) {
+                    // Si tienes una página de depósito, redirige allí
+                    // window.location.href = 'DepositarFondos.html';
+                    customAlert('Funcionalidad de depósito: Aquí se abriría el formulario o página para depositar fondos.', 'Depositar Fondos', 'info');
+                }
+            });
+        });
+    }
+}
+
+// Función para manejar el panel de notificaciones
+function initNotifications() {
+    const notificationsBtn = document.getElementById('notifications-btn');
+    const notificationsPanel = document.getElementById('notifications-panel');
+    const closePanelBtn = document.getElementById('close-notifications-panel');
+    const badge = document.getElementById('notifications-badge');
+
+    if (notificationsBtn && notificationsPanel) {
+        // Toggle panel al hacer clic en el botón
+        notificationsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isHidden = notificationsPanel.classList.contains('hidden');
+            if (isHidden) {
+                notificationsPanel.classList.remove('hidden');
+                loadNotificationsIntoPanel();
+                // Ocultar badge si hay notificaciones nuevas
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+            } else {
+                notificationsPanel.classList.add('hidden');
+            }
+        });
+
+        // Cerrar panel con el botón de cerrar
+        if (closePanelBtn) {
+            closePanelBtn.addEventListener('click', function() {
+                notificationsPanel.classList.add('hidden');
+            });
+        }
+
+        // Cerrar panel al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!notificationsPanel.contains(e.target) && !notificationsBtn.contains(e.target)) {
+                notificationsPanel.classList.add('hidden');
+            }
+        });
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !notificationsPanel.classList.contains('hidden')) {
+                notificationsPanel.classList.add('hidden');
+            }
+        });
+    }
+
+    // Cargar notificaciones en el panel
+    function loadNotificationsIntoPanel() {
+        const notificationsList = document.getElementById('notifications-list');
+        if (!notificationsList) return;
+
+        const notifications = [
+            { id: 'sorteo-finalizado', type: 'winner', title: '¡Sorteo finalizado!', message: 'El ganador del sorteo #502 ha sido anunciado. Revisa si ganaste.', time: 'Hace 2 horas', icon: 'emoji_events', color: 'primary' },
+            { id: 'deposito-confirmado', type: 'payment', title: 'Depósito confirmado', message: 'Tus $50.00 han sido acreditados a tu cuenta exitosamente.', time: 'Hace 1 día', icon: 'account_balance_wallet', color: 'green-500' },
+            { id: 'boletos-pendientes', type: 'ticket', title: 'Boletos Pendientes', message: 'Tienes 2 boletos esperando aprobación del administrador.', time: 'Hace 2 días', icon: 'confirmation_number', color: 'yellow-500' }
+        ];
+
+        notificationsList.innerHTML = notifications.map(notif => `
+            <div class="notification-item flex gap-4 p-3 rounded-lg hover:bg-[#353b4b] transition-colors cursor-pointer" 
+                 data-notification-id="${notif.id}" data-notification-type="${notif.type}">
+                <div class="flex-shrink-0">
+                    <div class="size-10 rounded-full bg-${notif.color}/20 flex items-center justify-center text-${notif.color}">
+                        <span class="material-symbols-outlined text-[20px]">${notif.icon}</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-white">${notif.title}</p>
+                    <p class="text-xs text-text-secondary mt-0.5">${notif.message}</p>
+                    <p class="text-[10px] text-text-secondary mt-2">${notif.time}</p>
+                </div>
+            </div>
+        `).join('');
+
+        // Agregar event listeners a las notificaciones del panel
+        const notificationItems = notificationsList.querySelectorAll('.notification-item');
+        notificationItems.forEach(item => {
+            item.addEventListener('click', function() {
+                handleNotificationClick(this.dataset.notificationId, this.dataset.notificationType);
+            });
+        });
+    }
+}
+
+// Función para manejar clic en notificaciones
+function handleNotificationClick(notificationId, notificationType) {
+    switch(notificationType) {
+        case 'winner':
+            customAlert('Redirigiendo a página de ganadores...', 'Sorteo Finalizado', 'success').then(() => {
+                window.location.href = 'MisGanancias.html';
+            });
+            break;
+        case 'payment':
+            customAlert('Puedes ver el detalle en tu historial de transacciones.', 'Depósito Confirmado', 'success');
+            break;
+        case 'ticket':
+            customAlert('Redirigiendo a página de boletos...', 'Boletos Pendientes', 'warning').then(() => {
+                window.location.href = 'MisBoletosCliente.html';
+            });
+            break;
+        default:
+            console.log('Notificación clickeada:', notificationId);
+    }
+}
+
+// Función para inicializar búsqueda
+function initSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length === 0) {
+                return;
+            }
+
+            // Debounce: esperar 500ms después de que el usuario deje de escribir
+            searchTimeout = setTimeout(function() {
+                performSearch(query);
+            }, 500);
+        });
+
+        // Búsqueda con Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                if (query.length > 0) {
+                    performSearch(query);
+                }
+            }
+        });
+    }
+}
+
+function performSearch(query) {
+    console.log('Buscando:', query);
+    // Aquí puedes implementar la lógica de búsqueda
+    // Por ejemplo, redirigir a una página de resultados o filtrar elementos en la página
+    customAlert(`Buscando: "${query}"\n\nEsta funcionalidad buscaría en sorteos y boletos.`, 'Búsqueda', 'info');
+    // Ejemplo: window.location.href = `Buscar.html?q=${encodeURIComponent(query)}`;
+}
+
+// Función para botones del Hero (Comprar Boletos y Ver Detalles)
+function initHeroButtons() {
+    const buyTicketsBtn = document.getElementById('buy-tickets-hero-btn');
+    const viewDetailsBtn = document.getElementById('view-details-hero-btn');
+
+    if (buyTicketsBtn) {
+        buyTicketsBtn.addEventListener('click', function() {
+            // Redirigir a la página de selección de boletos del sorteo destacado
+            window.location.href = 'SeleccionBoletos.html?sorteo=iphone-15-pro';
+        });
+    }
+
+    if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', function() {
+            // Redirigir a la página de detalles del sorteo
+            window.location.href = 'SorteoClienteDetalles.html?sorteo=iphone-15-pro';
+        });
+    }
+}
+
+// Función para menús contextuales de boletos (botones more_vert)
+function initTicketMenus() {
+    const ticketMenuBtns = document.querySelectorAll('.ticket-menu-btn');
+    
+    ticketMenuBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const ticketId = this.dataset.ticketId;
+            const ticketName = this.dataset.ticketName;
+            showTicketContextMenu(this, ticketId, ticketName);
+        });
+    });
+
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', function() {
+        closeAllContextMenus();
+    });
+}
+
+function showTicketContextMenu(button, ticketId, ticketName) {
+    // Cerrar otros menús abiertos
+    closeAllContextMenus();
+
+    // Crear menú contextual
+    const menu = document.createElement('div');
+    menu.className = 'ticket-context-menu absolute right-0 mt-2 w-48 bg-card-dark rounded-lg border border-[#282d39] shadow-xl z-50';
+    menu.innerHTML = `
+        <div class="py-1">
+            <button class="context-menu-item w-full text-left px-4 py-2 text-sm text-white hover:bg-[#353b4b] transition-colors flex items-center gap-2" data-action="view">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                <span>Ver Detalles</span>
+            </button>
+            <button class="context-menu-item w-full text-left px-4 py-2 text-sm text-white hover:bg-[#353b4b] transition-colors flex items-center gap-2" data-action="share">
+                <span class="material-symbols-outlined text-[18px]">share</span>
+                <span>Compartir</span>
+            </button>
+            <div class="border-t border-[#282d39] my-1"></div>
+            <button class="context-menu-item w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#353b4b] transition-colors flex items-center gap-2" data-action="delete">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+                <span>Eliminar</span>
+            </button>
+        </div>
+    `;
+
+    // Posicionar el menú
+    const rect = button.getBoundingClientRect();
+    const parentCell = button.closest('td');
+    if (parentCell) {
+        parentCell.style.position = 'relative';
+        parentCell.appendChild(menu);
+
+        // Event listeners para acciones del menú
+        const menuItems = menu.querySelectorAll('.context-menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                handleTicketMenuAction(this.dataset.action, ticketId, ticketName);
+                closeAllContextMenus();
+            });
+        });
+    }
+}
+
+function handleTicketMenuAction(action, ticketId, ticketName) {
+    switch(action) {
+        case 'view':
+            customAlert(`Boleto: #${ticketId}\nSorteo: ${ticketName}`, 'Detalles del Boleto', 'info');
+            // window.location.href = `DetalleBoleto.html?id=${ticketId}`;
+            break;
+        case 'share':
+            if (navigator.share) {
+                navigator.share({
+                    title: `Mi boleto: ${ticketName}`,
+                    text: `Tengo un boleto #${ticketId} para el sorteo ${ticketName}`,
+                }).catch(console.error);
+            } else {
+                // Fallback: copiar al portapapeles
+                navigator.clipboard.writeText(`Boleto #${ticketId} - ${ticketName}`);
+                customToast('Información del boleto copiada al portapapeles', 'success');
+            }
+            break;
+        case 'delete':
+            customConfirm(`¿Estás seguro de que deseas eliminar el boleto #${ticketId}?`, 'Eliminar Boleto', 'warning').then(confirmed => {
+                if (confirmed) {
+                    customAlert(`Boleto #${ticketId} eliminado (simulado)`, 'Boleto Eliminado', 'success');
+                    // Aquí implementarías la lógica de eliminación real
+                }
+            });
+            break;
+    }
+}
+
+function closeAllContextMenus() {
+    const menus = document.querySelectorAll('.ticket-context-menu');
+    menus.forEach(menu => menu.remove());
+}
+
+// Función para notificaciones clicables en el sidebar
+function initNotificationItems() {
+    const notificationItems = document.querySelectorAll('.notification-item[data-notification-id]');
+    notificationItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const notificationId = this.dataset.notificationId;
+            const notificationType = this.dataset.notificationType;
+            handleNotificationClick(notificationId, notificationType);
+        });
+    });
+}
+
+// Función para botón "Ver todas las notificaciones"
+function initViewAllNotifications() {
+    const viewAllBtn = document.getElementById('view-all-notifications-btn');
+    if (viewAllBtn) {
+        viewAllBtn.addEventListener('click', function() {
+            // Redirigir a página de todas las notificaciones
+            customAlert('Redirigiendo a página de todas las notificaciones...', 'Notificaciones', 'info');
+            // window.location.href = 'NotificacionesCliente.html';
+        });
+    }
+}
+
+// Función para navegación de carrusel de sorteos
+function initRafflesCarousel() {
+    const prevBtn = document.getElementById('prev-raffles-btn');
+    const nextBtn = document.getElementById('next-raffles-btn');
+    const container = document.getElementById('raffles-container');
+    
+    if (!container) return;
+
+    function scrollCarousel(direction) {
+        const cardWidth = 288; // w-72 = 288px + gap-6 = 24px = 312px por tarjeta
+        const scrollAmount = cardWidth * 1.5; // Scroll por 1.5 tarjetas
+        
+        if (direction === 'prev') {
+            container.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        } else {
+            container.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            scrollCarousel('prev');
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            scrollCarousel('next');
+        });
+    }
+}
+
+// Función para botones "Participar" en tarjetas de sorteos
+function initParticipateButtons() {
+    const participateBtns = document.querySelectorAll('.participate-btn');
+    
+    participateBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const raffleId = this.dataset.raffleId;
+            const raffleName = this.dataset.raffleName;
+            
+            // Confirmar participación
+            customConfirm(`¿Deseas participar en el sorteo "${raffleName}"?`, 'Participar en Sorteo', 'help').then(confirmed => {
+                if (confirmed) {
+                    // Redirigir a la página de selección de boletos para este sorteo
+                    window.location.href = `SeleccionBoletos.html?sorteo=${raffleId}`;
+                }
+            });
+        });
+    });
+}
+
 // Cargar datos cuando la página esté lista
 document.addEventListener('DOMContentLoaded', function() {
     loadClientData();
+    
+    // Inicializar todos los contadores regresivos
+    initAllCountdowns();
+    
+    // Inicializar todas las funcionalidades de botones
+    initDepositFunds();
+    initNotifications();
+    initSearch();
+    initHeroButtons();
+    initTicketMenus();
+    initNotificationItems();
+    initViewAllNotifications();
+    initRafflesCarousel();
+    initParticipateButtons();
     
     // Escuchar eventos de actualización de datos (si se disparan desde otras partes de la app)
     window.addEventListener('clientDataUpdated', function(event) {

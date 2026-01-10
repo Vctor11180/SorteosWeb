@@ -350,12 +350,273 @@
 </main>
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('boletos');
     }
+    
+    // Inicializar funcionalidades de botones
+    initMisBoletosButtons();
 });
+
+// Función para inicializar todas las funcionalidades de Mis Boletos
+function initMisBoletosButtons() {
+    // Búsqueda
+    initBoletoSearch();
+    
+    // Filtros
+    initBoletoFilters();
+    
+    // Botones de acciones
+    initBoletoActions();
+    
+    // Paginación
+    initPagination();
+}
+
+// Función para búsqueda de boletos
+function initBoletoSearch() {
+    const searchInput = document.querySelector('input[placeholder*="Buscar por número"]');
+    if (!searchInput) return;
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim().toLowerCase();
+        
+        searchTimeout = setTimeout(() => {
+            searchBoletos(query);
+        }, 300);
+    });
+    
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            searchBoletos(e.target.value.trim().toLowerCase());
+        }
+    });
+}
+
+// Función para buscar boletos
+function searchBoletos(query) {
+    const boletoCards = document.querySelectorAll('.grid > div');
+    
+    if (!query) {
+        boletoCards.forEach(card => {
+            card.style.display = '';
+        });
+        return;
+    }
+    
+    boletoCards.forEach(card => {
+        const boletoNumber = card.querySelector('.font-mono')?.textContent.toLowerCase() || '';
+        const sorteoName = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        
+        if (boletoNumber.includes(query) || sorteoName.includes(query)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Función para inicializar filtros
+function initBoletoFilters() {
+    const sorteoSelect = document.querySelectorAll('select')[0];
+    const estadoSelect = document.querySelectorAll('select')[1];
+    
+    if (sorteoSelect) {
+        sorteoSelect.addEventListener('change', function() {
+            filterBoletos();
+        });
+    }
+    
+    if (estadoSelect) {
+        estadoSelect.addEventListener('change', function() {
+            filterBoletos();
+        });
+    }
+}
+
+// Función para filtrar boletos
+function filterBoletos() {
+    const sorteoFilter = document.querySelectorAll('select')[0]?.value || '';
+    const estadoFilter = document.querySelectorAll('select')[1]?.value || '';
+    
+    const boletoCards = document.querySelectorAll('.grid > div');
+    
+    boletoCards.forEach(card => {
+        let show = true;
+        
+        // Filtrar por sorteo
+        if (sorteoFilter) {
+            const sorteoName = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            if (sorteoFilter === 'iphone' && !sorteoName.includes('iphone')) show = false;
+            if (sorteoFilter === 'car' && !sorteoName.includes('automóvil') && !sorteoName.includes('auto')) show = false;
+            if (sorteoFilter === 'cash' && !sorteoName.includes('efectivo') && !sorteoName.includes('bono')) show = false;
+        }
+        
+        // Filtrar por estado
+        if (estadoFilter && show) {
+            const estadoBadge = card.textContent.toLowerCase();
+            if (estadoFilter === 'winner' && !estadoBadge.includes('ganador')) show = false;
+            if (estadoFilter === 'approved' && !estadoBadge.includes('aprobado')) show = false;
+            if (estadoFilter === 'pending' && !estadoBadge.includes('validando') && !estadoBadge.includes('pendiente')) show = false;
+            if (estadoFilter === 'rejected' && !estadoBadge.includes('rechazado')) show = false;
+        }
+        
+        card.style.display = show ? '' : 'none';
+    });
+}
+
+// Función para inicializar acciones de boletos
+function initBoletoActions() {
+    // Botón "Reclamar Premio"
+    const reclamarButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.textContent.includes('Reclamar Premio')
+    );
+    
+    reclamarButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            const boletoNumber = card?.querySelector('.font-mono')?.textContent || 'N/A';
+            
+            customConfirm(`¿Deseas reclamar el premio del sorteo "${sorteoName}"?\n\nBoleto #${boletoNumber}\n\nSe te pedirá que proporciones información de contacto para coordinar la entrega.`, 'Reclamar Premio', 'help').then(confirmed => {
+                if (confirmed) {
+                    customAlert('Solicitud de reclamación enviada. Nuestro equipo se pondrá en contacto contigo pronto para coordinar la entrega del premio.\n\n¡Felicidades por tu victoria!', 'Reclamación Enviada', 'success');
+                    // Aquí se podría redirigir a un formulario o actualizar el estado
+                }
+            });
+        });
+    });
+    
+    // Botones "Comprobante"
+    const comprobanteButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.textContent.includes('Comprobante')
+    );
+    
+    comprobanteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const boletoNumber = card?.querySelector('.font-mono')?.textContent || 'N/A';
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            
+            // Simular descarga de comprobante
+            customAlert(`Descargando comprobante del boleto #${boletoNumber} del sorteo "${sorteoName}".\n\nEn una implementación real, esto descargaría el PDF del comprobante.`, 'Descargar Comprobante', 'info');
+            
+            // Aquí se podría generar/descargar el PDF real
+            // window.open(`/comprobantes/${boletoNumber}.pdf`, '_blank');
+        });
+    });
+    
+    // Botones "Ver Detalles" (visibility)
+    const verDetallesButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.querySelector('.material-symbols-outlined')?.textContent === 'visibility'
+    );
+    
+    verDetallesButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const boletoNumber = card?.querySelector('.font-mono')?.textContent || 'N/A';
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            const fecha = card?.querySelector('p.text-xs')?.textContent || 'N/A';
+            const estadoBadge = card?.querySelector('.inline-flex')?.textContent || 'N/A';
+            
+            customAlert(`Detalles del Boleto\n\n` +
+                  `Número: #${boletoNumber}\n` +
+                  `Sorteo: ${sorteoName}\n` +
+                  `Fecha: ${fecha}\n` +
+                  `Estado: ${estadoBadge}\n\n` +
+                  `Aquí se mostrarían más detalles del boleto.`, 'Detalles del Boleto', 'info');
+        });
+    });
+    
+    // Botón "Help" (para boletos pendientes)
+    const helpButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.querySelector('.material-symbols-outlined')?.textContent === 'help'
+    );
+    
+    helpButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            
+            customAlert(`Tu boleto está siendo validado. Este proceso puede tardar entre 24 y 48 horas.\n\n` +
+                  `Una vez que se confirme tu pago, recibirás tu número de boleto asignado y un correo de confirmación.\n\n` +
+                  `Si tienes alguna pregunta, puedes contactar a nuestro equipo de soporte.`, 'Boleto en Validación', 'warning');
+        });
+    });
+    
+    // Botón "Contactar Soporte" (para boletos rechazados)
+    const soporteButtons = Array.from(document.querySelectorAll('button')).filter(
+        btn => btn.textContent.includes('Contactar Soporte')
+    );
+    
+    soporteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.grid > div');
+            const sorteoName = card?.querySelector('h3')?.textContent || 'Sorteo';
+            const motivo = card?.querySelector('.text-red-400')?.textContent || 'Motivo no especificado';
+            
+            customConfirm(`¿Deseas contactar a nuestro equipo de soporte sobre tu boleto rechazado?\n\n` +
+                  `Sorteo: ${sorteoName}\n` +
+                  `Motivo: ${motivo}\n\n` +
+                  `Te redirigiremos a la página de contacto.`, 'Contactar Soporte', 'help').then(confirmed => {
+                if (confirmed) {
+                    window.location.href = 'ContactoSoporteCliente.html';
+                }
+            });
+        });
+    });
+}
+
+// Función para inicializar paginación
+function initPagination() {
+    const paginationButtons = document.querySelectorAll('.flex.items-center.justify-center.gap-2 button');
+    
+    paginationButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            const buttonContent = this.innerHTML.trim();
+            const isChevronLeft = buttonContent.includes('chevron_left');
+            const isChevronRight = buttonContent.includes('chevron_right');
+            const isNumber = !isNaN(parseInt(this.textContent.trim()));
+            
+            if (isChevronLeft) {
+                // Página anterior
+                customToast('Cargando página anterior...', 'info', 1500);
+                // Aquí se cargaría la página anterior
+            } else if (isChevronRight) {
+                // Página siguiente
+                customToast('Cargando página siguiente...', 'info', 1500);
+                // Aquí se cargaría la página siguiente
+            } else if (isNumber) {
+                // Número de página
+                const pageNum = parseInt(this.textContent.trim());
+                
+                // Remover clase activa de todos los botones numéricos
+                paginationButtons.forEach(btn => {
+                    if (!isNaN(parseInt(btn.textContent.trim()))) {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('border', 'border-[#282d39]', 'text-text-secondary', 'hover:bg-[#353b4b]');
+                    }
+                });
+                
+                // Agregar clase activa al clickeado
+                this.classList.remove('border', 'border-[#282d39]', 'text-text-secondary', 'hover:bg-[#353b4b]');
+                this.classList.add('bg-primary', 'text-white');
+                
+                customToast(`Cargando página ${pageNum}...`, 'info', 1500);
+            }
+        });
+    });
+}
 </script>
 </body></html>
 

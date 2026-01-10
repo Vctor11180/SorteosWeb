@@ -63,6 +63,20 @@ const ClientLayout = {
         this.renderMobileMenu();
         this.attachEventListeners();
         this.updateActiveNavigation();
+        
+        // Asegurar que el sidebar se muestre correctamente en resize
+        window.addEventListener('resize', () => {
+            const sidebarContainer = document.getElementById('client-sidebar-container');
+            const sidebar = document.getElementById('client-sidebar');
+            if (sidebarContainer && sidebar) {
+                if (window.innerWidth >= 1024) {
+                    sidebarContainer.style.display = 'block';
+                    sidebar.style.display = 'flex';
+                } else {
+                    sidebarContainer.style.display = 'none';
+                }
+            }
+        });
     },
 
     /**
@@ -132,49 +146,83 @@ const ClientLayout = {
         const sidebarContainer = document.getElementById('client-sidebar-container');
         if (!sidebarContainer) return;
 
+        // Asegurar que el contenedor tenga los estilos correctos para mostrar el sidebar
+        // El contenedor debe estar visible en desktop
+        sidebarContainer.style.cssText = 'position: relative; z-index: 10;';
+        
+        // Agregar estilos CSS para asegurar visibilidad en desktop
+        if (!document.getElementById('sidebar-styles')) {
+            const style = document.createElement('style');
+            style.id = 'sidebar-styles';
+            style.textContent = `
+                #client-sidebar-container {
+                    display: none;
+                }
+                @media (min-width: 1024px) {
+                    #client-sidebar-container {
+                        display: block !important;
+                        width: 16rem;
+                        flex-shrink: 0;
+                    }
+                    #client-sidebar {
+                        display: flex !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         sidebarContainer.innerHTML = `
-            <aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full" id="client-sidebar" role="navigation" aria-label="Navegación principal">
-                <div class="p-6 pb-2">
-                    <!-- Logo -->
-                    <div class="flex items-center gap-3 mb-8">
-                        <div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-                            <span class="material-symbols-outlined text-2xl" aria-hidden="true">confirmation_number</span>
-                        </div>
-                        <h2 class="text-white text-lg font-bold leading-tight tracking-tight">Sorteos Web</h2>
+            <aside class="w-64 flex-shrink-0 flex flex-col border-r border-[#282d39] bg-[#111318] fixed top-0 left-0 h-screen lg:relative lg:h-full lg:top-auto lg:left-auto" id="client-sidebar" role="navigation" aria-label="Navegación principal">
+                <!-- Logo Header -->
+                <div class="h-16 flex items-center px-6 border-b border-[#282d39]">
+                    <div class="flex items-center gap-2 text-primary">
+                        <span class="material-symbols-outlined text-3xl" aria-hidden="true">confirmation_number</span>
+                        <span class="text-lg font-bold tracking-tight text-white">Sorteos<span class="text-primary">Web</span></span>
                     </div>
-                    
-                    <!-- User Mini Profile -->
-                    <div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
+                </div>
+                
+                <!-- Navigation Menu -->
+                <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                    <!-- Sección Principal -->
+                    <p class="px-3 text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2 mt-2">Principal</p>
+                    ${this.renderNavigationLinks()}
+                </div>
+                
+                <!-- User Profile Footer -->
+                <div class="p-4 border-t border-[#282d39]">
+                    <div class="flex items-center gap-3 mb-3">
                         <div id="sidebar-user-avatar" 
-                             class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" 
+                             class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-primary/20" 
                              data-alt="Foto de perfil del usuario"
                              style='background-image: url("${this.state.clientData.fotoPerfil}");'
                              role="img"
                              aria-label="Foto de perfil">
                         </div>
                         <div class="flex flex-col overflow-hidden">
-                            <h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate">${this.state.clientData.nombre}</h1>
-                            <p id="sidebar-user-type" class="text-text-secondary text-xs truncate">${this.state.clientData.tipoUsuario}</p>
+                            <span id="sidebar-user-name" class="text-sm font-medium text-white truncate">${this.state.clientData.nombre}</span>
+                            <span id="sidebar-user-type" class="text-xs text-text-secondary truncate">${this.state.clientData.tipoUsuario}</span>
                         </div>
                     </div>
-                    
-                    <!-- Navigation -->
-                    <nav class="flex flex-col gap-1.5" aria-label="Menú de navegación">
-                        ${this.renderNavigationLinks()}
-                    </nav>
-                </div>
-                
-                <!-- Logout Button -->
-                <div class="mt-auto p-6">
+                    <!-- Logout Button -->
                     <button id="logout-btn" 
-                            class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]"
+                            class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-medium transition-colors border border-transparent hover:border-[#4b5563]"
                             aria-label="Cerrar sesión">
-                        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
+                        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">logout</span>
                         <span>Cerrar Sesión</span>
                     </button>
                 </div>
             </aside>
         `;
+
+        // Asegurar que el sidebar sea visible en desktop
+        const sidebar = document.getElementById('client-sidebar');
+        if (sidebar) {
+            // Forzar visibilidad en pantallas grandes
+            if (window.innerWidth >= 1024) {
+                sidebar.style.display = 'flex';
+            }
+        }
 
         // Actualizar datos del usuario si hay elementos específicos en la página
         this.updateUserInfo();
@@ -196,9 +244,10 @@ const ClientLayout = {
                 return `
                     <a href="${route.path}" 
                        id="${route.id}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg ${activeClasses} transition-colors group"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg ${activeClasses} transition-colors group cursor-pointer"
                        aria-current="${isActive ? 'page' : 'false'}"
-                       aria-label="${route.label}">
+                       aria-label="${route.label}"
+                       data-navigation-link="true">
                         <span class="material-symbols-outlined text-[24px]" aria-hidden="true">${route.icon}</span>
                         <p class="text-sm font-medium">${route.label}</p>
                     </a>
@@ -310,10 +359,24 @@ const ClientLayout = {
             }
         });
 
-        // Cerrar menú móvil al hacer clic en un enlace
+        // Cerrar menú móvil al hacer clic en un enlace (pero permitir la navegación)
         document.addEventListener('click', (e) => {
-            if (e.target.closest('#mobile-sidebar a')) {
-                this.closeMobileMenu();
+            const mobileLink = e.target.closest('#mobile-sidebar a');
+            if (mobileLink) {
+                // Permitir que el enlace funcione normalmente
+                // Solo cerrar el menú después de un pequeño delay para mejorar UX
+                setTimeout(() => {
+                    this.closeMobileMenu();
+                }, 100);
+            }
+        });
+        
+        // Asegurar que los enlaces del sidebar funcionen correctamente
+        document.addEventListener('click', (e) => {
+            const sidebarLink = e.target.closest('#client-sidebar a');
+            if (sidebarLink && sidebarLink.href && !sidebarLink.href.includes('#')) {
+                // Los enlaces del sidebar principal funcionan normalmente
+                // No necesitamos hacer nada especial, solo permitir la navegación
             }
         });
 
@@ -337,12 +400,22 @@ const ClientLayout = {
                 .find(key => this.navigationRoutes[key].id === route.id);
 
             if (isActive) {
-                link.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-card-dark');
-                link.classList.add('bg-primary', 'text-white');
+                link.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]/50');
+                link.classList.add('bg-primary/10', 'text-primary', 'font-medium');
+                const icon = link.querySelector('.material-symbols-outlined');
+                if (icon) {
+                    icon.classList.remove('group-hover:text-primary', 'transition-colors');
+                    icon.classList.add('text-primary');
+                }
                 link.setAttribute('aria-current', 'page');
             } else {
-                link.classList.remove('bg-primary', 'text-white');
-                link.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-card-dark');
+                link.classList.remove('bg-primary/10', 'text-primary', 'font-medium');
+                link.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]/50');
+                const icon = link.querySelector('.material-symbols-outlined');
+                if (icon) {
+                    icon.classList.remove('text-primary');
+                    icon.classList.add('group-hover:text-primary', 'transition-colors');
+                }
                 link.setAttribute('aria-current', 'false');
             }
         });
@@ -407,10 +480,21 @@ const ClientLayout = {
      * Maneja el cierre de sesión
      */
     handleLogout() {
-        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-            // Limpiar datos de sesión
-            localStorage.removeItem('clientData');
-            sessionStorage.removeItem('clientData');
+        if (typeof customConfirm === 'function') {
+            customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+                if (confirmed) {
+                    // Limpiar datos de sesión
+                    localStorage.removeItem('clientData');
+                    sessionStorage.removeItem('clientData');
+                    window.location.href = '../index.html';
+                }
+            });
+        } else {
+            // Fallback si customConfirm no está disponible
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                // Limpiar datos de sesión
+                localStorage.removeItem('clientData');
+                sessionStorage.removeItem('clientData');
             
             // Redirigir a la página de inicio de sesión
             window.location.href = '../InicioSesion.html';

@@ -291,6 +291,7 @@
 
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
@@ -302,8 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar información del sorteo y boletos seleccionados
     loadPaymentData();
     
-    // Iniciar timer de reserva
-    startReservationTimer();
+    // Asegurar que el timer de reserva se inicialice (igual que DashboardCliente)
+    setTimeout(function() {
+        startReservationTimer();
+    }, 100);
+    
+    // Inicializar funcionalidades de botones y formularios
+    initPaymentPageFunctionality();
 });
 
 // Función para cargar los datos del sorteo y boletos desde localStorage
@@ -369,29 +375,288 @@ function getDefaultTickets() {
     return [4, 13]; // Boletos #004 y #013 como ejemplo
 }
 
-// Timer de reserva (14:59 minutos)
-let reservationTime = 14 * 60 + 59; // 14 minutos y 59 segundos en segundos totales
+// Almacenar intervalos activos para poder limpiarlos si es necesario
+const activeCountdownIntervals = new Map();
 
+// Timer de reserva (14:59 minutos) - EXACTO COMO DashboardCliente
 function startReservationTimer() {
-    const timerInterval = setInterval(function() {
-        const minutes = Math.floor(reservationTime / 60);
-        const seconds = reservationTime % 60;
+    const timerElement = document.getElementById('reservation-timer');
+    const minutosElement = document.getElementById('timer-minutos');
+    const segundosElement = document.getElementById('timer-segundos');
+    
+    if (!timerElement && !minutosElement && !segundosElement) return;
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('reservation-timer')) {
+        clearInterval(activeCountdownIntervals.get('reservation-timer'));
+        activeCountdownIntervals.delete('reservation-timer');
+    }
+    
+    // Tiempo inicial: 14 minutos y 59 segundos (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = 14 * 60 + 59;
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateReservationTimer() {
+        if (remainingSeconds <= 0) {
+            if (timerElement) timerElement.textContent = '00:00';
+            if (minutosElement) minutosElement.textContent = '00';
+            if (segundosElement) segundosElement.textContent = '00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('reservation-timer')) {
+                clearInterval(activeCountdownIntervals.get('reservation-timer'));
+                activeCountdownIntervals.delete('reservation-timer');
+            }
+            // Aquí se podría liberar los boletos o mostrar un mensaje
+            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning').then(() => {
+                window.location.href = 'ListadoSorteosActivos.html';
+            });
+            return;
+        }
         
-        const minutosElement = document.getElementById('timer-minutos');
-        const segundosElement = document.getElementById('timer-segundos');
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
         
+        if (timerElement) {
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
         if (minutosElement) minutosElement.textContent = String(minutes).padStart(2, '0');
         if (segundosElement) segundosElement.textContent = String(seconds).padStart(2, '0');
         
-        if (reservationTime <= 0) {
-            clearInterval(timerInterval);
-            // Aquí se podría liberar los boletos o mostrar un mensaje
-            alert('El tiempo de reserva ha expirado. Los boletos han sido liberados.');
-            window.location.href = 'ListadoSorteosActivos.html';
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateReservationTimer();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateReservationTimer, 1000);
+    activeCountdownIntervals.set('reservation-timer', intervalId);
+}
+
+// Función para inicializar todas las funcionalidades de la página de pago
+function initPaymentPageFunctionality() {
+    // Upload de comprobante
+    initComprobanteUpload();
+    
+    // Botón finalizar compra
+    initFinalizarCompra();
+    
+    // Copiar información bancaria
+    initCopyBankInfo();
+}
+
+// Función para manejar el upload de comprobante
+function initComprobanteUpload() {
+    const dropzone = document.querySelector('.group.cursor-pointer');
+    const fileInput = document.getElementById('dropzone-file');
+    
+    if (!dropzone || !fileInput) return;
+    
+    // Click en dropzone
+    dropzone.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Cambio de archivo
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    });
+    
+    // Drag and drop
+    dropzone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-primary', 'bg-primary/5');
+    });
+    
+    dropzone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-primary/5');
+    });
+    
+    dropzone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-primary/5');
+        
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            handleFileUpload(file);
+        }
+    });
+}
+
+// Función para manejar el archivo subido
+function handleFileUpload(file) {
+    // Validar tipo de archivo
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+        customAlert('Por favor sube un archivo PNG, JPG o PDF.', 'Tipo de Archivo Inválido', 'error');
+        return;
+    }
+    
+    // Validar tamaño (2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    if (file.size > maxSize) {
+        customAlert('El archivo no puede ser mayor a 2MB.', 'Archivo Demasiado Grande', 'error');
+        return;
+    }
+    
+    // Mostrar preview o mensaje de éxito
+    const dropzone = document.querySelector('.group.cursor-pointer');
+    if (dropzone) {
+        dropzone.innerHTML = `
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <span class="material-symbols-outlined text-4xl text-green-500 mb-3">check_circle</span>
+                <p class="mb-2 text-sm text-white font-semibold">${file.name}</p>
+                <p class="text-xs text-text-secondary">${(file.size / 1024).toFixed(2)} KB</p>
+                <button id="remove-file-btn" class="mt-3 text-xs text-red-400 hover:text-red-300 underline">Eliminar archivo</button>
+            </div>
+        `;
+        
+        // Botón para eliminar archivo
+        const removeBtn = document.getElementById('remove-file-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                resetComprobanteUpload();
+            });
         }
         
-        reservationTime--;
-    }, 1000);
+        // Guardar información del archivo
+        localStorage.setItem('comprobanteFileName', file.name);
+        localStorage.setItem('comprobanteFileSize', file.size);
+    }
+}
+
+// Función para resetear el upload de comprobante
+function resetComprobanteUpload() {
+    const dropzone = document.querySelector('.group.cursor-pointer');
+    const fileInput = document.getElementById('dropzone-file');
+    
+    if (dropzone && fileInput) {
+        dropzone.innerHTML = `
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <span class="material-symbols-outlined text-4xl text-text-secondary mb-3 group-hover:text-primary transition-colors">cloud_upload</span>
+                <p class="mb-2 text-sm text-text-secondary"><span class="font-semibold text-primary">Haz clic para subir</span> o arrastra y suelta</p>
+                <p class="text-xs text-gray-500">PNG, JPG o PDF (MAX. 2MB)</p>
+            </div>
+        `;
+        fileInput.value = '';
+        localStorage.removeItem('comprobanteFileName');
+        localStorage.removeItem('comprobanteFileSize');
+        
+        // Re-inicializar
+        initComprobanteUpload();
+    }
+}
+
+// Función para inicializar el botón "Finalizar Compra"
+function initFinalizarCompra() {
+    const finalizarBtn = Array.from(document.querySelectorAll('button')).find(
+        btn => btn.textContent.includes('Finalizar Compra')
+    );
+    
+    if (finalizarBtn) {
+        finalizarBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleFinalizarCompra();
+        });
+    }
+}
+
+// Función para manejar la finalización de la compra
+function handleFinalizarCompra() {
+    // Validar información de contacto
+    const nombreInput = document.querySelector('input[placeholder*="Juan"]');
+    const emailInput = document.querySelector('input[type="email"]');
+    const telefonoInput = document.querySelector('input[type="tel"]');
+    
+    const nombre = nombreInput?.value.trim();
+    const email = emailInput?.value.trim();
+    const telefono = telefonoInput?.value.trim();
+    
+    if (!nombre || !email || !telefono) {
+        customAlert('Por favor completa todos los campos de información de contacto.', 'Campos Incompletos', 'warning');
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        customAlert('Por favor ingresa un correo electrónico válido.', 'Email Inválido', 'error');
+        return;
+    }
+    
+    // Validar comprobante
+    const comprobanteFileName = localStorage.getItem('comprobanteFileName');
+    if (!comprobanteFileName) {
+        customAlert('Por favor sube el comprobante de pago antes de finalizar la compra.', 'Comprobante Requerido', 'warning');
+        return;
+    }
+    
+    // Validar boletos
+    const selectedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+    if (selectedTickets.length === 0) {
+        customAlert('No hay boletos seleccionados. Por favor vuelve a la página anterior.', 'Boletos Requeridos', 'warning').then(() => {
+            window.location.href = 'SeleccionBoletos.html';
+        });
+        return;
+    }
+    
+    // Confirmar compra
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || {};
+    const total = document.getElementById('total-amount')?.textContent || '$0.00';
+    
+    const confirmMessage = `¿Deseas finalizar la compra?\n\n` +
+                          `Boletos: ${selectedTickets.length}\n` +
+                          `Total: ${total}\n\n` +
+                          `Asegúrate de haber realizado la transferencia bancaria y subido el comprobante.`;
+    
+    customConfirm(confirmMessage, 'Finalizar Compra', 'help').then(confirmed => {
+        if (!confirmed) return;
+        
+        // Simular procesamiento (aquí iría la llamada al servidor)
+        console.log('Procesando compra...', {
+            nombre,
+            email,
+            telefono,
+            boletos: selectedTickets,
+            comprobante: comprobanteFileName,
+            total
+        });
+        
+        // Mostrar mensaje de éxito
+        customAlert('Tu compra está siendo verificada. Recibirás un correo de confirmación cuando tu pago sea aprobado.\n\nPuedes seguir el estado de tus boletos en la sección "Mis Boletos".', '¡Compra Procesada!', 'success').then(() => {
+        });
+    });
+}
+
+// Función para copiar información bancaria
+function initCopyBankInfo() {
+    const bankInfoElements = document.querySelectorAll('.text-white.font-medium.tracking-wide, .text-white.font-medium');
+    
+    bankInfoElements.forEach(element => {
+        if (element.textContent.includes('0191') || element.textContent.includes('J-')) {
+            element.style.cursor = 'pointer';
+            element.title = 'Click para copiar';
+            element.addEventListener('click', function() {
+                const text = this.textContent.trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    // Mostrar feedback visual
+                    const originalText = this.textContent;
+                    this.textContent = '¡Copiado!';
+                    this.classList.add('text-green-400');
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.classList.remove('text-green-400');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Error al copiar:', err);
+                });
+            });
+        }
+    });
 }
 </script>
 
