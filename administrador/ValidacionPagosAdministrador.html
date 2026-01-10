@@ -3,7 +3,7 @@
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Gestión de Usuarios Admin</title>
+<title>Validación de Pagos Admin</title>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -21,103 +21,252 @@
                     colors: {
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
-                        "background-dark": "#111318", // Matching the component's dark bg
-                        "surface-dark": "#1c1f27", // Matching component's secondary dark bg
-                        "border-dark": "#282d39", // Matching component's border
+                        "background-dark": "#111621",
+                        "card-dark": "#1e2433", // Slightly lighter than bg-dark for contrast
+                        "border-dark": "#2a3241",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"],
-                        "body": ["Inter", "sans-serif"]
+                        "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
                 },
             },
         }
     </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-white antialiased overflow-x-hidden">
-<div class="relative flex min-h-screen w-full flex-col group/design-root">
-<!-- Top Navigation -->
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark bg-background-dark px-10 py-3 sticky top-0 z-50">
-<div class="flex items-center gap-4 text-white">
-<div class="size-8 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined !text-3xl">casino</span>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
 </div>
-<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Sorteos Admin</h2>
 </div>
-<div class="flex flex-1 justify-end gap-8 items-center">
-<div class="flex gap-4 items-center">
-<button class="text-[#9da6b9] hover:text-white transition-colors">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="text-[#9da6b9] hover:text-white transition-colors">
-<span class="material-symbols-outlined">settings</span>
-</button>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="ValidacionPagosAdministrador.html">
+<span class="material-symbols-outlined">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
 </div>
-<div class="h-6 w-px bg-border-dark"></div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
 <div class="flex items-center gap-3">
-<div class="text-right hidden sm:block">
-<p class="text-sm font-medium text-white">Admin User</p>
-<p class="text-xs text-[#9da6b9]">Super Admin</p>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-border-dark" data-alt="Avatar de usuario administrador" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwPyHKB4teON5JhTcrcFXt6CSkFbeU2MLWeEdGgNG_Wkn1YiLlq149-kc4ajBzPkNoxsLXytSsYdCzH9dfqxzBS4bJj5O8E1ahEqntkKnald5ts1j12XIB2DODOlnfOI66ABT7R2JQPws6YSIBb_YYsF3ExrPMZ25X-8t9Km0_5q6Zw9c_BYWXmOFWr2GPs5v5oJ8oNAWWViWawiEVZIuTy8ZdShzN-d6nDelizptO5HfpLv_L4VxIyQx8eaIQ2ven8QrtM4E5UPM");'></div>
 </div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Validación de Pagos</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
 </div>
 </header>
-<div class="layout-container flex h-full grow flex-col">
-<div class="flex flex-1 justify-center py-5 px-4 md:px-10 lg:px-20 xl:px-40">
-<div class="layout-content-container flex flex-col w-full max-w-[1200px] flex-1">
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="max-w-[1400px] mx-auto w-full">
 <!-- Breadcrumbs -->
 <div class="flex flex-wrap gap-2 px-4 py-2">
-<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="#">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
 <span class="material-symbols-outlined !text-lg">dashboard</span>
                             Dashboard
                         </a>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
-<span class="text-white text-sm font-medium leading-normal">Gestión de Usuarios</span>
+<span class="text-white text-sm font-medium leading-normal">Validación de Pagos</span>
 </div>
 <!-- Page Heading -->
 <div class="flex flex-wrap justify-between items-end gap-4 px-4 py-6">
 <div class="flex min-w-72 flex-col gap-2">
-<h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Gestión de Usuarios</h1>
-<p class="text-[#9da6b9] text-base font-normal leading-normal">Administra los usuarios registrados, sus estados y permisos en la plataforma.</p>
+<h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Validación de Pagos</h1>
+<p class="text-[#9da6b9] text-base font-normal leading-normal">Revisa y valida los comprobantes de pago pendientes de los usuarios.</p>
 </div>
-<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20">
-<span class="material-symbols-outlined mr-2 !text-lg">add</span>
-<span class="truncate">Crear Nuevo Usuario</span>
-</button>
+<div class="flex gap-3">
+<button id="btnAprobarTodos" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-green-500/20">
+<span class="material-symbols-outlined !text-xl">check_circle</span>
+                                Aprobar Seleccionados
+                            </button>
+<button id="btnRechazarTodos" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-red-500/20">
+<span class="material-symbols-outlined !text-xl">cancel</span>
+                                Rechazar Seleccionados
+                            </button>
 </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-4 mb-6">
+<!-- Pendientes -->
+<div class="bg-[#1e2433] rounded-xl p-5 border border-border-dark hover:border-yellow-500/30 transition-colors">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-[#9da6b9] text-sm font-medium">Pagos Pendientes</p>
+<p class="text-3xl font-bold text-yellow-400 mt-1">12</p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-yellow-400 !text-2xl">hourglass_top</span>
+</div>
+</div>
+<p class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm text-yellow-400">schedule</span>
+                                Requieren revisión
+                            </p>
+</div>
+<!-- Aprobados Hoy -->
+<div class="bg-[#1e2433] rounded-xl p-5 border border-border-dark hover:border-green-500/30 transition-colors">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-[#9da6b9] text-sm font-medium">Aprobados Hoy</p>
+<p class="text-3xl font-bold text-green-400 mt-1">8</p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-400 !text-2xl">task_alt</span>
+</div>
+</div>
+<p class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm text-green-400">trending_up</span>
+                                +25% vs ayer
+                            </p>
+</div>
+<!-- Rechazados -->
+<div class="bg-[#1e2433] rounded-xl p-5 border border-border-dark hover:border-red-500/30 transition-colors">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-[#9da6b9] text-sm font-medium">Rechazados Hoy</p>
+<p class="text-3xl font-bold text-red-400 mt-1">2</p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-red-400 !text-2xl">block</span>
+</div>
+</div>
+<p class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm text-red-400">info</span>
+                                Comprobantes inválidos
+                            </p>
+</div>
+<!-- Monto Total -->
+<div class="bg-[#1e2433] rounded-xl p-5 border border-border-dark hover:border-primary/30 transition-colors">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-[#9da6b9] text-sm font-medium">Monto Pendiente</p>
+<p class="text-3xl font-bold text-primary mt-1">$2,450</p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary !text-2xl">payments</span>
+</div>
+</div>
+<p class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm text-primary">account_balance_wallet</span>
+                                En 12 transacciones
+                            </p>
+</div>
+</div>
+
 <!-- Filters & Search Toolbar -->
-<div class="flex flex-col md:flex-row gap-4 px-4 py-4 bg-surface-dark/50 rounded-xl mb-4 border border-border-dark mx-4">
+<div class="flex flex-col md:flex-row gap-4 px-4 py-4 bg-[#1e2433]/50 rounded-xl mb-4 border border-border-dark mx-4">
 <div class="flex-1 relative">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-[#9da6b9]">search</span>
 </div>
-<input class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por nombre, email o ID..."/>
+<input id="searchInput" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por usuario, sorteo o referencia de pago..."/>
 </div>
-<div class="flex gap-4 w-full md:w-auto">
+<div class="flex gap-4 w-full md:w-auto flex-wrap">
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Estado: Todos</option>
-<option value="active">Activo</option>
-<option value="inactive">Inactivo</option>
+<select id="estadoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="" selected>Estado: Todos</option>
 <option value="pending">Pendiente</option>
+<option value="approved">Aprobado</option>
+<option value="rejected">Rechazado</option>
 </select>
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
 <span class="material-symbols-outlined !text-xl">expand_more</span>
 </div>
 </div>
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Ordenar por: Recientes</option>
-<option value="oldest">Antiguos</option>
-<option value="name_asc">Nombre (A-Z)</option>
-<option value="name_desc">Nombre (Z-A)</option>
+<select id="metodoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="">Método de Pago</option>
+<option value="transfer">Transferencia</option>
+<option value="deposit">Depósito</option>
+<option value="paypal">PayPal</option>
+<option value="crypto">Criptomoneda</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
+<span class="material-symbols-outlined !text-xl">account_balance</span>
+</div>
+</div>
+<div class="relative min-w-[160px] flex-1 md:flex-none">
+<select id="ordenFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="">Ordenar: Más recientes</option>
+<option value="oldest">Más antiguos</option>
+<option value="amount_high">Mayor monto</option>
+<option value="amount_low">Menor monto</option>
 </select>
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
 <span class="material-symbols-outlined !text-xl">sort</span>
@@ -125,219 +274,319 @@
 </div>
 </div>
 </div>
+
 <!-- Data Table -->
 <div class="px-4 py-2">
 <div class="overflow-x-auto rounded-xl border border-border-dark bg-background-dark shadow-xl shadow-black/20">
 <table class="w-full text-left border-collapse">
 <thead>
-<tr class="bg-surface-dark border-b border-border-dark">
-<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] w-[60px] text-center">
+<tr class="bg-[#1e2433] border-b border-border-dark">
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] w-[50px] text-center">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Usuario</th>
-<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Email / Teléfono</th>
-<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Registro</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Sorteo</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Monto</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Método</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Comprobante</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Fecha</th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Estado</th>
-<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] text-right">Acciones</th>
+<th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] text-center">Acciones</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-border-dark">
-<!-- Row 1 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
+<!-- Row 1 - Pendiente -->
+<tr class="hover:bg-[#1e2433]/50 transition-colors group">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Juan Pérez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPPtsNAPaU9CgF3Ndb0DnD4BY-TbXGgXAgGR7bScQNxU6u5_inTAQo_ymHIWvaFI1MUJBpIx3R7xQ0p97bEM3DOaOHhP5bceUQNEzNCPRZin5yE4xJ0oeep6bR_RX9Ot5sPTC_Z1_PaLA1rDnCCHH2kMB2K1Fzl6yH9NkiL_CtrE-8Sl_csBaehGkRA2j-XftDcDsaZSXZQmwX_R0CB9hD2LRBDbyQ4f3cbqbV0JZ2awiFtQqh9MH9wB7U1qi5jZcjWBnaNXCTlBI");'></div>
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPPtsNAPaU9CgF3Ndb0DnD4BY-TbXGgXAgGR7bScQNxU6u5_inTAQo_ymHIWvaFI1MUJBpIx3R7xQ0p97bEM3DOaOHhP5bceUQNEzNCPRZin5yE4xJ0oeep6bR_RX9Ot5sPTC_Z1_PaLA1rDnCCHH2kMB2K1Fzl6yH9NkiL_CtrE-8Sl_csBaehGkRA2j-XftDcDsaZSXZQmwX_R0CB9hD2LRBDbyQ4f3cbqbV0JZ2awiFtQqh9MH9wB7U1qi5jZcjWBnaNXCTlBI");'></div>
 <div class="flex flex-col">
 <span class="text-white text-sm font-semibold">Juan Pérez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8293</span>
+<span class="text-[#9da6b9] text-xs">juan.perez@email.com</span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">juan.perez@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 612 345 678</span>
+<span class="text-white text-sm font-medium">iPhone 15 Pro Max</span>
+<span class="text-[#9da6b9] text-xs">5 boletos × $10</span>
 </div>
 </td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            12 Oct 2023
-                                        </td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
+<span class="text-white text-sm font-bold">$50.00</span>
 </td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary !text-lg">account_balance</span>
+<span class="text-[#9da6b9] text-sm">Transferencia</span>
+</div>
+</td>
+<td class="p-4">
+<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">image</span>
+                                            Ver comprobante
+                                        </button>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-white text-sm">Hoy, 14:32</span>
+<span class="text-[#9da6b9] text-xs">Hace 25 min</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/10 px-2.5 py-1 text-xs font-medium text-yellow-400 border border-yellow-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="p-4">
+<div class="flex items-center justify-center gap-1">
+<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
-<span class="material-symbols-outlined !text-[20px]">block</span>
+<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<span class="material-symbols-outlined !text-xl">cancel</span>
+</button>
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
-<!-- Row 2 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
+<!-- Row 2 - Pendiente -->
+<tr class="hover:bg-[#1e2433]/50 transition-colors group">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/20">MG</div>
+<div class="h-10 w-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 font-bold border border-pink-500/20">MG</div>
 <div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Maria Garcia</span>
-<span class="text-[#9da6b9] text-xs">ID: #8294</span>
+<span class="text-white text-sm font-semibold">María García</span>
+<span class="text-[#9da6b9] text-xs">maria.garcia@email.com</span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">maria.garcia@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 622 987 654</span>
+<span class="text-white text-sm font-medium">MacBook Pro M3</span>
+<span class="text-[#9da6b9] text-xs">10 boletos × $25</span>
 </div>
 </td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            10 Oct 2023
-                                        </td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-gray-500/10 px-2.5 py-1 text-xs font-medium text-gray-400 border border-gray-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                                                Inactivo
-                                            </span>
+<span class="text-white text-sm font-bold">$250.00</span>
 </td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400 !text-lg">credit_card</span>
+<span class="text-[#9da6b9] text-sm">PayPal</span>
+</div>
+</td>
+<td class="p-4">
+<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">receipt_long</span>
+                                            Ver recibo
+                                        </button>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-white text-sm">Hoy, 13:15</span>
+<span class="text-[#9da6b9] text-xs">Hace 1h 42min</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/10 px-2.5 py-1 text-xs font-medium text-yellow-400 border border-yellow-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="p-4">
+<div class="flex items-center justify-center gap-1">
+<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta">
-<span class="material-symbols-outlined !text-[20px]">check_circle</span>
+<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<span class="material-symbols-outlined !text-xl">cancel</span>
+</button>
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
-<!-- Row 3 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
+<!-- Row 3 - Pendiente -->
+<tr class="hover:bg-[#1e2433]/50 transition-colors group">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Carlos Lopez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA80RfleoWbDvy1m9MS5NJtn7r8uG_3qifK6VgHJlUJnFmLZrC89xDphkdFMtyQ5jj05N8g32p8HthkKF-TgM2rpTqCSydCDhUiOZd2ow_zHADzTOjYQ5-YEFkPTDN6HtIdu4C2LH9HyHRxs7Q5s1RvL8YiXwVAxr4lyieqPpUvguHgmizNcuwsvtpxihNLJqGIk17rDR2rDG7FnZazSCK76bvdRuUlKRBidTbHestcDq9n1jnspvKWJAUN4t2G0lT1Pxx9cI1EGcI");'></div>
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA80RfleoWbDvy1m9MS5NJtn7r8uG_3qifK6VgHJlUJnFmLZrC89xDphkdFMtyQ5jj05N8g32p8HthkKF-TgM2rpTqCSydCDhUiOZd2ow_zHADzTOjYQ5-YEFkPTDN6HtIdu4C2LH9HyHRxs7Q5s1RvL8YiXwVAxr4lyieqPpUvguHgmizNcuwsvtpxihNLJqGIk17rDR2rDG7FnZazSCK76bvdRuUlKRBidTbHestcDq9n1jnspvKWJAUN4t2G0lT1Pxx9cI1EGcI");'></div>
 <div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Carlos Lopez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8295</span>
+<span class="text-white text-sm font-semibold">Carlos López</span>
+<span class="text-[#9da6b9] text-xs">carlos.lopez@email.com</span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">carlos.lopez@example.com</span>
-<span class="text-[#6b7280] text-xs">--</span>
+<span class="text-white text-sm font-medium">PlayStation 5</span>
+<span class="text-[#9da6b9] text-xs">3 boletos × $15</span>
 </div>
 </td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            08 Oct 2023
-                                        </td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
+<span class="text-white text-sm font-bold">$45.00</span>
 </td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-400 !text-lg">savings</span>
+<span class="text-[#9da6b9] text-sm">Depósito</span>
+</div>
+</td>
+<td class="p-4">
+<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">image</span>
+                                            Ver comprobante
+                                        </button>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-white text-sm">Hoy, 10:45</span>
+<span class="text-[#9da6b9] text-xs">Hace 4h 12min</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/10 px-2.5 py-1 text-xs font-medium text-yellow-400 border border-yellow-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                                            Pendiente
+                                        </span>
+</td>
+<td class="p-4">
+<div class="flex items-center justify-center gap-1">
+<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
-<span class="material-symbols-outlined !text-[20px]">block</span>
+<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<span class="material-symbols-outlined !text-xl">cancel</span>
+</button>
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
-<!-- Row 4 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
+<!-- Row 4 - Aprobado -->
+<tr class="hover:bg-[#1e2433]/50 transition-colors group bg-green-500/5">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
 <div class="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold border border-purple-500/20">AM</div>
 <div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Ana Martinez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8296</span>
+<span class="text-white text-sm font-semibold">Ana Martínez</span>
+<span class="text-[#9da6b9] text-xs">ana.martinez@email.com</span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">ana.martinez@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 633 123 456</span>
+<span class="text-white text-sm font-medium">Smart TV 65"</span>
+<span class="text-[#9da6b9] text-xs">8 boletos × $8</span>
 </div>
 </td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            05 Oct 2023
-                                        </td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 border border-amber-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                                                Pendiente
-                                            </span>
+<span class="text-white text-sm font-bold">$64.00</span>
 </td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta">
-<span class="material-symbols-outlined !text-[20px]">check</span>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary !text-lg">account_balance</span>
+<span class="text-[#9da6b9] text-sm">Transferencia</span>
+</div>
+</td>
+<td class="p-4">
+<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">image</span>
+                                            Ver comprobante
+                                        </button>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-white text-sm">Ayer, 18:20</span>
+<span class="text-[#9da6b9] text-xs">Aprobado hoy</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                                            Aprobado
+                                        </span>
+</td>
+<td class="p-4">
+<div class="flex items-center justify-center gap-1">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
-<!-- Row 5 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group">
+<!-- Row 5 - Rechazado -->
+<tr class="hover:bg-[#1e2433]/50 transition-colors group bg-red-500/5">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Luis Rodriguez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmfN1J8Yp1o3I9XGKtWr7sFwBvkGdCUiXu4M8uhs9ADRNHIz3zp2Yqb0U_OAK8eTlOoCU0pTL9Tzrc4tuzVRbxWbBgCd5FAlGMqry4E6Uonlw2N00Tua5CI2XN8j7ohoLbjxkOqnMig4KMqOI3sChtlnW-dyJwfF7ew5dFhgBRPt4KKrfBNBHbqOp1F658Ss0ThfmbC7cF80qYdkM8KTpzET8LaXSd35gVhA2ThM-Y2eSBAqGMft8S93cjznQW0uZOGR9TI2seCwY");'></div>
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmfN1J8Yp1o3I9XGKtWr7sFwBvkGdCUiXu4M8uhs9ADRNHIz3zp2Yqb0U_OAK8eTlOoCU0pTL9Tzrc4tuzVRbxWbBgCd5FAlGMqry4E6Uonlw2N00Tua5CI2XN8j7ohoLbjxkOqnMig4KMqOI3sChtlnW-dyJwfF7ew5dFhgBRPt4KKrfBNBHbqOp1F658Ss0ThfmbC7cF80qYdkM8KTpzET8LaXSd35gVhA2ThM-Y2eSBAqGMft8S93cjznQW0uZOGR9TI2seCwY");'></div>
 <div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Luis Rodriguez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8297</span>
+<span class="text-white text-sm font-semibold">Luis Rodríguez</span>
+<span class="text-[#9da6b9] text-xs">luis.rod@email.com</span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">luis.rod@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 655 444 333</span>
+<span class="text-white text-sm font-medium">Nintendo Switch</span>
+<span class="text-[#9da6b9] text-xs">2 boletos × $12</span>
 </div>
 </td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            01 Oct 2023
-                                        </td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
+<span class="text-white text-sm font-bold">$24.00</span>
 </td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-400 !text-lg">currency_bitcoin</span>
+<span class="text-[#9da6b9] text-sm">Criptomoneda</span>
+</div>
+</td>
+<td class="p-4">
+<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined !text-lg">image</span>
+                                            Ver comprobante
+                                        </button>
+</td>
+<td class="p-4">
+<div class="flex flex-col">
+<span class="text-white text-sm">Ayer, 09:15</span>
+<span class="text-[#9da6b9] text-xs">Rechazado hoy</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 border border-red-500/20">
+<span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+                                            Rechazado
+                                        </span>
+</td>
+<td class="p-4">
+<div class="flex items-center justify-center gap-1">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver motivo">
+<span class="material-symbols-outlined !text-xl">info</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
-<span class="material-symbols-outlined !text-[20px]">block</span>
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
@@ -349,26 +598,27 @@
 <!-- Pagination -->
 <div class="px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
 <p class="text-sm text-[#9da6b9]">
-                            Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">245</span> usuarios
+                            Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">22</span> pagos
                         </p>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
-<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
-<span class="sr-only">Previous</span>
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<span class="sr-only">Anterior</span>
 <span class="material-symbols-outlined !text-sm">chevron_left</span>
 </a>
 <a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">2</a>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">3</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">2</a>
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">3</a>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">12</a>
-<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
-<span class="sr-only">Next</span>
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">5</a>
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<span class="sr-only">Siguiente</span>
 <span class="material-symbols-outlined !text-sm">chevron_right</span>
 </a>
 </nav>
 </div>
 </div>
 </div>
+</main>
 </div>
-</div>
+<script src="../js/validacion-pagos.js"></script>
 </body></html>

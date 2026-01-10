@@ -95,26 +95,26 @@
 <div class="text-[#9d9db9] flex bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
+<input id="inputBusqueda" class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
 </div>
 </label>
 <!-- Status Chips -->
 <div class="flex gap-2 flex-wrap">
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all">
+<button id="filtroTodos" class="filtro-btn filtro-activo flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all" data-filtro="todos">
 <span class="text-sm font-medium leading-normal">Todos</span>
 </button>
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
-<span class="text-sm font-medium leading-normal">Pendientes</span>
+<button id="filtroFinalizado" class="filtro-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filtro="finalizado">
+<span class="text-sm font-medium leading-normal">Finalizado</span>
 </button>
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
-<span class="text-sm font-medium leading-normal">Completados</span>
+<button id="filtroEnCurso" class="filtro-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filtro="en-curso">
+<span class="text-sm font-medium leading-normal">En Curso</span>
 </button>
 </div>
 </div>
 <!-- Raffle Cards Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+<div id="gridSorteos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
 <!-- Card 1: Pending Selection (High Priority) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-estado="pendiente" data-nombre="MacBook Pro M3 Max">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Blue abstract pattern representing technology raffle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoSINFL-cpmVH_XlcaDl1cwe8PsmG6-LfZhAMp6RsoF7trtqDTRFfKk5sIXMgJrd9WBHK-DdbbMp_iBnmZAjzllvHHUYkSJAGEVjLDLCWhBv4MmI_vIZPvHHpPo2ZPCLyUqtprYR5tjtzr02_ZjfJZn5vp65sDxXmvx8VfV15Knvf7T1LqTf0Ipli9ePqiuYdYZlvM39ef-ZSkeTiOjYUZF_V_XrEbpF1MSSt0CKq1dhIInIoMF6-wEfcLAFFPqb0iMqZd4reRAEM");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -136,7 +136,11 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<button 
+    data-accion="generar-ganador"
+    data-id-sorteo="8821"
+    class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group"
+>
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -148,7 +152,7 @@
 </div>
 </div>
 <!-- Card 2: Winner Selected (Action needed) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5">
+<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5" data-estado="completado" data-nombre="Ford Mustang GT">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Green luxury car abstract background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXzkVVFwoeTbIqAEzkgAVc-PdfRWGN9CzfHgq-R-IyIpCOpJHkWsiz3_kHlhIYj37QT3BpnU6WAlltwPp1D8r0BOtxTtdt0vYN6_uxtB-FyFrbFIuNiKnwGj34v6_Wqh2xWrLJ2l04DSYYmo798YqtuEISk_CsI0yiVwzDA2HHWgbkq5m-tGpkrI_Zpa9Rp7l-O5CJMLz2EdrbSPxIzGkvBuTJgBeJW-tJ4o9n70jbKvoEvZPQILuGV59UT4vBAw67bBVa6ZNgdLE");'></div>
 <div class="absolute top-3 right-3 bg-success text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide flex items-center gap-1">
@@ -194,7 +198,7 @@
 </div>
 </div>
 <!-- Card 3: Pending Selection -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-estado="pendiente" data-nombre="Bono Efectivo $2,500">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Gold coins stack abstract" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtQcUBS2tMBXNjknJwJnuHc3dl3WeLGU9W_SWaMPjrG_b4EBZAPEYGOu0YmHcS7RqstSdcBLWocqrp0xyThF4vlP-XqXTc11iLDyX770MQZPGI5X9aOXh2qBFE-W3vGORC0R4C5A-c-Fu6tmCuapI750DAuW1-pvoDy-SuYkM4fhSviZVjli_Pg5eRyI17TR3qgb2jezjBBXZ9pRb01XTUpZpyCH4biUhw5UpdeHGa-1FQXyZbwSBBHnzpmAuMSd2SywcyCwQUIqk");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -216,7 +220,11 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<button 
+    data-accion="generar-ganador"
+    data-id-sorteo="8819"
+    class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group"
+>
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -228,7 +236,7 @@
 </div>
 </div>
 <!-- Card 4: Upcoming/Live (Disabled State Example) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75">
+<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75" data-estado="en-curso" data-nombre="Kit Smart Home">
 <div class="relative h-48 w-full bg-gray-800 grayscale">
 <div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="Smart home devices collection" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBw3ocfkeRB5vo7w-n75WEJf1CFyeKk7qC3Il0zG_ze19TwO8pRz8MrCSApAo6oaDEEfVCGFSX11McTFqxtzsvnclH6gof9EyyKssuEz7YgKv3sAnx-zCmP-RYSQQC65dIawD0ZAVfgxVnrHSGfiCyGEXtd_bvwaxYYfhEO1TFjDDX6wlRHHrk09sn-tPfWVubrOA9jaL79-ehIBsVKfKxraQpm9bfTkXkYPk4gbv-_Xq0xlyNIzm1SVKuG0scwCfYwQHCXNlN_GgU");'></div>
 <div class="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">En Curso</div>
@@ -309,4 +317,6 @@
 </div>
 </div>
 </div>
+<!-- Scripts -->
+<script src="../js/generador-ganadores.js"></script>
 </body></html>
