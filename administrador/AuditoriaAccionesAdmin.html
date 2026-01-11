@@ -17,7 +17,8 @@
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111621",
-                        "surface-dark": "#1a2231",
+                        "card-dark": "#1e2433",
+                        "border-dark": "#2a3241",
                     },
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
@@ -27,48 +28,115 @@
             },
         }
     </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-[#111318] dark:text-white font-display overflow-x-hidden">
-<div class="relative flex min-h-screen w-full flex-col">
-<!-- TopNavBar -->
-<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e7eb] dark:border-b-[#282d39] bg-white dark:bg-[#111318] px-10 py-3">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="AuditoriaAccionesAdmin.html">
+<span class="material-symbols-outlined">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<div class="size-8 text-[#111318] dark:text-white">
-<svg class="h-full w-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-<path d="M8.57829 8.57829C5.52816 11.6284 3.451 15.5145 2.60947 19.7452C1.76794 23.9758 2.19984 28.361 3.85056 32.3462C5.50128 36.3314 8.29667 39.7376 11.8832 42.134C15.4698 44.5305 19.6865 45.8096 24 45.8096C28.3135 45.8096 32.5302 44.5305 36.1168 42.134C39.7033 39.7375 42.4987 36.3314 44.1494 32.3462C45.8002 28.361 46.2321 23.9758 45.3905 19.7452C44.549 15.5145 42.4718 11.6284 39.4217 8.57829L24 24L8.57829 8.57829Z" fill="currentColor"></path>
-</svg>
-</div>
-<h2 class="text-[#111318] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Admin Console</h2>
-</div>
-<div class="flex flex-1 justify-end gap-8">
-<nav class="hidden md:flex items-center gap-9">
-<a class="text-[#637588] dark:text-[#9da6b9] hover:text-[#111318] dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
-<a class="text-[#637588] dark:text-[#9da6b9] hover:text-[#111318] dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Sorteos</a>
-<a class="text-[#637588] dark:text-[#9da6b9] hover:text-[#111318] dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Usuarios</a>
-<a class="text-[#111318] dark:text-white text-sm font-medium leading-normal transition-colors" href="#">Auditoría</a>
-<a class="text-[#637588] dark:text-[#9da6b9] hover:text-[#111318] dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Configuración</a>
-</nav>
-<div class="flex gap-2">
-<button class="flex size-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#f0f2f4] dark:bg-[#282d39] text-[#111318] dark:text-white hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors">
-<span class="material-symbols-outlined text-[20px]">notifications</span>
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
 </button>
-<button class="flex size-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-[#f0f2f4] dark:bg-[#282d39] text-[#111318] dark:text-white hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors">
-<span class="material-symbols-outlined text-[20px]">settings</span>
-</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Auditoría de Acciones</h1>
 </div>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-white dark:ring-[#282d39]" data-alt="Avatar de usuario administrador" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD8zCBznw8BEg-He4VmhtvjykQWX56ao1zHuMCkhk7a3PgEO0plfKX4WWGORLNelxNrfZxfgcm4Zfnj1jqdIlVxG1OWtSanUvlQhB50s5Uw38ccISOv7ddLsn5y3fsEf4B7XiD3OD9j2ed5edawQTp2F4w0xuE_xYgmc53E7KbXtsCGr4-NQjzkB5Zc-NeYtyMNIxTAUPw_JoDpmio7AHslELkCGHTdC4vrVuhiNh0pTS6WYxfvdaWCLbN0oAPHhSrZ17uwcBrX2zI");'></div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
 </div>
 </header>
-<div class="layout-container flex h-full grow flex-col">
-<div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
-<div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="max-w-[1200px] mx-auto w-full">
 <!-- Breadcrumbs -->
 <div class="flex flex-wrap gap-2 px-4 py-2">
-<a class="text-[#637588] dark:text-[#9da6b9] text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Inicio</a>
-<span class="text-[#637588] dark:text-[#9da6b9] text-sm font-medium leading-normal">/</span>
-<a class="text-[#637588] dark:text-[#9da6b9] text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Admin</a>
-<span class="text-[#637588] dark:text-[#9da6b9] text-sm font-medium leading-normal">/</span>
-<span class="text-[#111318] dark:text-white text-sm font-medium leading-normal">Auditoría de Acciones</span>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined !text-lg">dashboard</span>
+                            Dashboard
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Auditoría de Acciones</span>
 </div>
 <!-- Page Heading -->
 <div class="flex flex-wrap justify-between items-end gap-3 px-4 py-6">
@@ -100,26 +168,39 @@
 <!-- Filter Chips -->
 <div class="flex flex-wrap gap-2 items-center">
 <span class="text-xs font-semibold text-[#637588] dark:text-[#9da6b9] uppercase tracking-wider mr-1">Filtros:</span>
-<div class="relative group">
-<button class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Últimos 7 días</span>
-<span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">calendar_today</span>
-</button>
+<div class="flex items-center gap-2">
+<label class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#9da6b9] text-[16px]">calendar_today</span>
+<input type="date" id="filtroFechaDesde" class="h-8 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] border border-transparent dark:border-[#3e4556] px-2 text-xs text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"/>
+</label>
+<span class="text-[#9da6b9] text-xs">-</span>
+<label class="flex items-center gap-2">
+<input type="date" id="filtroFechaHasta" class="h-8 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] border border-transparent dark:border-[#3e4556] px-2 text-xs text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"/>
+</label>
 </div>
 <div class="relative group">
-<button class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Tipo: Todos</span>
-<span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">expand_more</span>
-</button>
+<select id="filtroTipo" class="h-8 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] border border-transparent dark:border-[#3e4556] px-3 pr-8 text-xs text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option value="">Tipo: Todos</option>
+<option value="Creación Usuario">Creación Usuario</option>
+<option value="Creación Sorteo">Creación Sorteo</option>
+<option value="Generar Ganador">Generar Ganador</option>
+<option value="Edición Usuario">Edición Usuario</option>
+<option value="Validación Pago">Validación Pago</option>
+<option value="Login Exitoso">Login Exitoso</option>
+<option value="Login Fallido">Login Fallido</option>
+</select>
+<span class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none material-symbols-outlined text-[#111318] dark:text-white text-[16px]">expand_more</span>
 </div>
 <div class="relative group">
-<button class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Estado: Todos</span>
-<span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">filter_list</span>
-</button>
+<select id="filtroEstado" class="h-8 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] border border-transparent dark:border-[#3e4556] px-3 pr-8 text-xs text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option value="">Estado: Todos</option>
+<option value="Exitoso">Exitoso</option>
+<option value="Fallido">Fallido</option>
+</select>
+<span class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none material-symbols-outlined text-[#111318] dark:text-white text-[16px]">filter_list</span>
 </div>
 <div class="h-6 w-px bg-[#e5e7eb] dark:bg-[#3e4556] mx-1"></div>
-<button class="flex h-8 items-center gap-x-1 rounded-md bg-red-500/10 dark:bg-red-500/20 px-3 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors border border-red-500/20 dark:border-red-500/30">
+<button id="btnSoloAlertas" class="flex h-8 items-center gap-x-1 rounded-md bg-red-500/10 dark:bg-red-500/20 px-3 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors border border-red-500/20 dark:border-red-500/30">
 <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-[16px]">warning</span>
 <span class="text-red-600 dark:text-red-400 text-xs font-bold">Solo Alertas</span>
 </button>
@@ -143,7 +224,7 @@
 </thead>
 <tbody class="divide-y divide-[#e5e7eb] dark:divide-[#282d39]">
 <!-- Row 1: Success -->
-<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors">
+<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors" data-fecha="2023-10-24" data-tipo="Validación Pago" data-estado="Exitoso">
 <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
                                             24 Oct 2023 <span class="text-[#9da6b9] ml-1 font-normal text-xs">14:30:22</span>
 </td>
@@ -179,7 +260,7 @@
 </td>
 </tr>
 <!-- Row 2: System Action -->
-<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors">
+<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors" data-fecha="2023-10-24" data-tipo="Generar Ganador" data-estado="Exitoso">
 <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
                                             24 Oct 2023 <span class="text-[#9da6b9] ml-1 font-normal text-xs">14:25:10</span>
 </td>
@@ -215,7 +296,7 @@
 </td>
 </tr>
 <!-- Row 3: Critical Alert -->
-<tr class="group bg-red-50/50 dark:bg-red-900/5 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-l-2 border-l-red-500">
+<tr class="group bg-red-50/50 dark:bg-red-900/5 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-l-2 border-l-red-500" data-fecha="2023-10-24" data-tipo="Login Fallido" data-estado="Fallido" data-alerta="true">
 <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
                                             24 Oct 2023 <span class="text-[#9da6b9] ml-1 font-normal text-xs">12:00:05</span>
 </td>
@@ -251,7 +332,7 @@
 </td>
 </tr>
 <!-- Row 4: Modification -->
-<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors">
+<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors" data-fecha="2023-10-23" data-tipo="Edición Usuario" data-estado="Exitoso">
 <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
                                             23 Oct 2023 <span class="text-[#9da6b9] ml-1 font-normal text-xs">09:15:33</span>
 </td>
@@ -287,7 +368,7 @@
 </td>
 </tr>
 <!-- Row 5: Creation -->
-<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors">
+<tr class="group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors" data-fecha="2023-10-22" data-tipo="Creación Sorteo" data-estado="Exitoso">
 <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
                                             22 Oct 2023 <span class="text-[#9da6b9] ml-1 font-normal text-xs">18:42:01</span>
 </td>
@@ -356,7 +437,7 @@
 </div>
 </div>
 </div>
-</div>
+</main>
 </div>
 <script src="../js/auditoria.js"></script>
 </body></html>

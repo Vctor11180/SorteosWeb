@@ -19,10 +19,11 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#2424eb",
+                        "primary": "#2463eb",
                         "background-light": "#f6f6f8",
-                        "background-dark": "#111118",
-                        "surface-dark": "#282839",
+                        "background-dark": "#111621",
+                        "card-dark": "#1e2433",
+                        "border-dark": "#2a3241",
                         "success": "#22C55E",
                     },
                     fontFamily: {
@@ -40,48 +41,124 @@
             },
         }
     </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-x-hidden antialiased">
-<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root">
-<!-- Top Navigation -->
-<div class="w-full border-b border-solid border-[#282839] bg-[#111118]">
-<div class="px-4 md:px-10 py-3 flex items-center justify-between whitespace-nowrap">
-<div class="flex items-center gap-4 text-white">
-<div class="size-8 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined text-3xl">casino</span>
-</div>
-<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Admin Sorteos</h2>
-</div>
-<div class="flex flex-1 justify-end gap-8">
-<div class="hidden md:flex items-center gap-9">
-<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Dashboard</a>
-<a class="text-white text-sm font-medium leading-normal" href="#">Sorteos</a>
-<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Usuarios</a>
-<a class="text-[#9d9db9] hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Configuración</a>
-</div>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#282839]" data-alt="Admin profile picture placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrKlWhd4pso74-R513YDBwJxwjJ-mjAB4-z9-F_gIpLVynxBsvyhE1ApGZ0FDEuXQcSONYY9GhLvLNptfWP5jiGLQY7h4DyuDN-LmQe3umtrgVAgGRVBuVbmN0vHLRs3VSSRglcZk7JFjTMO6YG8JiK5EDPAPPZEtL6mmFm2AsnzTfXRBu_n_djxv9S8n68AJ7ia_DwrBqFT7gUP5PBtFwG3KlrnoSXULmzLVAXhk5TMQUpFfg2VD8eEt9Xn0JE0rhUCn37DzFR7U");'></div>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
 </div>
 </div>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GeneradorGanadoresAdminstradores.html">
+<span class="material-symbols-outlined">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
 </div>
-<!-- Main Content Container -->
-<div class="flex flex-1 justify-center py-5 px-4 md:px-10 lg:px-40">
-<div class="flex flex-col max-w-[1200px] flex-1 w-full gap-6">
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Generación de Ganadores</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="max-w-[1200px] mx-auto w-full">
 <!-- Breadcrumbs -->
-<div class="flex flex-wrap gap-2 px-4 pt-4">
-<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Inicio</a>
-<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
-<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Admin</a>
-<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
-<span class="text-white text-sm md:text-base font-medium leading-normal">Generación de Ganadores</span>
+<div class="flex flex-wrap gap-2 px-4 py-2">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined !text-lg">dashboard</span>
+                            Dashboard
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Generación de Ganadores</span>
 </div>
 <!-- Page Heading -->
-<div class="flex flex-wrap justify-between gap-3 px-4">
+<div class="flex flex-wrap justify-between items-end gap-4 px-4 py-6">
 <div class="flex min-w-72 flex-col gap-2">
 <h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Generación de Ganadores</h1>
-<p class="text-[#9d9db9] text-base font-normal leading-normal">Selecciona y gestiona los ganadores de los sorteos finalizados.</p>
+<p class="text-[#9da6b9] text-base font-normal leading-normal">Selecciona y gestiona los ganadores de los sorteos finalizados.</p>
 </div>
 <div class="flex items-center gap-2">
-<button class="flex items-center gap-2 bg-surface-dark hover:bg-[#34344a] text-white px-4 py-2 rounded-lg transition-colors border border-gray-700/50">
+<button class="flex items-center gap-2 bg-[#282d39] hover:bg-[#3b4354] text-white px-4 py-2 rounded-lg transition-colors border border-[#3b4354]">
 <span class="material-symbols-outlined text-[20px]">download</span>
 <span class="text-sm font-medium">Exportar Reporte</span>
 </button>
@@ -91,30 +168,30 @@
 <div class="px-4 py-2 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
 <!-- Search -->
 <label class="flex flex-col min-w-40 h-12 w-full md:w-96">
-<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#3e3e52] focus-within:border-primary transition-colors">
-<div class="text-[#9d9db9] flex bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#3b4354] focus-within:border-primary transition-colors">
+<div class="text-[#9d9db9] flex bg-[#282d39] items-center justify-center pl-4 rounded-l-lg border-r-0">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input id="inputBusqueda" class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#282d39] focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
 </div>
 </label>
 <!-- Status Chips -->
 <div class="flex gap-2 flex-wrap">
-<button id="filtroTodos" class="filtro-btn filtro-activo flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all" data-filtro="todos">
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all">
 <span class="text-sm font-medium leading-normal">Todos</span>
 </button>
-<button id="filtroFinalizado" class="filtro-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filtro="finalizado">
-<span class="text-sm font-medium leading-normal">Finalizado</span>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-[#282d39] hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3b4354] pl-4 pr-4 transition-all">
+<span class="text-sm font-medium leading-normal">Pendientes</span>
 </button>
-<button id="filtroEnCurso" class="filtro-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filtro="en-curso">
-<span class="text-sm font-medium leading-normal">En Curso</span>
+<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-[#282d39] hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3b4354] pl-4 pr-4 transition-all">
+<span class="text-sm font-medium leading-normal">Completados</span>
 </button>
 </div>
 </div>
 <!-- Raffle Cards Grid -->
-<div id="gridSorteos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
 <!-- Card 1: Pending Selection (High Priority) -->
-<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-estado="pendiente" data-nombre="MacBook Pro M3 Max">
+<div class="flex flex-col bg-[#282d39] rounded-xl overflow-hidden border border-[#3b4354] shadow-lg hover:border-primary/50 transition-all duration-300">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Blue abstract pattern representing technology raffle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoSINFL-cpmVH_XlcaDl1cwe8PsmG6-LfZhAMp6RsoF7trtqDTRFfKk5sIXMgJrd9WBHK-DdbbMp_iBnmZAjzllvHHUYkSJAGEVjLDLCWhBv4MmI_vIZPvHHpPo2ZPCLyUqtprYR5tjtzr02_ZjfJZn5vp65sDxXmvx8VfV15Knvf7T1LqTf0Ipli9ePqiuYdYZlvM39ef-ZSkeTiOjYUZF_V_XrEbpF1MSSt0CKq1dhIInIoMF6-wEfcLAFFPqb0iMqZd4reRAEM");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -125,7 +202,7 @@
 <h3 class="text-white text-xl font-bold mb-1">MacBook Pro M3 Max</h3>
 <p class="text-[#9d9db9] text-sm">Sorteo #8821 • Cerrado hace 2 horas</p>
 </div>
-<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3e3e52]">
+<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3b4354]">
 <div class="flex flex-col">
 <span class="text-[#9d9db9] text-xs uppercase font-semibold">Boletos</span>
 <span class="text-white font-medium">2,000 / 2,000</span>
@@ -136,11 +213,7 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button 
-    data-accion="generar-ganador"
-    data-id-sorteo="8821"
-    class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group"
->
+<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -152,7 +225,7 @@
 </div>
 </div>
 <!-- Card 2: Winner Selected (Action needed) -->
-<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5" data-estado="completado" data-nombre="Ford Mustang GT">
+<div class="flex flex-col bg-[#282d39] rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Green luxury car abstract background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXzkVVFwoeTbIqAEzkgAVc-PdfRWGN9CzfHgq-R-IyIpCOpJHkWsiz3_kHlhIYj37QT3BpnU6WAlltwPp1D8r0BOtxTtdt0vYN6_uxtB-FyFrbFIuNiKnwGj34v6_Wqh2xWrLJ2l04DSYYmo798YqtuEISk_CsI0yiVwzDA2HHWgbkq5m-tGpkrI_Zpa9Rp7l-O5CJMLz2EdrbSPxIzGkvBuTJgBeJW-tJ4o9n70jbKvoEvZPQILuGV59UT4vBAw67bBVa6ZNgdLE");'></div>
 <div class="absolute top-3 right-3 bg-success text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide flex items-center gap-1">
@@ -176,7 +249,7 @@
 <p class="text-[#9d9db9] text-sm">Sorteo #8820</p>
 </div>
 </div>
-<div class="bg-[#1e1e2d] rounded-lg p-3 border border-[#3e3e52] flex items-center justify-between">
+<div class="bg-[#1e1e2d] rounded-lg p-3 border border-[#3b4354] flex items-center justify-between">
 <div class="flex flex-col">
 <span class="text-[#9d9db9] text-xs">Boleto Ganador</span>
 <span class="text-success text-2xl font-mono font-bold tracking-widest">#0592</span>
@@ -198,7 +271,7 @@
 </div>
 </div>
 <!-- Card 3: Pending Selection -->
-<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-estado="pendiente" data-nombre="Bono Efectivo $2,500">
+<div class="flex flex-col bg-[#282d39] rounded-xl overflow-hidden border border-[#3b4354] shadow-lg hover:border-primary/50 transition-all duration-300">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Gold coins stack abstract" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtQcUBS2tMBXNjknJwJnuHc3dl3WeLGU9W_SWaMPjrG_b4EBZAPEYGOu0YmHcS7RqstSdcBLWocqrp0xyThF4vlP-XqXTc11iLDyX770MQZPGI5X9aOXh2qBFE-W3vGORC0R4C5A-c-Fu6tmCuapI750DAuW1-pvoDy-SuYkM4fhSviZVjli_Pg5eRyI17TR3qgb2jezjBBXZ9pRb01XTUpZpyCH4biUhw5UpdeHGa-1FQXyZbwSBBHnzpmAuMSd2SywcyCwQUIqk");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -209,7 +282,7 @@
 <h3 class="text-white text-xl font-bold mb-1">Bono Efectivo $2,500</h3>
 <p class="text-[#9d9db9] text-sm">Sorteo #8819 • Cerrado ayer</p>
 </div>
-<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3e3e52]">
+<div class="grid grid-cols-2 gap-3 py-2 border-y border-[#3b4354]">
 <div class="flex flex-col">
 <span class="text-[#9d9db9] text-xs uppercase font-semibold">Boletos</span>
 <span class="text-white font-medium">500 / 500</span>
@@ -220,11 +293,7 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button 
-    data-accion="generar-ganador"
-    data-id-sorteo="8819"
-    class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group"
->
+<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -236,7 +305,7 @@
 </div>
 </div>
 <!-- Card 4: Upcoming/Live (Disabled State Example) -->
-<div class="sorteo-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75" data-estado="en-curso" data-nombre="Kit Smart Home">
+<div class="flex flex-col bg-[#282d39] rounded-xl overflow-hidden border border-[#3b4354] opacity-75">
 <div class="relative h-48 w-full bg-gray-800 grayscale">
 <div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="Smart home devices collection" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBw3ocfkeRB5vo7w-n75WEJf1CFyeKk7qC3Il0zG_ze19TwO8pRz8MrCSApAo6oaDEEfVCGFSX11McTFqxtzsvnclH6gof9EyyKssuEz7YgKv3sAnx-zCmP-RYSQQC65dIawD0ZAVfgxVnrHSGfiCyGEXtd_bvwaxYYfhEO1TFjDDX6wlRHHrk09sn-tPfWVubrOA9jaL79-ehIBsVKfKxraQpm9bfTkXkYPk4gbv-_Xq0xlyNIzm1SVKuG0scwCfYwQHCXNlN_GgU");'></div>
 <div class="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">En Curso</div>
@@ -254,7 +323,7 @@
 <span>1000 total</span>
 </div>
 <div class="mt-auto pt-2">
-<button class="w-full h-12 bg-[#34344a] text-gray-500 font-semibold rounded-lg border border-[#3e3e52] cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<button class="w-full h-12 bg-[#34344a] text-gray-500 font-semibold rounded-lg border border-[#3b4354] cursor-not-allowed flex items-center justify-center gap-2" disabled="">
 <span class="material-symbols-outlined">schedule</span>
                                 Pendiente de cierre
                             </button>
@@ -268,7 +337,7 @@
 <span class="material-symbols-outlined text-gray-400">history</span>
                     Historial Reciente
                 </h3>
-<div class="w-full overflow-x-auto rounded-xl border border-[#3e3e52] bg-surface-dark">
+<div class="w-full overflow-x-auto rounded-xl border border-[#3b4354] bg-[#282d39]">
 <table class="w-full text-left text-sm text-[#9d9db9]">
 <thead class="bg-[#1e1e2d] text-xs uppercase text-white font-semibold">
 <tr>
@@ -316,7 +385,6 @@
 </div>
 </div>
 </div>
+</main>
 </div>
-<!-- Scripts -->
-<script src="../js/generador-ganadores.js"></script>
 </body></html>

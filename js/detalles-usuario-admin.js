@@ -524,6 +524,123 @@
             });
         }
 
+        // Función para filtrar por fecha (funciona con ambos tabs)
+        function filtrarPorFecha() {
+            const fechaDesde = document.getElementById('filtroFechaDesde')?.value;
+            const fechaHasta = document.getElementById('filtroFechaHasta')?.value;
+            
+            // Filtrar tabla de boletos
+            if (tablaBoletos) {
+                const filasBoletos = tablaBoletos.querySelectorAll('tbody tr');
+                filasBoletos.forEach(fila => {
+                    const fechaBoleto = fila.getAttribute('data-fecha');
+                    if (!fechaBoleto) {
+                        fila.style.display = 'none';
+                        return;
+                    }
+                    
+                    let mostrar = true;
+                    
+                    if (fechaDesde) {
+                        if (fechaBoleto < fechaDesde) {
+                            mostrar = false;
+                        }
+                    }
+                    
+                    if (fechaHasta && mostrar) {
+                        if (fechaBoleto > fechaHasta) {
+                            mostrar = false;
+                        }
+                    }
+                    
+                    fila.style.display = mostrar ? '' : 'none';
+                });
+            }
+            
+            // Filtrar tabla de pagos
+            if (tablaPagos) {
+                const filasPagos = tablaPagos.querySelectorAll('tbody tr');
+                filasPagos.forEach(fila => {
+                    const fechaPago = fila.getAttribute('data-fecha');
+                    if (!fechaPago) {
+                        fila.style.display = 'none';
+                        return;
+                    }
+                    
+                    let mostrar = true;
+                    
+                    if (fechaDesde) {
+                        if (fechaPago < fechaDesde) {
+                            mostrar = false;
+                        }
+                    }
+                    
+                    if (fechaHasta && mostrar) {
+                        if (fechaPago > fechaHasta) {
+                            mostrar = false;
+                        }
+                    }
+                    
+                    fila.style.display = mostrar ? '' : 'none';
+                });
+            }
+        }
+        
+        // Función para limpiar filtros y mostrar todas las filas
+        function limpiarFiltros() {
+            const fechaDesde = document.getElementById('filtroFechaDesde');
+            const fechaHasta = document.getElementById('filtroFechaHasta');
+            
+            if (fechaDesde) fechaDesde.value = '';
+            if (fechaHasta) fechaHasta.value = '';
+            
+            // Mostrar todas las filas de boletos
+            if (tablaBoletos) {
+                const filasBoletos = tablaBoletos.querySelectorAll('tbody tr');
+                filasBoletos.forEach(fila => {
+                    fila.style.display = '';
+                });
+            }
+            
+            // Mostrar todas las filas de pagos
+            if (tablaPagos) {
+                const filasPagos = tablaPagos.querySelectorAll('tbody tr');
+                filasPagos.forEach(fila => {
+                    fila.style.display = '';
+                });
+            }
+        }
+        
+        // Botón aplicar filtro
+        const btnAplicarFiltro = document.getElementById('btnAplicarFiltro');
+        if (btnAplicarFiltro) {
+            btnAplicarFiltro.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                filtrarPorFecha();
+            });
+        }
+        
+        // Botón limpiar filtro
+        const btnLimpiarFiltro = document.getElementById('btnLimpiarFiltro');
+        if (btnLimpiarFiltro) {
+            btnLimpiarFiltro.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                limpiarFiltros();
+            });
+        }
+        
+        // Permitir aplicar filtro al cambiar los inputs de fecha
+        const filtroFechaDesde = document.getElementById('filtroFechaDesde');
+        const filtroFechaHasta = document.getElementById('filtroFechaHasta');
+        
+        [filtroFechaDesde, filtroFechaHasta].forEach(input => {
+            if (input) {
+                input.addEventListener('change', filtrarPorFecha);
+            }
+        });
+
         // Inicializar: mostrar tab de boletos por defecto, ocultar tab de pagos
         if (tablaPagos) {
             tablaPagos.style.display = 'none';
