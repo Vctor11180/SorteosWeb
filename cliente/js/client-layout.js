@@ -59,24 +59,10 @@ const ClientLayout = {
     init(currentPageId = null) {
         this.state.currentPage = currentPageId || this.detectCurrentPage();
         this.loadClientData();
-        this.renderSidebar();
         this.renderMobileMenu();
         this.attachEventListeners();
         this.updateActiveNavigation();
-        
-        // Asegurar que el sidebar se muestre correctamente en resize
-        window.addEventListener('resize', () => {
-            const sidebarContainer = document.getElementById('client-sidebar-container');
-            const sidebar = document.getElementById('client-sidebar');
-            if (sidebarContainer && sidebar) {
-                if (window.innerWidth >= 1024) {
-                    sidebarContainer.style.display = 'block';
-                    sidebar.style.display = 'flex';
-                } else {
-                    sidebarContainer.style.display = 'none';
-                }
-            }
-        });
+        this.updateUserInfo();
     },
 
     /**
@@ -120,10 +106,10 @@ const ClientLayout = {
      */
     loadClientData() {
         let clientData = {
-            nombre: 'Usuario',
-            tipoUsuario: 'Usuario Estándar',
+            nombre: 'Juan Pérez',
+            tipoUsuario: 'Usuario Premium',
             fotoPerfil: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
-            saldo: 0
+            saldo: 1250.00
         };
 
         try {
@@ -144,117 +130,69 @@ const ClientLayout = {
      */
     renderSidebar() {
         const sidebarContainer = document.getElementById('client-sidebar-container');
-        if (!sidebarContainer) return;
-
-        // Asegurar que el contenedor tenga los estilos correctos para mostrar el sidebar
-        // El contenedor debe estar visible en desktop
-        sidebarContainer.style.cssText = 'position: relative; z-index: 10;';
-        
-        // Agregar estilos CSS para asegurar visibilidad en desktop
-        if (!document.getElementById('sidebar-styles')) {
-            const style = document.createElement('style');
-            style.id = 'sidebar-styles';
-            style.textContent = `
-                #client-sidebar-container {
-                    display: none;
-                }
-                @media (min-width: 1024px) {
-                    #client-sidebar-container {
-                        display: block !important;
-                        width: 16rem;
-                        flex-shrink: 0;
-                    }
-                    #client-sidebar {
-                        display: flex !important;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
+        if (!sidebarContainer) {
+            console.error('No se encontró el contenedor del sidebar: #client-sidebar-container');
+            return;
         }
+        
+
+        // Los estilos se manejan con clases Tailwind en el aside (hidden lg:flex)
 
         sidebarContainer.innerHTML = `
-            <aside class="w-64 flex-shrink-0 flex flex-col border-r border-[#282d39] bg-[#111318] fixed top-0 left-0 h-screen lg:relative lg:h-full lg:top-auto lg:left-auto" id="client-sidebar" role="navigation" aria-label="Navegación principal">
-                <!-- Logo Header -->
-                <div class="h-16 flex items-center px-6 border-b border-[#282d39]">
-                    <div class="flex items-center gap-2 text-primary">
-                        <span class="material-symbols-outlined text-3xl" aria-hidden="true">confirmation_number</span>
-                        <span class="text-lg font-bold tracking-tight text-white">Sorteos<span class="text-primary">Web</span></span>
+            <aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full" id="client-sidebar" role="navigation" aria-label="Navegación principal">
+                <div class="p-6 pb-2">
+                    <!-- Logo Header -->
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="size-8 text-primary">
+                            <svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
                     </div>
-                </div>
-                
-                <!-- Navigation Menu -->
-                <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                    <!-- Sección Principal -->
-                    <p class="px-3 text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2 mt-2">Principal</p>
-                    ${this.renderNavigationLinks()}
-                </div>
-                
-                <!-- User Profile Footer -->
-                <div class="p-4 border-t border-[#282d39]">
-                    <div class="flex items-center gap-3 mb-3">
+                    
+                    <!-- User Mini Profile -->
+                    <div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
                         <div id="sidebar-user-avatar" 
-                             class="w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-primary/20" 
+                             class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" 
                              data-alt="Foto de perfil del usuario"
                              style='background-image: url("${this.state.clientData.fotoPerfil}");'
                              role="img"
                              aria-label="Foto de perfil">
                         </div>
                         <div class="flex flex-col overflow-hidden">
-                            <span id="sidebar-user-name" class="text-sm font-medium text-white truncate">${this.state.clientData.nombre}</span>
-                            <span id="sidebar-user-type" class="text-xs text-text-secondary truncate">${this.state.clientData.tipoUsuario}</span>
+                            <h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate">${this.state.clientData.nombre}</h1>
+                            <p id="sidebar-user-type" class="text-text-secondary text-xs truncate">${this.state.clientData.tipoUsuario}</p>
                         </div>
                     </div>
-                    <!-- Logout Button -->
+                    
+                    <!-- Navigation -->
+                    <nav class="flex flex-col gap-1.5">
+                        ${this.renderNavigationLinks()}
+                    </nav>
+                </div>
+                
+                <!-- Logout Button Footer -->
+                <div class="mt-auto p-6">
                     <button id="logout-btn" 
-                            class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-medium transition-colors border border-transparent hover:border-[#4b5563]"
+                            class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]"
                             aria-label="Cerrar sesión">
-                        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">logout</span>
+                        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
                         <span>Cerrar Sesión</span>
                     </button>
                 </div>
             </aside>
         `;
 
-        // Asegurar que el sidebar sea visible en desktop
-        const sidebar = document.getElementById('client-sidebar');
-        if (sidebar) {
-            // Forzar visibilidad en pantallas grandes
-            if (window.innerWidth >= 1024) {
-                sidebar.style.display = 'flex';
-            }
-        }
+        // El sidebar se muestra automáticamente con las clases Tailwind (hidden lg:flex)
 
         // Actualizar datos del usuario si hay elementos específicos en la página
         this.updateUserInfo();
     },
 
     /**
-     * Renderiza los enlaces de navegación
+     * Los enlaces de navegación ahora están directamente en el HTML
      */
-    renderNavigationLinks() {
-        return Object.values(this.navigationRoutes)
-            .map(route => {
-                const isActive = this.state.currentPage === Object.keys(this.navigationRoutes)
-                    .find(key => this.navigationRoutes[key].path === route.path);
-                
-                const activeClasses = isActive 
-                    ? 'bg-primary text-white' 
-                    : 'text-text-secondary hover:text-white hover:bg-card-dark';
-                
-                return `
-                    <a href="${route.path}" 
-                       id="${route.id}"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg ${activeClasses} transition-colors group cursor-pointer"
-                       aria-current="${isActive ? 'page' : 'false'}"
-                       aria-label="${route.label}"
-                       data-navigation-link="true">
-                        <span class="material-symbols-outlined text-[24px]" aria-hidden="true">${route.icon}</span>
-                        <p class="text-sm font-medium">${route.label}</p>
-                    </a>
-                `;
-            })
-            .join('');
-    },
 
     /**
      * Renderiza el menú móvil
@@ -370,15 +308,6 @@ const ClientLayout = {
                 }, 100);
             }
         });
-        
-        // Asegurar que los enlaces del sidebar funcionen correctamente
-        document.addEventListener('click', (e) => {
-            const sidebarLink = e.target.closest('#client-sidebar a');
-            if (sidebarLink && sidebarLink.href && !sidebarLink.href.includes('#')) {
-                // Los enlaces del sidebar principal funcionan normalmente
-                // No necesitamos hacer nada especial, solo permitir la navegación
-            }
-        });
 
         // Cerrar menú móvil con tecla Escape
         document.addEventListener('keydown', (e) => {
@@ -392,30 +321,19 @@ const ClientLayout = {
      * Actualiza la navegación activa
      */
     updateActiveNavigation() {
-        Object.values(this.navigationRoutes).forEach(route => {
+        Object.entries(this.navigationRoutes).forEach(([key, route]) => {
             const link = document.getElementById(route.id);
             if (!link) return;
 
-            const isActive = this.state.currentPage === Object.keys(this.navigationRoutes)
-                .find(key => this.navigationRoutes[key].id === route.id);
+            const isActive = this.state.currentPage === key;
 
             if (isActive) {
-                link.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]/50');
-                link.classList.add('bg-primary/10', 'text-primary', 'font-medium');
-                const icon = link.querySelector('.material-symbols-outlined');
-                if (icon) {
-                    icon.classList.remove('group-hover:text-primary', 'transition-colors');
-                    icon.classList.add('text-primary');
-                }
+                link.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-card-dark');
+                link.classList.add('bg-primary', 'text-white');
                 link.setAttribute('aria-current', 'page');
             } else {
-                link.classList.remove('bg-primary/10', 'text-primary', 'font-medium');
-                link.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]/50');
-                const icon = link.querySelector('.material-symbols-outlined');
-                if (icon) {
-                    icon.classList.remove('text-primary');
-                    icon.classList.add('group-hover:text-primary', 'transition-colors');
-                }
+                link.classList.remove('bg-primary', 'text-white');
+                link.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-card-dark');
                 link.setAttribute('aria-current', 'false');
             }
         });
@@ -552,4 +470,5 @@ const ClientLayout = {
 
 // Exportar para uso global
 window.ClientLayout = ClientLayout;
+
 
