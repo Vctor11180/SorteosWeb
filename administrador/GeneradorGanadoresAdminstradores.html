@@ -164,12 +164,12 @@
 <!-- Filters & Search Toolbar -->
 <div class="px-4 py-2 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
 <!-- Search -->
-<label class="flex flex-col min-w-40 h-12 w-full md:w-96">
-<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#3e3e52] focus-within:border-primary transition-colors">
-<div class="text-[#9d9db9] flex bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
-<span class="material-symbols-outlined">search</span>
+<label class="flex flex-col min-w-40 h-10 w-full md:max-w-md">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-[#3e3e52] focus-within:border-primary transition-colors bg-[#1e1e2d]">
+<div class="text-[#9d9db9] flex bg-[#1e1e2d] items-center justify-center pl-3 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined !text-lg">search</span>
 </div>
-<input id="searchInput" class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
+<input id="searchInput" class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-[#1e1e2d] focus:border-none h-full placeholder:text-[#9d9db9] px-3 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value="" style="color: rgb(255 255 255) !important; background-color: rgb(30 30 45) !important;"/>
 </div>
 </label>
 <!-- Status Chips -->
@@ -752,7 +752,7 @@ function cargarHistorial() {
 // ========== EXPORTACIÓN DE DATOS ==========
 
 /**
- * Exporta el historial de ganadores a CSV
+ * Exporta el historial de ganadores a CSV con formato mejorado
  */
 function exportarHistorialGanadoresCSV() {
     // Combinar historial dinámico con datos estáticos si es necesario
@@ -769,40 +769,92 @@ function exportarHistorialGanadoresCSV() {
         return;
     }
     
-    // Preparar datos
-    const headers = ['Sorteo', 'Fecha', 'Ganador', 'Boleto Ganador', 'Acción'];
-    const datos = historialCompleto.map(entrada => {
-        const accionTexto = entrada.accion === 'Generado' ? 'Generado' : 
-                           entrada.accion === 'Anunciado' ? 'Anunciado' : 
-                           entrada.accion === 'Notificado' ? 'Notificado' : entrada.accion;
+    // Obtener fecha actual para el título
+    const fechaActual = new Date().toLocaleDateString('es-ES', { 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    // Preparar datos con formato mejorado
+    const headers = [
+        'ID Sorteo',
+        'Nombre del Sorteo',
+        'Fecha del Sorteo',
+        'Nombre del Ganador',
+        'Número de Boleto Ganador',
+        'Estado',
+        'Acción Realizada'
+    ];
+    
+    const datos = historialCompleto.map((entrada, index) => {
+        const accionTexto = entrada.accion === 'generado' ? 'Ganador Generado' : 
+                           entrada.accion === 'anunciado' ? 'Ganador Anunciado' : 
+                           entrada.accion === 'notificado' ? 'Ganador Notificado' : 
+                           entrada.accion === 'entregado' ? 'Premio Entregado' :
+                           entrada.accion || 'Generado';
+        
+        const estadoTexto = entrada.estado || accionTexto;
         
         return [
-            entrada.raffleName,
-            entrada.fecha,
-            entrada.ganador,
-            `#${entrada.boleto}`,
+            entrada.raffleId || `SORT-${String(index + 1).padStart(4, '0')}`,
+            entrada.raffleName || 'N/A',
+            entrada.fecha || 'N/A',
+            entrada.ganador || 'N/A',
+            entrada.boleto ? `#${entrada.boleto}` : 'N/A',
+            estadoTexto,
             accionTexto
         ];
     });
     
-    // Crear CSV
-    const csv = [headers, ...datos].map(row => 
-        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+    // Crear CSV con título y formato mejorado
+    const lineas = [];
     
-    // Agregar BOM para Excel
+    // Título del reporte
+    lineas.push('REPORTE DE HISTORIAL DE GANADORES');
+    lineas.push('');
+    lineas.push(`Fecha de Generación: ${fechaActual}`);
+    lineas.push(`Total de Registros: ${historialCompleto.length}`);
+    lineas.push('');
+    lineas.push('='.repeat(80));
+    lineas.push('');
+    
+    // Encabezados
+    lineas.push(headers.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+    
+    // Separador visual
+    lineas.push(headers.map(() => '"-"').join(','));
+    
+    // Datos
+    datos.forEach(row => {
+        lineas.push(row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+    });
+    
+    // Pie de página
+    lineas.push('');
+    lineas.push('='.repeat(80));
+    lineas.push('');
+    lineas.push(`Este reporte fue generado automáticamente el ${fechaActual}`);
+    lineas.push('Sistema de Gestión de Sorteos - Administración');
+    
+    const csv = lineas.join('\n');
+    
+    // Agregar BOM para Excel (UTF-8 con BOM)
     const BOM = '\uFEFF';
     const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
     
     // Descargar
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `historial_ganadores_${new Date().toISOString().split('T')[0]}.csv`;
+    const nombreArchivo = `Reporte_Ganadores_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = nombreArchivo;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    mostrarNotificacion(`${historialCompleto.length} registro(s) exportado(s) exitosamente`, 'success');
+    mostrarNotificacion(`Reporte exportado exitosamente: ${historialCompleto.length} registro(s)`, 'success');
 }
 
 // ========== NAVEGACIÓN CON HISTORIAL ==========

@@ -120,7 +120,7 @@
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
 <span class="material-symbols-outlined text-[20px]">search</span>
 </span>
-<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400" placeholder="Buscar sorteo, usuario..." type="text" style="color: rgb(15 23 42) !important;"/>
 </div>
 <button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
@@ -168,15 +168,15 @@
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input id="searchRaffleInput" class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-border-dark rounded-lg leading-5 bg-white dark:bg-surface-dark text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="Buscar por nombre, ID o premio..." type="text"/>
+<input id="searchRaffleInput" class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-border-dark rounded-lg leading-5 bg-white dark:bg-[#1e2433] placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="Buscar por nombre, ID o premio..." type="text" style="color: rgb(15 23 42) !important;"/>
 </div>
 <div class="md:col-span-3 lg:col-span-2">
 <div class="relative">
-<select id="statusFilterSelect" onchange="applyFilters()" class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-surface-dark text-slate-900 dark:text-white appearance-none cursor-pointer">
-<option value="all">Todos los Estados</option>
-<option value="Activo">Activo</option>
-<option value="Inactivo">Inactivo</option>
-<option value="Finalizado">Finalizado</option>
+<select id="statusFilterSelect" onchange="applyFilters()" class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-[#1e2433] appearance-none cursor-pointer" style="color: rgb(15 23 42) !important;">
+<option value="all" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Todos los Estados</option>
+<option value="Activo" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Activo</option>
+<option value="Inactivo" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Inactivo</option>
+<option value="Finalizado" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Finalizado</option>
 </select>
 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
 <span class="material-symbols-outlined">expand_more</span>
@@ -452,7 +452,7 @@
 </nav>
 </div>
 </div>
-</div>
+    </div>
 </div>
 <!-- Optional: Background Decoration -->
 <div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
@@ -460,58 +460,54 @@
 <div class="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl"></div>
 </div>
 </main>
-<!-- Modal (Hidden by default, simulating visible state for demo purposes structure) -->
-<!-- Add 'hidden' class to hide, remove to show -->
-<div class="hidden fixed inset-0 z-50 overflow-y-auto" id="raffleModal">
-<div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-<div aria-hidden="true" class="fixed inset-0 transition-opacity">
+<!-- Modal para crear/editar sorteo -->
+<div class="hidden fixed inset-0 z-[9999] overflow-y-auto" id="raffleModal" onclick="if(event.target === this) closeRaffleModal()">
+<div aria-hidden="true" class="fixed inset-0 transition-opacity z-[9998]">
 <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
 </div>
-<!-- This element is to trick the browser into centering the modal contents. -->
-<span aria-hidden="true" class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
-<div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+<div class="relative bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-2xl mx-4 my-8 z-[10000]" onclick="event.stopPropagation()">
 <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
 <div class="sm:flex sm:items-start">
 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
 <span class="material-symbols-outlined text-primary">edit_document</span>
 </div>
 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-<h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white" id="modalTitle">
+<h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4" id="modalTitle">
                                 Crear Nuevo Sorteo
                             </h3>
 <form id="raffleForm" onsubmit="saveRaffle(event)" class="mt-4 space-y-4">
 <input type="hidden" id="raffleIdInput" value="">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="raffleNameInput">Nombre del Sorteo</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="raffleNameInput" name="raffle-name" placeholder="Ej. Gran Rifa Navideña" type="text" required/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="raffleNameInput">Nombre del Sorteo</label>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="raffleNameInput" name="raffle-name" placeholder="Ej. Gran Rifa Navideña" type="text" required/>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="startDateInput">Fecha Inicio</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="startDateInput" name="start-date" type="date" required/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="startDateInput">Fecha Inicio</label>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="startDateInput" name="start-date" type="date" required/>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="endDateInput">Fecha Fin</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="endDateInput" name="end-date" type="date" required/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="endDateInput">Fecha Fin</label>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="endDateInput" name="end-date" type="date" required/>
 </div>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="prizeInput">Premio Principal</label>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="prizeInput">Premio Principal</label>
 <div class="mt-1 flex rounded-md shadow-sm">
 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sm:text-sm">
 <span class="material-symbols-outlined text-sm">emoji_events</span>
 </span>
-<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prizeInput" name="prize" placeholder="Descripción del premio" type="text" required/>
+<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prizeInput" name="prize" placeholder="Descripción del premio" type="text" required/>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="ticketsInput">Cantidad Boletos</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="ticketsInput" name="tickets" placeholder="1000" type="number" min="1" required/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ticketsInput">Cantidad Boletos</label>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="ticketsInput" name="tickets" placeholder="1000" type="number" min="1" required/>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="statusInput">Estado</label>
-<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="statusInput" name="status" required>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="statusInput">Estado</label>
+<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="statusInput" name="status" required>
 <option value="Borrador">Borrador</option>
 <option value="Activo" selected>Activo</option>
 <option value="Finalizado">Finalizado</option>
@@ -519,11 +515,12 @@
 </select>
 </div>
 </div>
-<div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-<button type="submit" id="saveRaffleButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
+<div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3 mt-6">
+<button type="submit" id="saveRaffleButton" class="w-full inline-flex justify-center items-center gap-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+<span class="material-symbols-outlined text-sm">save</span>
                         Guardar Sorteo
                     </button>
-<button type="button" id="cancelButton" onclick="closeRaffleModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+<button type="button" id="cancelButton" onclick="closeRaffleModal()" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
                         Cancelar
                     </button>
 </div>
@@ -531,7 +528,7 @@
 </div>
 </div>
 </div>
-</main>
+</div>
 </div>
 <script>
 // Datos de sorteos
@@ -551,6 +548,55 @@ let editingRaffleId = null;
 let filteredRaffles = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Asegurar que el modal esté cerrado al cargar la página
+    const modal = document.getElementById('raffleModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important;';
+    }
+    
+    // Ajustar colores de texto en inputs y selects según el tema
+    function ajustarColoresTexto() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? 'rgb(255 255 255)' : 'rgb(15 23 42)';
+        const bgColor = isDark ? 'rgb(30 36 51)' : 'rgb(255 255 255)';
+        
+        // Buscador principal
+        const searchInput = document.getElementById('searchRaffleInput');
+        if (searchInput) {
+            searchInput.style.color = textColor;
+            searchInput.style.backgroundColor = bgColor;
+        }
+        
+        // Dropdown de estados
+        const statusSelect = document.getElementById('statusFilterSelect');
+        if (statusSelect) {
+            statusSelect.style.color = textColor;
+            statusSelect.style.backgroundColor = bgColor;
+            // Ajustar opciones
+            Array.from(statusSelect.options).forEach(option => {
+                option.style.color = textColor;
+                option.style.backgroundColor = bgColor;
+            });
+        }
+        
+        // Buscador del header
+        const headerSearch = document.getElementById('headerSearchInput');
+        if (headerSearch) {
+            headerSearch.style.color = textColor;
+        }
+    }
+    
+    // Aplicar colores al cargar
+    ajustarColoresTexto();
+    
+    // Observar cambios en el tema
+    const observer = new MutationObserver(ajustarColoresTexto);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
     const searchInput = document.getElementById('searchRaffleInput');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
@@ -679,31 +725,96 @@ function changePage(direction) {
     applyFilters();
 }
 
-function showRaffleModal(mode, raffleData = null) {
-    const modal = document.getElementById('raffleModal');
-    const title = document.getElementById('modalTitle');
-    editingRaffleId = mode === 'edit' ? raffleData.id : null;
-    if (mode === 'edit' && raffleData) {
-        title.textContent = 'Editar Sorteo';
-        document.getElementById('raffleIdInput').value = raffleData.id;
-        document.getElementById('raffleNameInput').value = raffleData.name;
-        document.getElementById('prizeInput').value = raffleData.prize;
-        document.getElementById('ticketsInput').value = raffleData.ticketsTotal;
-        document.getElementById('statusInput').value = raffleData.status;
-    } else {
-        title.textContent = 'Crear Nuevo Sorteo';
-        document.getElementById('raffleForm').reset();
-        document.getElementById('raffleIdInput').value = '';
+// Definir función en scope global explícitamente
+window.showRaffleModal = function(mode, raffleData = null) {
+    try {
+        console.log('showRaffleModal ejecutado con mode:', mode);
+        const modal = document.getElementById('raffleModal');
+        if (!modal) {
+            console.error('Modal no encontrado');
+            showNotification('Error al abrir el formulario', 'error');
+            return;
+        }
+        
+        const title = document.getElementById('modalTitle');
+        const form = document.getElementById('raffleForm');
+        
+        editingRaffleId = mode === 'edit' && raffleData ? raffleData.id : null;
+        
+        if (mode === 'edit' && raffleData) {
+            title.textContent = 'Editar Sorteo';
+            document.getElementById('raffleIdInput').value = raffleData.id || '';
+            document.getElementById('raffleNameInput').value = raffleData.name || '';
+            document.getElementById('prizeInput').value = raffleData.prize || '';
+            document.getElementById('ticketsInput').value = raffleData.ticketsTotal || '';
+            document.getElementById('statusInput').value = raffleData.status || 'Activo';
+            
+            // Parsear fechas del período si existe
+            if (raffleData.period) {
+                const periodParts = raffleData.period.split(' - ');
+                if (periodParts.length === 2) {
+                    // Intentar parsear diferentes formatos de fecha
+                    const startDate = periodParts[0].trim();
+                    const endDate = periodParts[1].trim();
+                    document.getElementById('startDateInput').value = startDate;
+                    document.getElementById('endDateInput').value = endDate;
+                }
+            }
+        } else {
+            title.textContent = 'Crear Nuevo Sorteo';
+            if (form) {
+                form.reset();
+            }
+            document.getElementById('raffleIdInput').value = '';
+            document.getElementById('startDateInput').value = '';
+            document.getElementById('endDateInput').value = '';
+            document.getElementById('statusInput').value = 'Activo';
+        }
+        
+        // Limpiar errores previos
+        limpiarErroresFormulario('raffleForm');
+        
+        // Mostrar modal - limpiar estilos previos y aplicar nuevos
+        modal.classList.remove('hidden');
+        modal.style.cssText = 'display: flex !important; align-items: center !important; justify-content: center !important; z-index: 9999 !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; visibility: visible !important; opacity: 1 !important;';
+        
+        // Prevenir scroll del body
+        document.body.style.overflow = 'hidden';
+        
+        // Focus en el primer campo después de un pequeño delay
+        setTimeout(() => {
+            const firstInput = document.getElementById('raffleNameInput');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }, 150);
+    } catch (error) {
+        console.error('Error al mostrar modal:', error);
+        manejarError(error, 'Abrir formulario de sorteo');
     }
-    modal.classList.remove('hidden');
 }
 
 function closeRaffleModal() {
-    document.getElementById('raffleModal').classList.add('hidden');
-    editingRaffleId = null;
-    const form = document.getElementById('raffleForm');
-    form.reset();
-    limpiarErroresFormulario('raffleForm');
+    try {
+        const modal = document.getElementById('raffleModal');
+        if (modal) {
+            // Ocultar modal completamente
+            modal.classList.add('hidden');
+            modal.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important;';
+        }
+        
+        // Restaurar scroll del body
+        document.body.style.overflow = '';
+        
+        editingRaffleId = null;
+        const form = document.getElementById('raffleForm');
+        if (form) {
+            form.reset();
+            limpiarErroresFormulario('raffleForm');
+        }
+    } catch (error) {
+        console.error('Error al cerrar modal:', error);
+    }
 }
 
 function saveRaffle(e) {
@@ -1279,5 +1390,8 @@ function getFilteredRaffles() {
     return (filteredRaffles && filteredRaffles.length > 0) ? filteredRaffles : raffles;
 }
 
-//pagina para gestionar los sorteos como administrador despues de iniciar sesion
-//Se ve esta pagina para gestionar los sorteos, crear nuevos sorteos, editar sorteos existentes y eliminar sorteos.
+// Las funciones ya están disponibles globalmente a través de window.showRaffleModal
+// No es necesario duplicar las asignaciones
+</script>
+</body>
+</html>s

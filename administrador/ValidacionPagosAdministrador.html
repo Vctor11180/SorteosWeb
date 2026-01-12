@@ -129,7 +129,7 @@
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
 <span class="material-symbols-outlined text-[20px]">search</span>
 </span>
-<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400" placeholder="Buscar sorteo, usuario..." type="text" style="color: rgb(15 23 42);"/>
 </div>
 <button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
@@ -185,7 +185,7 @@
 <div class="flex items-center justify-between">
 <div>
 <p class="text-[#9da6b9] text-sm font-medium">Pagos Pendientes</p>
-<p class="text-3xl font-bold text-yellow-400 mt-1">12</p>
+<p id="contadorPendientes" class="text-3xl font-bold text-yellow-400 mt-1">12</p>
 </div>
 <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
 <span class="material-symbols-outlined text-yellow-400 !text-2xl">hourglass_top</span>
@@ -201,7 +201,7 @@
 <div class="flex items-center justify-between">
 <div>
 <p class="text-[#9da6b9] text-sm font-medium">Aprobados Hoy</p>
-<p class="text-3xl font-bold text-green-400 mt-1">8</p>
+<p id="contadorAprobados" class="text-3xl font-bold text-green-400 mt-1">8</p>
 </div>
 <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
 <span class="material-symbols-outlined text-green-400 !text-2xl">task_alt</span>
@@ -217,7 +217,7 @@
 <div class="flex items-center justify-between">
 <div>
 <p class="text-[#9da6b9] text-sm font-medium">Rechazados Hoy</p>
-<p class="text-3xl font-bold text-red-400 mt-1">2</p>
+<p id="contadorRechazados" class="text-3xl font-bold text-red-400 mt-1">2</p>
 </div>
 <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
 <span class="material-symbols-outlined text-red-400 !text-2xl">block</span>
@@ -233,13 +233,13 @@
 <div class="flex items-center justify-between">
 <div>
 <p class="text-[#9da6b9] text-sm font-medium">Monto Pendiente</p>
-<p class="text-3xl font-bold text-primary mt-1">$2,450</p>
+<p id="montoPendiente" class="text-3xl font-bold text-primary mt-1">$2,450</p>
 </div>
 <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
 <span class="material-symbols-outlined text-primary !text-2xl">payments</span>
 </div>
 </div>
-<p class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
+<p id="transaccionesPendientes" class="text-xs text-[#9da6b9] mt-3 flex items-center gap-1">
 <span class="material-symbols-outlined !text-sm text-primary">account_balance_wallet</span>
                                 En 12 transacciones
                             </p>
@@ -248,45 +248,45 @@
 
 <!-- Filters & Search Toolbar -->
 <div class="flex flex-col md:flex-row gap-4 px-4 py-4 bg-[#1e2433]/50 rounded-xl mb-4 border border-border-dark mx-4">
-<div class="flex-1 relative">
+<div class="relative md:max-w-md flex-1">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-[#9da6b9]">search</span>
 </div>
-<input id="searchInput" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por usuario, sorteo o referencia de pago..."/>
+<input id="searchInput" class="w-full bg-background-dark border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por usuario, sorteo o referencia de pago..." style="color: rgb(255 255 255) !important;"/>
 </div>
 <div class="flex gap-4 w-full md:w-auto flex-wrap">
-<div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="statusFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="all">Estado: Todos</option>
-<option value="pending" selected>Pendiente</option>
-<option value="approved">Aprobado</option>
-<option value="rejected">Rechazado</option>
+<div class="relative min-w-[180px] flex-1 md:flex-none">
+<select id="statusFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark border border-[#3b4354] rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer" style="color: rgb(255 255 255) !important;">
+<option value="all" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Estado: Todos</option>
+<option value="pending" selected style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Pendiente</option>
+<option value="approved" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Aprobado</option>
+<option value="rejected" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Rechazado</option>
 </select>
-<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
-<span class="material-symbols-outlined !text-xl">expand_more</span>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9] z-0">
+<span class="material-symbols-outlined !text-lg">expand_more</span>
 </div>
 </div>
-<div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="methodFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="all">Método de Pago</option>
-<option value="transfer">Transferencia</option>
-<option value="deposit">Depósito</option>
-<option value="paypal">PayPal</option>
-<option value="crypto">Criptomoneda</option>
+<div class="relative min-w-[180px] flex-1 md:flex-none">
+<select id="methodFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark border border-[#3b4354] rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer" style="color: rgb(255 255 255) !important;">
+<option value="all" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Método de Pago</option>
+<option value="transfer" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Transferencia</option>
+<option value="deposit" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Depósito</option>
+<option value="paypal" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">PayPal</option>
+<option value="crypto" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Criptomoneda</option>
 </select>
-<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
-<span class="material-symbols-outlined !text-xl">account_balance</span>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9] z-0">
+<span class="material-symbols-outlined !text-lg">account_balance</span>
 </div>
 </div>
-<div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="sortFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="recent">Ordenar: Más recientes</option>
-<option value="oldest">Más antiguos</option>
-<option value="amount_high">Mayor monto</option>
-<option value="amount_low">Menor monto</option>
+<div class="relative min-w-[180px] flex-1 md:flex-none">
+<select id="sortFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark border border-[#3b4354] rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer" style="color: rgb(255 255 255) !important;">
+<option value="recent" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Ordenar: Más recientes</option>
+<option value="oldest" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Más antiguos</option>
+<option value="amount_high" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Mayor monto</option>
+<option value="amount_low" style="color: rgb(255 255 255); background-color: rgb(17 22 33);">Menor monto</option>
 </select>
-<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
-<span class="material-symbols-outlined !text-xl">sort</span>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9] z-0">
+<span class="material-symbols-outlined !text-lg">sort</span>
 </div>
 </div>
 </div>
@@ -708,6 +708,62 @@ function cargarFiltros() {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    // Ajustar colores de texto en filtros según el tema
+    function ajustarColoresFiltros() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? 'rgb(255 255 255)' : 'rgb(15 23 42)';
+        
+        // Buscador principal
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.style.color = textColor;
+        }
+        
+        // Dropdowns
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.style.color = textColor;
+            Array.from(statusFilter.options).forEach(option => {
+                option.style.color = textColor;
+                option.style.backgroundColor = isDark ? 'rgb(17 22 33)' : 'rgb(255 255 255)';
+            });
+        }
+        
+        const methodFilter = document.getElementById('methodFilter');
+        if (methodFilter) {
+            methodFilter.style.color = textColor;
+            Array.from(methodFilter.options).forEach(option => {
+                option.style.color = textColor;
+                option.style.backgroundColor = isDark ? 'rgb(17 22 33)' : 'rgb(255 255 255)';
+            });
+        }
+        
+        const sortFilter = document.getElementById('sortFilter');
+        if (sortFilter) {
+            sortFilter.style.color = textColor;
+            Array.from(sortFilter.options).forEach(option => {
+                option.style.color = textColor;
+                option.style.backgroundColor = isDark ? 'rgb(17 22 33)' : 'rgb(255 255 255)';
+            });
+        }
+        
+        // Buscador del header
+        const headerSearch = document.getElementById('headerSearchInput');
+        if (headerSearch) {
+            headerSearch.style.color = isDark ? 'rgb(255 255 255)' : 'rgb(15 23 42)';
+        }
+    }
+    
+    // Aplicar colores al cargar
+    ajustarColoresFiltros();
+    
+    // Observar cambios en el tema
+    const observer = new MutationObserver(ajustarColoresFiltros);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
     // Cargar filtros guardados primero
     cargarFiltros();
     
@@ -740,6 +796,9 @@ document.addEventListener('DOMContentLoaded', function() {
     aplicarFiltros();
     actualizarPaginacion();
     actualizarSeleccion(); // Inicializar estado de selección
+    
+    // Inicializar estadísticas
+    actualizarEstadisticas();
 });
 
 // ========== FUNCIONES DE SELECCIÓN MEJORADAS ==========
@@ -955,6 +1014,9 @@ async function aprobarSeleccionados() {
                 btn.innerHTML = '<span class="material-symbols-outlined !text-xl">check_circle</span> <span>Aprobar Seleccionados</span> <span id="contadorAprobar" class="hidden bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>';
                 mostrarNotificacion(`${pagos.length} pago(s) aprobado(s) exitosamente`, 'success');
                 aplicarFiltros();
+                
+                // Actualizar estadísticas
+                actualizarEstadisticas();
             } catch (error) {
                 manejarError(error, 'Procesar aprobaciones masivas', () => {
                     removeButtonLoading(btn);
@@ -1013,6 +1075,9 @@ async function rechazarSeleccionados() {
                 btn.innerHTML = '<span class="material-symbols-outlined !text-xl">cancel</span> <span>Rechazar Seleccionados</span> <span id="contadorRechazar" class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>';
                 mostrarNotificacion(`${pagos.length} pago(s) rechazado(s) exitosamente`, 'success');
                 aplicarFiltros();
+                
+                // Actualizar estadísticas
+                actualizarEstadisticas();
             } catch (error) {
                 manejarError(error, 'Procesar rechazos masivos', () => {
                     removeButtonLoading(btn);
@@ -1092,11 +1157,17 @@ function aprobarPagoIndividual(pagoId, usuario) {
         </div>
     `;
     
+    // Mover la fila al final de la tabla (después de los pendientes)
+    moverFilaAlFinal(row);
+    
     // Actualizar selección
     actualizarSeleccion();
     
     // Reaplicar filtros para ocultar el pago si no coincide con el filtro activo
     aplicarFiltros();
+    
+    // Actualizar estadísticas
+    actualizarEstadisticas();
     
     mostrarNotificacion(`Pago de ${usuario} aprobado exitosamente`, 'success');
 }
@@ -1175,11 +1246,17 @@ function rechazarPagoIndividual(pagoId, usuario, motivo) {
         </div>
     `;
     
+    // Mover la fila al final de la tabla (después de los pendientes)
+    moverFilaAlFinal(row);
+    
     // Actualizar selección
     actualizarSeleccion();
     
     // Reaplicar filtros para ocultar el pago si no coincide con el filtro activo
     aplicarFiltros();
+    
+    // Actualizar estadísticas
+    actualizarEstadisticas();
     
     mostrarNotificacion(`Pago de ${usuario} rechazado`, 'success');
 }
@@ -1368,6 +1445,49 @@ function aplicarFiltros() {
     
     // Actualizar selección después de filtrar
     actualizarSeleccion();
+}
+
+/**
+ * Mueve una fila al final de la tabla (después de los pendientes)
+ * @param {HTMLElement} row - Fila a mover
+ */
+function moverFilaAlFinal(row) {
+    if (!row) return;
+    
+    const tbody = document.getElementById('pagosTableBody');
+    if (!tbody) return;
+    
+    // Separar filas por estado: pendientes primero, luego aprobados/rechazados
+    const estado = row.getAttribute('data-estado');
+    
+    // Remover la fila de su posición actual
+    row.remove();
+    
+    // Si es pendiente, mantener al inicio
+    if (estado === 'pending') {
+        // Encontrar la última fila pendiente
+        let insertIndex = 0;
+        for (let i = 0; i < tbody.children.length; i++) {
+            const child = tbody.children[i];
+            if (child.classList.contains('pago-row')) {
+                const childEstado = child.getAttribute('data-estado');
+                if (childEstado === 'pending') {
+                    insertIndex = i + 1;
+                } else {
+                    break;
+                }
+            }
+        }
+        // Insertar después de los pendientes
+        if (insertIndex < tbody.children.length) {
+            tbody.insertBefore(row, tbody.children[insertIndex]);
+        } else {
+            tbody.appendChild(row);
+        }
+    } else {
+        // Si es aprobado o rechazado, mover al final
+        tbody.appendChild(row);
+    }
 }
 
 function ordenarFilas() {
@@ -2049,6 +2169,100 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// ========== ACTUALIZACIÓN DE ESTADÍSTICAS ==========
+
+/**
+ * Actualiza las estadísticas basándose en los datos reales de la tabla
+ * Cuenta TODAS las filas, independientemente de si están visibles o no (filtros)
+ */
+function actualizarEstadisticas() {
+    try {
+        // Obtener TODAS las filas, incluso las ocultas por filtros
+        const tbody = document.getElementById('pagosTableBody');
+        if (!tbody) {
+            console.warn('No se encontró el tbody de pagos');
+            return;
+        }
+        
+        const rows = tbody.querySelectorAll('tr.pago-row');
+        
+        let pendientes = 0;
+        let aprobados = 0;
+        let rechazados = 0;
+        let montoPendiente = 0;
+        let montoAprobado = 0;
+        
+        rows.forEach(row => {
+            // Obtener el estado del atributo data-estado
+            const estado = row.getAttribute('data-estado');
+            const monto = parseFloat(row.getAttribute('data-monto')) || 0;
+            
+            // Contar según el estado (ignorar si está oculta por filtros)
+            if (estado === 'pending') {
+                pendientes++;
+                montoPendiente += monto;
+            } else if (estado === 'approved') {
+                aprobados++;
+                montoAprobado += monto;
+            } else if (estado === 'rejected') {
+                rechazados++;
+            }
+        });
+        
+        // Actualizar contadores en las tarjetas
+        const contadorPendientes = document.getElementById('contadorPendientes');
+        const contadorAprobados = document.getElementById('contadorAprobados');
+        const contadorRechazados = document.getElementById('contadorRechazados');
+        const montoPendienteEl = document.getElementById('montoPendiente');
+        const transaccionesPendientes = document.getElementById('transaccionesPendientes');
+        
+        if (contadorPendientes) {
+            contadorPendientes.textContent = pendientes;
+            // Animación de cambio
+            contadorPendientes.classList.add('animate-pulse');
+            setTimeout(() => contadorPendientes.classList.remove('animate-pulse'), 500);
+        }
+        
+        if (contadorAprobados) {
+            contadorAprobados.textContent = aprobados;
+            // Animación de cambio
+            contadorAprobados.classList.add('animate-pulse');
+            setTimeout(() => contadorAprobados.classList.remove('animate-pulse'), 500);
+        }
+        
+        if (contadorRechazados) {
+            contadorRechazados.textContent = rechazados;
+            // Animación de cambio
+            contadorRechazados.classList.add('animate-pulse');
+            setTimeout(() => contadorRechazados.classList.remove('animate-pulse'), 500);
+        }
+        
+        if (montoPendienteEl) {
+            montoPendienteEl.textContent = `$${montoPendiente.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        
+        if (transaccionesPendientes) {
+            // Mostrar solo los aprobados (los rechazados no cuentan, los pendientes tampoco)
+            const totalTransacciones = aprobados;
+            const texto = totalTransacciones === 1 ? 'transacción' : 'transacciones';
+            transaccionesPendientes.innerHTML = `
+                <span class="material-symbols-outlined !text-sm text-primary">account_balance_wallet</span>
+                En ${totalTransacciones} ${texto} aprobadas
+            `;
+        }
+        
+        // Debug: mostrar en consola para verificar
+        console.log('Estadísticas actualizadas:', {
+            pendientes,
+            aprobados,
+            rechazados,
+            totalFilas: rows.length
+        });
+    } catch (error) {
+        console.error('Error al actualizar estadísticas:', error);
+    }
 }
 
 /**
