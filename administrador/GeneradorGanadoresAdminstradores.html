@@ -163,18 +163,18 @@
 <div class="text-[#9d9db9] flex bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
+<input id="searchInput" class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-surface-dark focus:border-none h-full placeholder:text-[#9d9db9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Buscar por nombre del sorteo..." value=""/>
 </div>
 </label>
 <!-- Status Chips -->
 <div class="flex gap-2 flex-wrap">
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all">
+<button class="filter-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary/20 text-primary border border-primary/30 pl-4 pr-4 transition-all" data-filter="all" onclick="aplicarFiltro('all')">
 <span class="text-sm font-medium leading-normal">Todos</span>
 </button>
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
+<button class="filter-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filter="pending" onclick="aplicarFiltro('pending')">
 <span class="text-sm font-medium leading-normal">Pendientes</span>
 </button>
-<button class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all">
+<button class="filter-btn flex h-9 items-center justify-center gap-x-2 rounded-full bg-surface-dark hover:bg-[#34344a] text-[#9d9db9] hover:text-white border border-[#3e3e52] pl-4 pr-4 transition-all" data-filter="completed" onclick="aplicarFiltro('completed')">
 <span class="text-sm font-medium leading-normal">Completados</span>
 </button>
 </div>
@@ -182,7 +182,7 @@
 <!-- Raffle Cards Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
 <!-- Card 1: Pending Selection (High Priority) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="raffle-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-status="pending" data-name="iPhone 15 Pro Max" data-id="1">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Blue abstract pattern representing technology raffle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAoSINFL-cpmVH_XlcaDl1cwe8PsmG6-LfZhAMp6RsoF7trtqDTRFfKk5sIXMgJrd9WBHK-DdbbMp_iBnmZAjzllvHHUYkSJAGEVjLDLCWhBv4MmI_vIZPvHHpPo2ZPCLyUqtprYR5tjtzr02_ZjfJZn5vp65sDxXmvx8VfV15Knvf7T1LqTf0Ipli9ePqiuYdYZlvM39ef-ZSkeTiOjYUZF_V_XrEbpF1MSSt0CKq1dhIInIoMF6-wEfcLAFFPqb0iMqZd4reRAEM");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -204,7 +204,7 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<button onclick="generarGanador('1', this)" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -216,7 +216,7 @@
 </div>
 </div>
 <!-- Card 2: Winner Selected (Action needed) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5">
+<div class="raffle-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-success/30 shadow-lg shadow-success/5" data-status="completed" data-name="Ford Mustang GT" data-id="8820">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Green luxury car abstract background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDXzkVVFwoeTbIqAEzkgAVc-PdfRWGN9CzfHgq-R-IyIpCOpJHkWsiz3_kHlhIYj37QT3BpnU6WAlltwPp1D8r0BOtxTtdt0vYN6_uxtB-FyFrbFIuNiKnwGj34v6_Wqh2xWrLJ2l04DSYYmo798YqtuEISk_CsI0yiVwzDA2HHWgbkq5m-tGpkrI_Zpa9Rp7l-O5CJMLz2EdrbSPxIzGkvBuTJgBeJW-tJ4o9n70jbKvoEvZPQILuGV59UT4vBAw67bBVa6ZNgdLE");'></div>
 <div class="absolute top-3 right-3 bg-success text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide flex items-center gap-1">
@@ -250,11 +250,11 @@
 </div>
 </div>
 <div class="mt-auto flex flex-col gap-2 pt-2">
-<button class="w-full h-10 bg-[#34344a] hover:bg-[#3f3f5a] text-white font-medium rounded-lg border border-[#4a4a6a] flex items-center justify-center gap-2 transition-colors">
+<button onclick="anunciarGanador('8820', 'Carlos Ruiz', this)" class="w-full h-10 bg-[#34344a] hover:bg-[#3f3f5a] text-white font-medium rounded-lg border border-[#4a4a6a] flex items-center justify-center gap-2 transition-colors">
 <span class="material-symbols-outlined text-sm">campaign</span>
                                 Anunciar Ganador
                             </button>
-<button class="w-full h-10 bg-transparent hover:bg-white/5 text-primary font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+<button onclick="notificarGanador('8820', 'Carlos Ruiz', this)" class="w-full h-10 bg-transparent hover:bg-white/5 text-primary font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
 <span class="material-symbols-outlined text-sm">mail</span>
                                 Notificar a Carlos
                             </button>
@@ -262,7 +262,7 @@
 </div>
 </div>
 <!-- Card 3: Pending Selection -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300">
+<div class="raffle-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] shadow-lg hover:border-primary/50 transition-all duration-300" data-status="pending" data-name="Bono Efectivo $2,500" data-id="8819">
 <div class="relative h-48 w-full bg-gray-800">
 <div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Gold coins stack abstract" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtQcUBS2tMBXNjknJwJnuHc3dl3WeLGU9W_SWaMPjrG_b4EBZAPEYGOu0YmHcS7RqstSdcBLWocqrp0xyThF4vlP-XqXTc11iLDyX770MQZPGI5X9aOXh2qBFE-W3vGORC0R4C5A-c-Fu6tmCuapI750DAuW1-pvoDy-SuYkM4fhSviZVjli_Pg5eRyI17TR3qgb2jezjBBXZ9pRb01XTUpZpyCH4biUhw5UpdeHGa-1FQXyZbwSBBHnzpmAuMSd2SywcyCwQUIqk");'></div>
 <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">Finalizado</div>
@@ -284,7 +284,7 @@
 </div>
 </div>
 <div class="mt-auto pt-2">
-<button class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
+<button onclick="generarGanador('1', this)" class="w-full h-12 bg-primary hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all transform active:scale-95 group">
 <span class="material-symbols-outlined group-hover:animate-spin">autorenew</span>
                                 Generar Ganador
                             </button>
@@ -296,7 +296,7 @@
 </div>
 </div>
 <!-- Card 4: Upcoming/Live (Disabled State Example) -->
-<div class="flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75">
+<div class="raffle-card flex flex-col bg-surface-dark rounded-xl overflow-hidden border border-[#3e3e52] opacity-75" data-status="pending" data-name="Kit Smart Home" data-id="8822">
 <div class="relative h-48 w-full bg-gray-800 grayscale">
 <div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="Smart home devices collection" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBw3ocfkeRB5vo7w-n75WEJf1CFyeKk7qC3Il0zG_ze19TwO8pRz8MrCSApAo6oaDEEfVCGFSX11McTFqxtzsvnclH6gof9EyyKssuEz7YgKv3sAnx-zCmP-RYSQQC65dIawD0ZAVfgxVnrHSGfiCyGEXtd_bvwaxYYfhEO1TFjDDX6wlRHHrk09sn-tPfWVubrOA9jaL79-ehIBsVKfKxraQpm9bfTkXkYPk4gbv-_Xq0xlyNIzm1SVKuG0scwCfYwQHCXNlN_GgU");'></div>
 <div class="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">En Curso</div>
@@ -377,4 +377,219 @@
 </div>
 </main>
 </div>
+<script>
+// Estado global
+let currentFilter = 'all';
+let searchQuery = '';
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            searchQuery = e.target.value.toLowerCase().trim();
+            filtrarYBuscar();
+        });
+    }
+});
+
+// Funciones de filtrado
+function aplicarFiltro(filter) {
+    currentFilter = filter;
+    
+    // Actualizar estilos de los botones
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        const btnFilter = btn.getAttribute('data-filter');
+        if (btnFilter === filter) {
+            btn.classList.add('bg-primary/20', 'text-primary', 'border-primary/30');
+            btn.classList.remove('bg-surface-dark', 'text-[#9d9db9]', 'border-[#3e3e52]');
+        } else {
+            btn.classList.remove('bg-primary/20', 'text-primary', 'border-primary/30');
+            btn.classList.add('bg-surface-dark', 'text-[#9d9db9]', 'border-[#3e3e52]');
+        }
+    });
+    
+    filtrarYBuscar();
+}
+
+function filtrarYBuscar() {
+    const cards = document.querySelectorAll('.raffle-card');
+    
+    cards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        const name = card.getAttribute('data-name').toLowerCase();
+        
+        let shouldShow = true;
+        
+        // Filtro por estado
+        if (currentFilter !== 'all') {
+            if (currentFilter === 'pending' && status !== 'pending') {
+                shouldShow = false;
+            } else if (currentFilter === 'completed' && status !== 'completed') {
+                shouldShow = false;
+            }
+        }
+        
+        // Filtro por búsqueda
+        if (shouldShow && searchQuery) {
+            if (!name.includes(searchQuery)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Mostrar u ocultar
+        if (shouldShow) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Funciones de generación de ganadores
+function generarGanador(raffleId, button) {
+    const card = button.closest('.raffle-card');
+    if (!card) return;
+    
+    const raffleName = card.getAttribute('data-name');
+    const nombresAleatorios = ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez', 'Luis Rodríguez', 'Sofía Hernández'];
+    const numeroBoleto = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0');
+    const nombreGanador = nombresAleatorios[Math.floor(Math.random() * nombresAleatorios.length)];
+    
+    // Simular proceso de generación
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span> Generando...';
+    
+    setTimeout(() => {
+        // Actualizar estado de la tarjeta
+        card.setAttribute('data-status', 'completed');
+        card.setAttribute('data-winner', nombreGanador);
+        card.setAttribute('data-winner-ticket', numeroBoleto);
+        
+        // Obtener la URL de la imagen del fondo
+        const bgImage = card.querySelector('.bg-cover')?.style.backgroundImage || 
+                       "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD_8uQxIfLXRHTf7V4hHU-WPM8q0h5LPe3yQih00baUgiGfYdj9wfffllB6qrMJ-hULBuNDkJF9YE2wmsw5qQ5Cscip8-N0u7kRU_YPGfDRz9QkxC3qFzIkzWrL3zJa60er4jCFEaxudlGlRSOHKTG0DAHpCRz0lrtj7hvh5OqLwa23lunzn-9CUkQqgTSAWYLsXmN6SAC8KTgvyhWILRBRd8t9cewmkqVO1QQgKl58L30fRR-0mtlAmW9vQwJ3jF1xxnyB3BR3TaU')";
+        
+        // Actualizar HTML de la tarjeta
+        card.innerHTML = `
+            <div class="relative h-48 w-full bg-gray-800">
+                <div class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: ${bgImage};"></div>
+                <div class="absolute top-3 right-3 bg-success text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                    Seleccionado
+                </div>
+                <div class="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-surface-dark via-surface-dark/60 to-transparent"></div>
+                <div class="absolute bottom-4 left-4 flex items-center gap-3">
+                    <div class="size-12 rounded-full border-2 border-success bg-gray-700 bg-cover bg-center" 
+                         style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD_8uQxIfLXRHTf7V4hHU-WPM8q0h5LPe3yQih00baUgiGfYdj9wfffllB6qrMJ-hULBuNDkJF9YE2wmsw5qQ5Cscip8-N0u7kRU_YPGfDRz9QkxC3qFzIkzWrL3zJa60er4jCFEaxudlGlRSOHKTG0DAHpCRz0lrtj7hvh5OqLwa23lunzn-9CUkQqgTSAWYLsXmN6SAC8KTgvyhWILRBRd8t9cewmkqVO1QQgKl58L30fRR-0mtlAmW9vQwJ3jF1xxnyB3BR3TaU');"></div>
+                    <div>
+                        <p class="text-white font-bold text-lg leading-tight">${nombreGanador}</p>
+                        <p class="text-success font-medium text-sm">Ganador</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-5 flex flex-col flex-1 gap-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-white text-xl font-bold mb-1">${raffleName}</h3>
+                        <p class="text-[#9d9db9] text-sm">Sorteo #${raffleId}</p>
+                    </div>
+                </div>
+                <div class="bg-[#1e1e2d] rounded-lg p-3 border border-[#3e3e52] flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-[#9d9db9] text-xs">Boleto Ganador</span>
+                        <span class="text-success text-2xl font-mono font-bold tracking-widest">#${numeroBoleto}</span>
+                    </div>
+                    <div class="size-10 rounded-full bg-success/20 flex items-center justify-center text-success">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                    </div>
+                </div>
+                <div class="mt-auto flex flex-col gap-2 pt-2">
+                    <button onclick="anunciarGanador('${raffleId}', '${nombreGanador}', this)" class="w-full h-10 bg-[#34344a] hover:bg-[#3f3f5a] text-white font-medium rounded-lg border border-[#4a4a6a] flex items-center justify-center gap-2 transition-colors">
+                        <span class="material-symbols-outlined text-sm">campaign</span>
+                        Anunciar Ganador
+                    </button>
+                    <button onclick="notificarGanador('${raffleId}', '${nombreGanador}', this)" class="w-full h-10 bg-transparent hover:bg-white/5 text-primary font-medium rounded-lg flex items-center justify-center gap-2 transition-colors">
+                        <span class="material-symbols-outlined text-sm">mail</span>
+                        Notificar a ${nombreGanador.split(' ')[0]}
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        card.classList.remove('border-[#3e3e52]');
+        card.classList.add('border-success/30', 'shadow-success/5');
+        
+        mostrarNotificacion(`Ganador generado exitosamente: ${nombreGanador} - Boleto #${numeroBoleto}`, 'success');
+        actualizarHistorial(raffleId, nombreGanador);
+    }, 1500);
+}
+
+function anunciarGanador(raffleId, winnerName, button) {
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">autorenew</span> Anunciando...';
+    
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Anunciado';
+        
+        mostrarNotificacion(`Ganador ${winnerName} anunciado públicamente`, 'success');
+        actualizarHistorial(raffleId, winnerName, 'anunciado');
+    }, 1200);
+}
+
+function notificarGanador(raffleId, winnerName, button) {
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">autorenew</span> Enviando...';
+    
+    setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
+        
+        mostrarNotificacion(`Notificación enviada a ${winnerName}`, 'success');
+        actualizarHistorial(raffleId, winnerName, 'notificado');
+    }, 1000);
+}
+
+function actualizarHistorial(raffleId, winnerName, accion = 'generado') {
+    // Aquí se actualizaría la tabla de historial en el futuro
+    console.log(`Historial: Sorteo #${raffleId} - ${winnerName} - ${accion}`);
+}
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+        tipo === 'success' ? 'bg-green-500 text-white' : 
+        tipo === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+    }`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    
+    notification.innerHTML = `
+        <span class="material-symbols-outlined">${tipo === 'success' ? 'check_circle' : tipo === 'error' ? 'error' : 'info'}</span>
+        <span class="font-medium">${mensaje}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 </body></html>

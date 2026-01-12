@@ -136,7 +136,7 @@
 <p class="text-gray-500 dark:text-gray-400 text-base">Administra, crea y monitorea todos tus eventos activos y pasados.</p>
 </div>
 <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-<button class="flex items-center justify-center gap-2 h-11 px-5 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all active:scale-95 w-full sm:w-auto">
+<button id="createRaffleButton" onclick="showRaffleModal('create')" class="flex items-center justify-center gap-2 h-11 px-5 bg-primary hover:bg-primary-hover text-white text-sm font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all active:scale-95 w-full sm:w-auto">
 <span class="material-symbols-outlined text-[20px]">add_circle</span>
 <span>Crear Nuevo Sorteo</span>
 </button>
@@ -148,15 +148,15 @@
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-border-dark rounded-lg leading-5 bg-white dark:bg-surface-dark text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="Buscar por nombre, ID o premio..." type="text"/>
+<input id="searchRaffleInput" class="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-border-dark rounded-lg leading-5 bg-white dark:bg-surface-dark text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-shadow" placeholder="Buscar por nombre, ID o premio..." type="text"/>
 </div>
 <div class="md:col-span-3 lg:col-span-2">
 <div class="relative">
-<select class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-surface-dark text-slate-900 dark:text-white appearance-none cursor-pointer">
-<option>Todos los Estados</option>
-<option>Activo</option>
-<option>Inactivo</option>
-<option>Finalizado</option>
+<select id="statusFilterSelect" onchange="applyFilters()" class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-surface-dark text-slate-900 dark:text-white appearance-none cursor-pointer">
+<option value="all">Todos los Estados</option>
+<option value="Activo">Activo</option>
+<option value="Inactivo">Inactivo</option>
+<option value="Finalizado">Finalizado</option>
 </select>
 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
 <span class="material-symbols-outlined">expand_more</span>
@@ -164,7 +164,7 @@
 </div>
 </div>
 <div class="md:col-span-4 lg:col-span-6 flex justify-end items-center gap-2">
-<span class="text-sm text-gray-500 dark:text-gray-400 hidden lg:inline-block">Mostrando 1-5 de 24 resultados</span>
+<span id="paginationInfo" class="text-sm text-gray-500 dark:text-gray-400 hidden lg:inline-block">Mostrando 1-5 de 24 resultados</span>
 </div>
 </div>
 <!-- Data Table Card -->
@@ -182,9 +182,9 @@
 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32" scope="col">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-[#151a23]">
+<tbody id="rafflesTableBody" class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-[#151a23]">
 <!-- Row 1: Active -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1024" data-name="Gran Rifa de Navidad" data-period="01 Dic - 25 Dic 2023" data-prize="Auto 0km Toyota Yaris" data-status="Activo" data-tickets-sold="750" data-tickets-total="1000" data-created-by="Admin">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1024</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Gran Rifa de Navidad</div>
@@ -218,17 +218,17 @@
 </td>
 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
+<button onclick="editRaffle(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
 <span class="material-symbols-outlined text-[20px]">edit</span>
 </button>
-<button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
+<button onclick="deleteRaffle(this)" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
 <span class="material-symbols-outlined text-[20px]">delete</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 2: Finished -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1023" data-name="Sorteo Pro-Fondos" data-period="15 Nov - 30 Nov 2023" data-prize="MacBook Pro M3" data-status="Finalizado" data-tickets-sold="500" data-tickets-total="500" data-created-by="Admin">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1023</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Pro-Fondos</div>
@@ -262,14 +262,14 @@
 </td>
 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados">
+<button onclick="viewResults(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados">
 <span class="material-symbols-outlined text-[20px]">visibility</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 3: Inactive -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1025" data-name="Rifa de Verano" data-period="01 Ene - 31 Ene 2024" data-prize="Viaje a Cancún (2 pers)" data-status="Inactivo" data-tickets-sold="0" data-tickets-total="2000" data-created-by="Borrador">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1025</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa de Verano</div>
@@ -313,7 +313,7 @@
 </td>
 </tr>
 <!-- Row 4: Active -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1026" data-name="Sorteo Flash Fin de Mes" data-period="28 Feb - 29 Feb 2024" data-prize="iPhone 15 Pro" data-status="Activo" data-tickets-sold="120" data-tickets-total="200" data-created-by="Marketing">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1026</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Flash Fin de Mes</div>
@@ -357,7 +357,7 @@
 </td>
 </tr>
 <!-- Row 5: Active Low Stock -->
-<tr class="hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group">
+<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1027" data-name="Rifa Solidaria Animalista" data-period="01 Mar - 15 Mar 2024" data-prize="Canasta de Productos" data-status="Activo" data-tickets-sold="98" data-tickets-total="100" data-created-by="ONG Vida">
 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1027</td>
 <td class="px-6 py-4 whitespace-nowrap">
 <div class="text-sm font-medium text-slate-900 dark:text-white">Rifa Solidaria Animalista</div>
@@ -408,25 +408,21 @@
 <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
 <div>
 <p class="text-sm text-gray-700 dark:text-gray-400">
-                            Mostrando <span class="font-medium">1</span> a <span class="font-medium">5</span> de <span class="font-medium">24</span> resultados
+                            Mostrando <span id="paginationStart" class="font-medium">1</span> a <span id="paginationEnd" class="font-medium">5</span> de <span id="paginationTotal" class="font-medium">24</span> resultados
                         </p>
 </div>
 <div>
 <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-<a class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
+<a id="prevPage" onclick="changePage('prev')" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
 <span class="sr-only">Anterior</span>
 <span class="material-symbols-outlined text-sm">chevron_left</span>
 </a>
-<a aria-current="page" class="z-10 bg-primary/10 border-primary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-bold" href="#">
-                                1
-                            </a>
-<a class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
-                                2
-                            </a>
-<a class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium" href="#">
-                                3
-                            </a>
-<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-700 dark:text-gray-400">
+<div id="paginationNumbers"></div>
+<a id="nextPage" onclick="changePage('next')" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+<span class="sr-only">Siguiente</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</nav>
                                 ...
                             </span>
 <a class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800" href="#">
@@ -446,7 +442,7 @@
 </main>
 <!-- Modal (Hidden by default, simulating visible state for demo purposes structure) -->
 <!-- Add 'hidden' class to hide, remove to show -->
-<div class="hidden fixed inset-0 z-50 overflow-y-auto" id="modal-backdrop">
+<div class="hidden fixed inset-0 z-50 overflow-y-auto" id="raffleModal">
 <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
 <div aria-hidden="true" class="fixed inset-0 transition-opacity">
 <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
@@ -460,64 +456,270 @@
 <span class="material-symbols-outlined text-primary">edit_document</span>
 </div>
 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-<h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white" id="modal-title">
+<h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white" id="modalTitle">
                                 Crear Nuevo Sorteo
                             </h3>
-<div class="mt-4 space-y-4">
+<form id="raffleForm" onsubmit="saveRaffle(event)" class="mt-4 space-y-4">
+<input type="hidden" id="raffleIdInput" value="">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="sorteo-name">Nombre del Sorteo</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="sorteo-name" name="sorteo-name" placeholder="Ej. Gran Rifa Navideña" type="text"/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="raffleNameInput">Nombre del Sorteo</label>
+<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="raffleNameInput" name="raffle-name" placeholder="Ej. Gran Rifa Navideña" type="text" required/>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="start-date">Fecha Inicio</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="start-date" name="start-date" type="date"/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="startDateInput">Fecha Inicio</label>
+<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="startDateInput" name="start-date" type="date" required/>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="end-date">Fecha Fin</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="end-date" name="end-date" type="date"/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="endDateInput">Fecha Fin</label>
+<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="endDateInput" name="end-date" type="date" required/>
 </div>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="prize">Premio Principal</label>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="prizeInput">Premio Principal</label>
 <div class="mt-1 flex rounded-md shadow-sm">
 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sm:text-sm">
 <span class="material-symbols-outlined text-sm">emoji_events</span>
 </span>
-<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prize" name="prize" placeholder="Descripción del premio" type="text"/>
+<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prizeInput" name="prize" placeholder="Descripción del premio" type="text" required/>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="tickets">Cantidad Boletos</label>
-<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="tickets" name="tickets" placeholder="1000" type="number"/>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="ticketsInput">Cantidad Boletos</label>
+<input class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="ticketsInput" name="tickets" placeholder="1000" type="number" min="1" required/>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="status">Estado</label>
-<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="status" name="status">
-<option>Borrador</option>
-<option selected="">Activo</option>
-<option>Finalizado</option>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="statusInput">Estado</label>
+<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="statusInput" name="status" required>
+<option value="Borrador">Borrador</option>
+<option value="Activo" selected>Activo</option>
+<option value="Finalizado">Finalizado</option>
+<option value="Inactivo">Inactivo</option>
 </select>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
 <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-<button class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm" type="button">
+<button type="submit" id="saveRaffleButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
                         Guardar Sorteo
                     </button>
-<button class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" type="button">
+<button type="button" id="cancelButton" onclick="closeRaffleModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancelar
                     </button>
 </div>
+</form>
 </div>
 </div>
 </div>
 </main>
 </div>
+<script>
+// Datos de sorteos
+const raffles = [
+    { id: '1024', name: 'Gran Rifa de Navidad', period: '01 Dic - 25 Dic 2023', prize: 'Auto 0km Toyota Yaris', status: 'Activo', ticketsSold: 750, ticketsTotal: 1000, createdBy: 'Admin' },
+    { id: '1023', name: 'Sorteo Pro-Fondos', period: '15 Nov - 30 Nov 2023', prize: 'MacBook Pro M3', status: 'Finalizado', ticketsSold: 500, ticketsTotal: 500, createdBy: 'Admin' },
+    { id: '1025', name: 'Rifa de Verano', period: '01 Ene - 31 Ene 2024', prize: 'Viaje a Cancún (2 pers)', status: 'Inactivo', ticketsSold: 0, ticketsTotal: 2000, createdBy: 'Borrador' },
+    { id: '1026', name: 'Sorteo Flash Fin de Mes', period: '28 Feb - 29 Feb 2024', prize: 'iPhone 15 Pro', status: 'Activo', ticketsSold: 120, ticketsTotal: 200, createdBy: 'Marketing' },
+    { id: '1027', name: 'Rifa Solidaria Animalista', period: '01 Mar - 15 Mar 2024', prize: 'Canasta de Productos', status: 'Activo', ticketsSold: 98, ticketsTotal: 100, createdBy: 'ONG Vida' }
+];
+
+let currentPage = 1;
+let itemsPerPage = 5;
+let currentSearchQuery = '';
+let currentStatusFilter = 'all';
+let editingRaffleId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchRaffleInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            currentSearchQuery = e.target.value.toLowerCase().trim();
+            applyFilters();
+        });
+    }
+    const statusFilter = document.getElementById('statusFilterSelect');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function(e) {
+            currentStatusFilter = e.target.value;
+            applyFilters();
+        });
+    }
+    applyFilters();
+});
+
+function applyFilters() {
+    let filtered = raffles.filter(raffle => {
+        if (currentSearchQuery) {
+            const searchLower = currentSearchQuery.toLowerCase();
+            if (!raffle.name.toLowerCase().includes(searchLower) && !raffle.id.toLowerCase().includes(searchLower) && !raffle.prize.toLowerCase().includes(searchLower)) {
+                return false;
+            }
+        }
+        if (currentStatusFilter !== 'all' && raffle.status !== currentStatusFilter) return false;
+        return true;
+    });
+    renderTable(filtered);
+    renderPagination(filtered.length);
+}
+
+function renderTable(filteredRaffles) {
+    const tbody = document.getElementById('rafflesTableBody');
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageRaffles = filteredRaffles.slice(start, end);
+    
+    tbody.innerHTML = pageRaffles.map(raffle => {
+        const statusBadge = raffle.status === 'Activo' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>' : raffle.status === 'Finalizado' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Finalizado</span>' : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Inactivo</span>';
+        const progress = (raffle.ticketsSold / raffle.ticketsTotal) * 100;
+        const progressColor = progress >= 90 ? 'bg-amber-500' : 'bg-primary';
+        const actionsHTML = raffle.status === 'Finalizado' ? `<button onclick="viewResults(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados"><span class="material-symbols-outlined text-[20px]">visibility</span></button>` : `<button onclick="editRaffle(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button><button onclick="deleteRaffle(this)" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>`;
+        const periodParts = raffle.period.split(' ');
+        return `<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="${raffle.id}" data-name="${raffle.name}" data-period="${raffle.period}" data-prize="${raffle.prize}" data-status="${raffle.status}" data-tickets-sold="${raffle.ticketsSold}" data-tickets-total="${raffle.ticketsTotal}" data-created-by="${raffle.createdBy}"><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#${raffle.id}</td><td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-slate-900 dark:text-white">${raffle.name}</div><div class="text-xs text-gray-500 dark:text-gray-400">${raffle.createdBy}</div></td><td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-gray-300">${periodParts[0]} ${periodParts[1]} - ${periodParts[3]} ${periodParts[4]}</div><div class="text-xs text-gray-500 dark:text-gray-500">${periodParts[5]}</div></td><td class="px-6 py-4 whitespace-nowrap"><div class="flex items-center"><span class="material-symbols-outlined text-yellow-500 mr-2 text-lg">emoji_events</span><span class="text-sm text-gray-900 dark:text-gray-300">${raffle.prize}</span></div></td><td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td><td class="px-6 py-4 whitespace-nowrap"><div class="w-full"><div class="flex justify-between text-xs mb-1"><span class="text-slate-900 dark:text-white font-medium">${raffle.ticketsSold}</span><span class="text-gray-500 dark:text-gray-400">de ${raffle.ticketsTotal}</span></div><div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden"><div class="${progressColor} h-1.5 rounded-full" style="width: ${progress}%"></div></div></div></td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">${actionsHTML}</div></td></tr>`;
+    }).join('');
+}
+
+function renderPagination(totalItems) {
+    const filtered = raffles.filter(r => {
+        if (currentSearchQuery) {
+            const searchLower = currentSearchQuery.toLowerCase();
+            if (!r.name.toLowerCase().includes(searchLower) && !r.id.toLowerCase().includes(searchLower) && !r.prize.toLowerCase().includes(searchLower)) return false;
+        }
+        if (currentStatusFilter !== 'all' && r.status !== currentStatusFilter) return false;
+        return true;
+    });
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginationNumbers = document.getElementById('paginationNumbers');
+    let paginationHTML = '';
+    const maxPages = Math.min(totalPages, 5);
+    for (let i = 1; i <= maxPages; i++) {
+        if (i === currentPage) {
+            paginationHTML += `<a aria-current="page" class="z-10 bg-primary/10 border-primary text-primary relative inline-flex items-center px-4 py-2 border text-sm font-bold cursor-pointer">${i}</a>`;
+        } else {
+            paginationHTML += `<a onclick="changePage(${i})" class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium cursor-pointer">${i}</a>`;
+        }
+    }
+    if (totalPages > 5) {
+        paginationHTML = `<a onclick="changePage(1)" class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium cursor-pointer">1</a><span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#151a23] text-sm font-medium text-gray-700 dark:text-gray-400">...</span><a onclick="changePage(${totalPages})" class="bg-white dark:bg-[#151a23] border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 relative inline-flex items-center px-4 py-2 border text-sm font-medium cursor-pointer">${totalPages}</a>`;
+    }
+    paginationNumbers.innerHTML = paginationHTML;
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+    document.getElementById('paginationStart').textContent = start;
+    document.getElementById('paginationEnd').textContent = end;
+    document.getElementById('paginationTotal').textContent = totalItems;
+    document.getElementById('paginationInfo').textContent = `Mostrando ${start}-${end} de ${totalItems} resultados`;
+    document.getElementById('prevPage').classList.toggle('opacity-50', currentPage === 1);
+    document.getElementById('nextPage').classList.toggle('opacity-50', currentPage === totalPages);
+}
+
+function changePage(direction) {
+    const filtered = raffles.filter(r => {
+        if (currentSearchQuery) {
+            const searchLower = currentSearchQuery.toLowerCase();
+            if (!r.name.toLowerCase().includes(searchLower) && !r.id.toLowerCase().includes(searchLower) && !r.prize.toLowerCase().includes(searchLower)) return false;
+        }
+        if (currentStatusFilter !== 'all' && r.status !== currentStatusFilter) return false;
+        return true;
+    });
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+    } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+    } else if (typeof direction === 'number') {
+        currentPage = direction;
+    }
+    applyFilters();
+}
+
+function showRaffleModal(mode, raffleData = null) {
+    const modal = document.getElementById('raffleModal');
+    const title = document.getElementById('modalTitle');
+    editingRaffleId = mode === 'edit' ? raffleData.id : null;
+    if (mode === 'edit' && raffleData) {
+        title.textContent = 'Editar Sorteo';
+        document.getElementById('raffleIdInput').value = raffleData.id;
+        document.getElementById('raffleNameInput').value = raffleData.name;
+        document.getElementById('prizeInput').value = raffleData.prize;
+        document.getElementById('ticketsInput').value = raffleData.ticketsTotal;
+        document.getElementById('statusInput').value = raffleData.status;
+    } else {
+        title.textContent = 'Crear Nuevo Sorteo';
+        document.getElementById('raffleForm').reset();
+        document.getElementById('raffleIdInput').value = '';
+    }
+    modal.classList.remove('hidden');
+}
+
+function closeRaffleModal() {
+    document.getElementById('raffleModal').classList.add('hidden');
+    editingRaffleId = null;
+    document.getElementById('raffleForm').reset();
+}
+
+function saveRaffle(e) {
+    e.preventDefault();
+    const name = document.getElementById('raffleNameInput').value;
+    const prize = document.getElementById('prizeInput').value;
+    const tickets = parseInt(document.getElementById('ticketsInput').value);
+    const status = document.getElementById('statusInput').value;
+    const startDate = document.getElementById('startDateInput').value;
+    const endDate = document.getElementById('endDateInput').value;
+    if (editingRaffleId) {
+        const index = raffles.findIndex(r => r.id === editingRaffleId);
+        if (index !== -1) {
+            raffles[index] = {...raffles[index], name, prize, ticketsTotal: tickets, status, period: `${startDate} - ${endDate}`};
+            showNotification('Sorteo actualizado exitosamente', 'success');
+        }
+    } else {
+        const newId = String(Math.max(...raffles.map(r => parseInt(r.id))) + 1);
+        raffles.push({id: newId, name, period: `${startDate} - ${endDate}`, prize, status, ticketsSold: 0, ticketsTotal: tickets, createdBy: 'Admin'});
+        showNotification('Sorteo creado exitosamente', 'success');
+    }
+    closeRaffleModal();
+    applyFilters();
+}
+
+function editRaffle(button) {
+    const row = button.closest('tr');
+    showRaffleModal('edit', {id: row.getAttribute('data-id'), name: row.getAttribute('data-name'), period: row.getAttribute('data-period'), prize: row.getAttribute('data-prize'), status: row.getAttribute('data-status'), ticketsTotal: parseInt(row.getAttribute('data-tickets-total'))});
+}
+
+function deleteRaffle(button) {
+    const row = button.closest('tr');
+    const raffleId = row.getAttribute('data-id');
+    const raffleName = row.getAttribute('data-name');
+    if (!confirm(`¿Estás seguro de que deseas eliminar el sorteo "${raffleName}"?`)) return;
+    const index = raffles.findIndex(r => r.id === raffleId);
+    if (index !== -1) {
+        raffles.splice(index, 1);
+        showNotification('Sorteo eliminado exitosamente', 'success');
+        applyFilters();
+    }
+}
+
+function viewResults(button) {
+    const row = button.closest('tr');
+    const raffleName = row.getAttribute('data-name');
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `<div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"><div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div><div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-200 dark:border-border-dark"><div class="px-4 pt-5 pb-4 sm:p-6"><h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Resultados del Sorteo: ${raffleName}</h3><div class="space-y-4"><div class="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4"><p class="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Ganador:</p><p class="text-lg font-bold text-emerald-900 dark:text-emerald-200">Carlos Ruiz</p><p class="text-sm text-emerald-700 dark:text-emerald-400 mt-1">Boleto Ganador: #0592</p></div><div class="grid grid-cols-2 gap-4"><div><p class="text-sm text-gray-600 dark:text-gray-400">Total de Boletos:</p><p class="text-base font-medium text-slate-900 dark:text-white">500</p></div><div><p class="text-sm text-gray-600 dark:text-gray-400">Fecha del Sorteo:</p><p class="text-base text-slate-900 dark:text-white">30 Nov 2023</p></div></div></div></div><div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse"><button onclick="this.closest('.fixed').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">Cerrar</button></div></div></div>`;
+    document.body.appendChild(modal);
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    notification.innerHTML = `<span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span><span class="font-medium">${message}</span>`;
+    document.body.appendChild(notification);
+    setTimeout(() => { notification.style.opacity = '1'; notification.style.transform = 'translateX(0)'; }, 10);
+    setTimeout(() => { notification.style.opacity = '0'; notification.style.transform = 'translateX(100%)'; setTimeout(() => notification.remove(), 300); }, 3000);
+}
+</script>
 </body></html>
 
 //pagina para gestionar los sorteos como administrador despues de iniciar sesion
