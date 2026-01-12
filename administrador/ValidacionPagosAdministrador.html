@@ -52,6 +52,10 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #3b4657; 
         }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
@@ -123,7 +127,7 @@
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
 <span class="material-symbols-outlined text-[20px]">search</span>
 </span>
-<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
 </div>
 <button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
@@ -150,11 +154,11 @@
 <p class="text-[#9da6b9] text-base font-normal leading-normal">Revisa y valida los comprobantes de pago pendientes de los usuarios.</p>
 </div>
 <div class="flex gap-3">
-<button id="btnAprobarTodos" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-green-500/20">
+<button id="aprobarSeleccionadosBtn" onclick="aprobarSeleccionados()" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-green-500/20">
 <span class="material-symbols-outlined !text-xl">check_circle</span>
                                 Aprobar Seleccionados
                             </button>
-<button id="btnRechazarTodos" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-red-500/20">
+<button id="rechazarSeleccionadosBtn" onclick="rechazarSeleccionados()" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors border border-red-500/20">
 <span class="material-symbols-outlined !text-xl">cancel</span>
                                 Rechazar Seleccionados
                             </button>
@@ -239,9 +243,9 @@
 </div>
 <div class="flex gap-4 w-full md:w-auto flex-wrap">
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="estadoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="" selected>Estado: Todos</option>
-<option value="pending">Pendiente</option>
+<select id="statusFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="all">Estado: Todos</option>
+<option value="pending" selected>Pendiente</option>
 <option value="approved">Aprobado</option>
 <option value="rejected">Rechazado</option>
 </select>
@@ -250,8 +254,8 @@
 </div>
 </div>
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="metodoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Método de Pago</option>
+<select id="methodFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="all">Método de Pago</option>
 <option value="transfer">Transferencia</option>
 <option value="deposit">Depósito</option>
 <option value="paypal">PayPal</option>
@@ -262,8 +266,8 @@
 </div>
 </div>
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="ordenFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Ordenar: Más recientes</option>
+<select id="sortFilter" onchange="aplicarFiltros()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<option value="recent">Ordenar: Más recientes</option>
 <option value="oldest">Más antiguos</option>
 <option value="amount_high">Mayor monto</option>
 <option value="amount_low">Menor monto</option>
@@ -282,7 +286,7 @@
 <thead>
 <tr class="bg-[#1e2433] border-b border-border-dark">
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] w-[50px] text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input id="selectAllCheckbox" onclick="toggleSelectAll()" class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Usuario</th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Sorteo</th>
@@ -294,11 +298,11 @@
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] text-center">Acciones</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-border-dark">
+<tbody id="pagosTableBody" class="divide-y divide-border-dark">
 <!-- Row 1 - Pendiente -->
-<tr class="hover:bg-[#1e2433]/50 transition-colors group">
+<tr class="pago-row hover:bg-[#1e2433]/50 transition-colors group" data-id="1" data-usuario="Juan Pérez" data-sorteo="iPhone 15 Pro Max" data-monto="50.00" data-metodo="transfer" data-estado="pending" data-referencia="REF-001">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="pago-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox" data-pago-id="1"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -325,7 +329,7 @@
 </div>
 </td>
 <td class="p-4">
-<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<button onclick="verComprobante('1', 'Juan Pérez')" class="flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
 <span class="material-symbols-outlined !text-lg">image</span>
                                             Ver comprobante
                                         </button>
@@ -344,22 +348,22 @@
 </td>
 <td class="p-4">
 <div class="flex items-center justify-center gap-1">
-<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<button onclick="aprobarPago('1', 'Juan Pérez')" class="p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
 <span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<button onclick="rechazarPago('1', 'Juan Pérez')" class="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
 <span class="material-symbols-outlined !text-xl">cancel</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<button onclick="verDetallesPago('1')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
 <span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 2 - Pendiente -->
-<tr class="hover:bg-[#1e2433]/50 transition-colors group">
+<tr class="pago-row hover:bg-[#1e2433]/50 transition-colors group" data-id="2" data-usuario="María García" data-sorteo="MacBook Pro M3" data-monto="250.00" data-metodo="paypal" data-estado="pending" data-referencia="REF-002">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="pago-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox" data-pago-id="2"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -386,7 +390,7 @@
 </div>
 </td>
 <td class="p-4">
-<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<button onclick="verComprobante('2', 'María García')" class="flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
 <span class="material-symbols-outlined !text-lg">receipt_long</span>
                                             Ver recibo
                                         </button>
@@ -405,22 +409,22 @@
 </td>
 <td class="p-4">
 <div class="flex items-center justify-center gap-1">
-<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<button onclick="aprobarPago('2', 'María García')" class="p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
 <span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<button onclick="rechazarPago('2', 'María García')" class="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
 <span class="material-symbols-outlined !text-xl">cancel</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<button onclick="verDetallesPago('2')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
 <span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 3 - Pendiente -->
-<tr class="hover:bg-[#1e2433]/50 transition-colors group">
+<tr class="pago-row hover:bg-[#1e2433]/50 transition-colors group" data-id="3" data-usuario="Carlos López" data-sorteo="PlayStation 5" data-monto="45.00" data-metodo="deposit" data-estado="pending" data-referencia="REF-003">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="pago-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox" data-pago-id="3"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -447,7 +451,7 @@
 </div>
 </td>
 <td class="p-4">
-<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<button onclick="verComprobante('1', 'Juan Pérez')" class="flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
 <span class="material-symbols-outlined !text-lg">image</span>
                                             Ver comprobante
                                         </button>
@@ -466,22 +470,22 @@
 </td>
 <td class="p-4">
 <div class="flex items-center justify-center gap-1">
-<button class="btn-aprobar p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
+<button onclick="aprobarPago('3', 'Carlos López')" class="p-2 text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar pago">
 <span class="material-symbols-outlined !text-xl">check_circle</span>
 </button>
-<button class="btn-rechazar p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
+<button onclick="rechazarPago('3', 'Carlos López')" class="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Rechazar pago">
 <span class="material-symbols-outlined !text-xl">cancel</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<button onclick="verDetallesPago('3')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
 <span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 4 - Aprobado -->
-<tr class="hover:bg-[#1e2433]/50 transition-colors group bg-green-500/5">
+<tr class="pago-row hover:bg-[#1e2433]/50 transition-colors group bg-green-500/5" data-id="4" data-usuario="Ana Martínez" data-sorteo="Smart TV 65\"" data-monto="64.00" data-metodo="transfer" data-estado="approved" data-referencia="REF-004">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="pago-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox" data-pago-id="4"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -508,7 +512,7 @@
 </div>
 </td>
 <td class="p-4">
-<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<button onclick="verComprobante('1', 'Juan Pérez')" class="flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
 <span class="material-symbols-outlined !text-lg">image</span>
                                             Ver comprobante
                                         </button>
@@ -527,16 +531,16 @@
 </td>
 <td class="p-4">
 <div class="flex items-center justify-center gap-1">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<button onclick="verDetallesPago('4')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
 <span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 5 - Rechazado -->
-<tr class="hover:bg-[#1e2433]/50 transition-colors group bg-red-500/5">
+<tr class="pago-row hover:bg-[#1e2433]/50 transition-colors group bg-red-500/5" data-id="5" data-usuario="Luis Rodríguez" data-sorteo="Nintendo Switch" data-monto="24.00" data-metodo="crypto" data-estado="rejected" data-referencia="REF-005">
 <td class="p-4 text-center">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="pago-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox" data-pago-id="5"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -563,7 +567,7 @@
 </div>
 </td>
 <td class="p-4">
-<button class="btn-ver-comprobante flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
+<button onclick="verComprobante('1', 'Juan Pérez')" class="flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium transition-colors">
 <span class="material-symbols-outlined !text-lg">image</span>
                                             Ver comprobante
                                         </button>
@@ -582,10 +586,10 @@
 </td>
 <td class="p-4">
 <div class="flex items-center justify-center gap-1">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver motivo">
+<button onclick="verMotivoRechazo('5', 'Luis Rodríguez')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver motivo">
 <span class="material-symbols-outlined !text-xl">info</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+<button onclick="verDetallesPago('5')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
 <span class="material-symbols-outlined !text-xl">visibility</span>
 </button>
 </div>
@@ -598,19 +602,19 @@
 <!-- Pagination -->
 <div class="px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
 <p class="text-sm text-[#9da6b9]">
-                            Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">22</span> pagos
+                            Mostrando <span id="paginationStart" class="font-medium text-white">1</span> a <span id="paginationEnd" class="font-medium text-white">5</span> de <span id="paginationTotal" class="font-medium text-white">22</span> pagos
                         </p>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
-<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<a id="prevPageBtn" onclick="cambiarPagina('prev')" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">
 <span class="sr-only">Anterior</span>
 <span class="material-symbols-outlined !text-sm">chevron_left</span>
 </a>
-<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">2</a>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">3</a>
+<a id="page1" onclick="cambiarPagina(1)" aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer">1</a>
+<a id="page2" onclick="cambiarPagina(2)" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">2</a>
+<a id="page3" onclick="cambiarPagina(3)" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors cursor-pointer">3</a>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">5</a>
-<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<a id="page5" onclick="cambiarPagina(5)" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors cursor-pointer">5</a>
+<a id="nextPageBtn" onclick="cambiarPagina('next')" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-[#1e2433] focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">
 <span class="sr-only">Siguiente</span>
 <span class="material-symbols-outlined !text-sm">chevron_right</span>
 </a>
@@ -620,5 +624,560 @@
 </div>
 </main>
 </div>
-<script src="../js/validacion-pagos.js"></script>
+<script>
+// Estado global
+let currentPage = 1;
+let totalPages = 5;
+let itemsPerPage = 5;
+let currentStatusFilter = 'pending';
+let currentMethodFilter = 'all';
+let currentSortFilter = 'recent';
+let searchQuery = '';
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const headerSearchInput = document.getElementById('headerSearchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            searchQuery = e.target.value.toLowerCase().trim();
+            aplicarFiltros();
+        });
+    }
+    
+    if (headerSearchInput) {
+        headerSearchInput.addEventListener('input', function(e) {
+            searchQuery = e.target.value.toLowerCase().trim();
+            aplicarFiltros();
+        });
+    }
+    
+    actualizarPaginacion();
+});
+
+// Funciones de selección
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.pago-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+// Función para obtener pagos seleccionados
+function getPagosSeleccionados() {
+    const checkboxes = document.querySelectorAll('.pago-checkbox:checked');
+    const pagos = [];
+    
+    checkboxes.forEach(checkbox => {
+        const pagoId = checkbox.getAttribute('data-pago-id');
+        const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+        if (row) {
+            pagos.push({
+                id: pagoId,
+                usuario: row.getAttribute('data-usuario'),
+                sorteo: row.getAttribute('data-sorteo'),
+                monto: row.getAttribute('data-monto')
+            });
+        }
+    });
+    
+    return pagos;
+}
+
+// Funciones de aprobación/rechazo masivo
+function aprobarSeleccionados() {
+    const pagos = getPagosSeleccionados();
+    
+    if (pagos.length === 0) {
+        mostrarNotificacion('Por favor selecciona al menos un pago para aprobar', 'error');
+        return;
+    }
+    
+    if (!confirm(`¿Deseas aprobar ${pagos.length} pago(s) seleccionado(s)?`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('aprobarSeleccionadosBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined !text-xl animate-spin">autorenew</span> Aprobando...';
+    
+    // Simular procesamiento
+    setTimeout(() => {
+        pagos.forEach(pago => {
+            aprobarPagoIndividual(pago.id, pago.usuario);
+        });
+        
+        // Limpiar selección
+        document.getElementById('selectAllCheckbox').checked = false;
+        document.querySelectorAll('.pago-checkbox').forEach(cb => cb.checked = false);
+        
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined !text-xl">check_circle</span> Aprobar Seleccionados';
+        mostrarNotificacion(`${pagos.length} pago(s) aprobado(s) exitosamente`, 'success');
+        aplicarFiltros();
+    }, 1500);
+}
+
+function rechazarSeleccionados() {
+    const pagos = getPagosSeleccionados();
+    
+    if (pagos.length === 0) {
+        mostrarNotificacion('Por favor selecciona al menos un pago para rechazar', 'error');
+        return;
+    }
+    
+    const motivo = prompt(`¿Por qué deseas rechazar ${pagos.length} pago(s)?\n\nMotivo del rechazo:`);
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    const btn = document.getElementById('rechazarSeleccionadosBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined !text-xl animate-spin">autorenew</span> Rechazando...';
+    
+    // Simular procesamiento
+    setTimeout(() => {
+        pagos.forEach(pago => {
+            rechazarPagoIndividual(pago.id, pago.usuario, motivo);
+        });
+        
+        // Limpiar selección
+        document.getElementById('selectAllCheckbox').checked = false;
+        document.querySelectorAll('.pago-checkbox').forEach(cb => cb.checked = false);
+        
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined !text-xl">cancel</span> Rechazar Seleccionados';
+        mostrarNotificacion(`${pagos.length} pago(s) rechazado(s) exitosamente`, 'success');
+        aplicarFiltros();
+    }, 1500);
+}
+
+// Funciones de aprobación/rechazo individual
+function aprobarPago(pagoId, usuario) {
+    if (!confirm(`¿Deseas aprobar el pago de ${usuario}?`)) {
+        return;
+    }
+    
+    aprobarPagoIndividual(pagoId, usuario);
+}
+
+function aprobarPagoIndividual(pagoId, usuario) {
+    const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+    if (!row) return;
+    
+    // Actualizar estado
+    row.setAttribute('data-estado', 'approved');
+    row.classList.remove('bg-red-500/5');
+    row.classList.add('bg-green-500/5');
+    
+    // Actualizar badge de estado
+    const estadoCell = row.cells[7];
+    estadoCell.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
+            <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+            Aprobado
+        </span>
+    `;
+    
+    // Actualizar botones de acción
+    const accionesCell = row.cells[8];
+    accionesCell.innerHTML = `
+        <div class="flex items-center justify-center gap-1">
+            <button onclick="verDetallesPago('${pagoId}')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+                <span class="material-symbols-outlined !text-xl">visibility</span>
+            </button>
+        </div>
+    `;
+    
+    mostrarNotificacion(`Pago de ${usuario} aprobado exitosamente`, 'success');
+}
+
+function rechazarPago(pagoId, usuario) {
+    const motivo = prompt(`¿Por qué deseas rechazar el pago de ${usuario}?\n\nMotivo del rechazo:`);
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    rechazarPagoIndividual(pagoId, usuario, motivo);
+}
+
+function rechazarPagoIndividual(pagoId, usuario, motivo) {
+    const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+    if (!row) return;
+    
+    // Actualizar estado
+    row.setAttribute('data-estado', 'rejected');
+    row.classList.remove('bg-green-500/5');
+    row.classList.add('bg-red-500/5');
+    
+    // Guardar motivo
+    row.setAttribute('data-motivo', motivo);
+    
+    // Actualizar badge de estado
+    const estadoCell = row.cells[7];
+    estadoCell.innerHTML = `
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-400 border border-red-500/20">
+            <span class="h-1.5 w-1.5 rounded-full bg-red-400"></span>
+            Rechazado
+        </span>
+    `;
+    
+    // Actualizar botones de acción
+    const accionesCell = row.cells[8];
+    accionesCell.innerHTML = `
+        <div class="flex items-center justify-center gap-1">
+            <button onclick="verMotivoRechazo('${pagoId}', '${usuario}')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver motivo">
+                <span class="material-symbols-outlined !text-xl">info</span>
+            </button>
+            <button onclick="verDetallesPago('${pagoId}')" class="p-2 text-[#9da6b9] hover:text-white hover:bg-[#1e2433] rounded-lg transition-colors" title="Ver detalles">
+                <span class="material-symbols-outlined !text-xl">visibility</span>
+            </button>
+        </div>
+    `;
+    
+    mostrarNotificacion(`Pago de ${usuario} rechazado`, 'success');
+}
+
+// Funciones de visualización
+function verComprobante(pagoId, usuario) {
+    const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+    if (!row) return;
+    
+    const sorteo = row.getAttribute('data-sorteo');
+    const monto = row.getAttribute('data-monto');
+    const metodo = row.getAttribute('data-metodo');
+    const referencia = row.getAttribute('data-referencia');
+    
+    const contenido = `
+        <div class="space-y-4">
+            <div class="bg-gray-50 dark:bg-[#151a23] rounded-lg p-4 border border-gray-200 dark:border-[#3b4354]">
+                <img src="https://via.placeholder.com/600x400/1e2433/9da6b9?text=Comprobante+de+Pago" 
+                     alt="Comprobante de Pago" 
+                     class="w-full h-auto rounded-lg border border-gray-200 dark:border-[#3b4354]">
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Usuario:</p>
+                    <p class="text-base font-medium text-slate-900 dark:text-white">${usuario}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Sorteo:</p>
+                    <p class="text-base font-medium text-slate-900 dark:text-white">${sorteo}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Monto:</p>
+                    <p class="text-base font-bold text-slate-900 dark:text-white">$${parseFloat(monto).toFixed(2)}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Referencia:</p>
+                    <p class="text-base font-mono text-slate-900 dark:text-white">${referencia}</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="this.closest('.fixed').remove(); mostrarNotificacion('Descargando comprobante...', 'success')" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    Descargar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    mostrarModal('Comprobante de Pago', contenido);
+}
+
+function verDetallesPago(pagoId) {
+    const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+    if (!row) return;
+    
+    const usuario = row.getAttribute('data-usuario');
+    const sorteo = row.getAttribute('data-sorteo');
+    const monto = row.getAttribute('data-monto');
+    const metodo = row.getAttribute('data-metodo');
+    const estado = row.getAttribute('data-estado');
+    const referencia = row.getAttribute('data-referencia');
+    const fecha = row.cells[6].querySelector('.text-white').textContent;
+    
+    const contenido = `
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Usuario:</p>
+                    <p class="text-base font-medium text-slate-900 dark:text-white">${usuario}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Sorteo:</p>
+                    <p class="text-base font-medium text-slate-900 dark:text-white">${sorteo}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Monto:</p>
+                    <p class="text-base font-bold text-slate-900 dark:text-white">$${parseFloat(monto).toFixed(2)}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Método:</p>
+                    <p class="text-base text-slate-900 dark:text-white">${metodo.charAt(0).toUpperCase() + metodo.slice(1)}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Referencia:</p>
+                    <p class="text-base font-mono text-slate-900 dark:text-white">${referencia}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Fecha:</p>
+                    <p class="text-base text-slate-900 dark:text-white">${fecha}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Estado:</p>
+                    <p class="text-base text-slate-900 dark:text-white">${estado === 'pending' ? 'Pendiente' : estado === 'approved' ? 'Aprobado' : 'Rechazado'}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    mostrarModal('Detalles del Pago', contenido);
+}
+
+function verMotivoRechazo(pagoId, usuario) {
+    const row = document.querySelector(`tr[data-id="${pagoId}"]`);
+    if (!row) return;
+    
+    const motivo = row.getAttribute('data-motivo') || 'No se especificó motivo';
+    
+    const contenido = `
+        <div class="space-y-4">
+            <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p class="text-sm font-medium text-red-800 dark:text-red-300 mb-2">Motivo del Rechazo:</p>
+                <p class="text-sm text-red-700 dark:text-red-400">${motivo}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Usuario:</p>
+                <p class="text-base font-medium text-slate-900 dark:text-white">${usuario}</p>
+            </div>
+        </div>
+    `;
+    
+    mostrarModal('Motivo del Rechazo', contenido);
+}
+
+// Funciones de filtrado
+function aplicarFiltros() {
+    const statusFilter = document.getElementById('statusFilter');
+    const methodFilter = document.getElementById('methodFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    
+    if (statusFilter) currentStatusFilter = statusFilter.value;
+    if (methodFilter) currentMethodFilter = methodFilter.value;
+    if (sortFilter) currentSortFilter = sortFilter.value;
+    
+    const rows = document.querySelectorAll('.pago-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        let shouldShow = true;
+        
+        // Filtro de estado
+        if (currentStatusFilter !== 'all') {
+            const estado = row.getAttribute('data-estado');
+            if (estado !== currentStatusFilter) {
+                shouldShow = false;
+            }
+        }
+        
+        // Filtro de método
+        if (shouldShow && currentMethodFilter !== 'all') {
+            const metodo = row.getAttribute('data-metodo');
+            if (metodo !== currentMethodFilter) {
+                shouldShow = false;
+            }
+        }
+        
+        // Filtro de búsqueda
+        if (shouldShow && searchQuery) {
+            const usuario = (row.getAttribute('data-usuario') || '').toLowerCase();
+            const sorteo = (row.getAttribute('data-sorteo') || '').toLowerCase();
+            const referencia = (row.getAttribute('data-referencia') || '').toLowerCase();
+            const rowText = row.textContent.toLowerCase();
+            
+            if (!usuario.includes(searchQuery) && 
+                !sorteo.includes(searchQuery) && 
+                !referencia.includes(searchQuery) &&
+                !rowText.includes(searchQuery)) {
+                shouldShow = false;
+            }
+        }
+        
+        // Mostrar u ocultar
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Ordenar filas visibles
+    ordenarFilas();
+    
+    actualizarPaginacion(visibleCount);
+}
+
+function ordenarFilas() {
+    const rows = Array.from(document.querySelectorAll('.pago-row[style=""], .pago-row:not([style*="display: none"])'));
+    const tbody = document.getElementById('pagosTableBody');
+    
+    rows.sort((a, b) => {
+        if (currentSortFilter === 'amount_high') {
+            return parseFloat(b.getAttribute('data-monto')) - parseFloat(a.getAttribute('data-monto'));
+        } else if (currentSortFilter === 'amount_low') {
+            return parseFloat(a.getAttribute('data-monto')) - parseFloat(b.getAttribute('data-monto'));
+        } else if (currentSortFilter === 'oldest') {
+            return 1; // Implementar lógica de fecha si es necesario
+        }
+        return -1; // Más recientes primero (default)
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+// Funciones de paginación
+function cambiarPagina(direccion) {
+    if (direccion === 'prev' && currentPage > 1) {
+        currentPage--;
+    } else if (direccion === 'next' && currentPage < totalPages) {
+        currentPage++;
+    } else if (typeof direccion === 'number') {
+        currentPage = direccion;
+    }
+    
+    actualizarPaginacion();
+    scrollToTop();
+}
+
+function actualizarPaginacion(visibleCount) {
+    // Actualizar números de página
+    for (let i = 1; i <= 5; i++) {
+        const pageEl = document.getElementById(`page${i}`);
+        if (pageEl) {
+            if (i === currentPage) {
+                pageEl.classList.add('bg-primary', 'text-white');
+                pageEl.classList.remove('text-[#9da6b9]');
+                pageEl.setAttribute('aria-current', 'page');
+            } else {
+                pageEl.classList.remove('bg-primary', 'text-white');
+                pageEl.classList.add('text-[#9da6b9]');
+                pageEl.removeAttribute('aria-current');
+            }
+        }
+    }
+    
+    // Actualizar botones prev/next
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    
+    if (prevBtn) {
+        prevBtn.classList.toggle('opacity-50', currentPage === 1);
+        prevBtn.classList.toggle('cursor-not-allowed', currentPage === 1);
+    }
+    
+    if (nextBtn) {
+        nextBtn.classList.toggle('opacity-50', currentPage === totalPages);
+        nextBtn.classList.toggle('cursor-not-allowed', currentPage === totalPages);
+    }
+    
+    // Actualizar contadores
+    const visibleRows = Array.from(document.querySelectorAll('.pago-row')).filter(r => 
+        r.style.display !== 'none' && !r.style.display
+    );
+    const total = visibleRows.length || visibleCount || 22;
+    const start = ((currentPage - 1) * itemsPerPage) + 1;
+    const end = Math.min(currentPage * itemsPerPage, total);
+    
+    const startEl = document.getElementById('paginationStart');
+    const endEl = document.getElementById('paginationEnd');
+    const totalEl = document.getElementById('paginationTotal');
+    
+    if (startEl) startEl.textContent = start;
+    if (endEl) endEl.textContent = end;
+    if (totalEl) totalEl.textContent = total;
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Función para mostrar modal
+function mostrarModal(titulo, contenido) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 z-50 overflow-y-auto';
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+    
+    const modal = document.createElement('div');
+    modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
+    
+    modal.innerHTML = `
+        <div aria-hidden="true" class="fixed inset-0 transition-opacity">
+            <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+        </div>
+        <span aria-hidden="true" class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
+        <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-200 dark:border-border-dark">
+            <div class="px-4 pt-5 pb-4 sm:p-6">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
+                        <span class="material-symbols-outlined text-primary">info</span>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white">${titulo}</h3>
+                        <div class="mt-4">
+                            ${contenido}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button onclick="this.closest('.fixed').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
+// Función para mostrar notificaciones
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+        tipo === 'success' ? 'bg-green-500 text-white' : 
+        tipo === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+    }`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    
+    notification.innerHTML = `
+        <span class="material-symbols-outlined">${tipo === 'success' ? 'check_circle' : tipo === 'error' ? 'error' : 'info'}</span>
+        <span class="font-medium">${mensaje}</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 </body></html>
