@@ -120,9 +120,9 @@
 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
 <span class="material-symbols-outlined text-[20px]">search</span>
 </span>
-<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
 </div>
-<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<button id="notificationsButton" onclick="showNotifications()" class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
 </button>
@@ -136,7 +136,7 @@
 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Resumen General</h2>
 <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Bienvenido de nuevo. Aquí tienes lo que está pasando hoy.</p>
 </div>
-<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+<button onclick="window.location.href='CrudGestionSorteo.html'" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
 <span class="material-symbols-outlined text-[20px]">add</span>
                         Crear Nuevo Sorteo
                     </button>
@@ -222,10 +222,10 @@
 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Ventas de Boletos</h3>
 <p class="text-sm text-gray-500 dark:text-gray-400">Últimos 30 días</p>
 </div>
-<select class="bg-gray-100 dark:bg-[#111621] border-none text-xs rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-0">
-<option>Últimos 30 días</option>
-<option>Esta semana</option>
-<option>Este año</option>
+<select id="chartPeriodSelect" onchange="updateChartPeriod(this.value)" class="bg-gray-100 dark:bg-[#111621] border-none text-xs rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-0">
+<option value="30days">Últimos 30 días</option>
+<option value="week">Esta semana</option>
+<option value="year">Este año</option>
 </select>
 </div>
 <div class="h-64 w-full">
@@ -275,7 +275,7 @@
 <div class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark flex flex-col">
 <div class="p-6 border-b border-gray-200 dark:border-border-dark flex justify-between items-center">
 <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sorteos por Finalizar</h3>
-<a class="text-xs text-primary font-medium hover:underline" href="#">Ver todos</a>
+<a class="text-xs text-primary font-medium hover:underline" href="CrudGestionSorteo.html">Ver todos</a>
 </div>
 <div class="flex-1 overflow-y-auto p-2">
 <div class="flex flex-col gap-2">
@@ -286,36 +286,36 @@
 <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">Sorteo Zapatillas Jordan</h4>
 <p class="text-xs text-gray-500">Cierra en: <span class="text-orange-500 font-bold">2h 15m</span></p>
 </div>
-<button class="text-gray-400 hover:text-primary">
+<button onclick="viewRaffleDetails('Sorteo Zapatillas Jordan')" class="text-gray-400 hover:text-primary">
 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
 </button>
 </div>
 <!-- Item 2 -->
-<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group">
+<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group" onclick="viewRaffleDetails('iPhone 15 Pro Max')">
 <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" data-alt="Smartphone raffle prize" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCpkgFbIrimnZVN6jB76zXf3QMxMQJ7bqKdmvlEuxwNYyrQL89geWWudBnKEvVYdYTlxethl7onPpeFYyT_o9zbxG_v7C26vX7eBBmn-QH7dPk3l-KPgbYjVybTVri00vTIkaPyCEOB5NdFoXMnpAybGzUEWEYlmI0I1Mi0H7IFAtfcPg4mPWQUh4hNfthDqigBf-7u21uOoAoDGKVlJ6UFX_qn8cn2sKFo_YRzVlcSQh2kgC2UwAi5zh0c8crYwqqkNiNjXhVQyAc')"></div>
 <div class="flex-1 min-w-0">
 <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">iPhone 15 Pro Max</h4>
 <p class="text-xs text-gray-500">Cierra en: <span class="text-orange-500 font-bold">5h 30m</span></p>
 </div>
-<button class="text-gray-400 hover:text-primary">
+<button onclick="event.stopPropagation(); viewRaffleDetails('iPhone 15 Pro Max')" class="text-gray-400 hover:text-primary">
 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
 </button>
 </div>
 <!-- Item 3 -->
-<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group">
+<div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group" onclick="viewRaffleDetails('Gran Premio $50,000')">
 <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" data-alt="Cash prize stack" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBe3AebY0jlP6MwbHmPk7-cJ9UCA1rCis62mcAqVOLZt-94jGy6747rPmqmNOHDGY0ogR4p8RbJi-Kfr4XiPQSVYbOkCgkwnCsjg64-na6LhSJ-tUk3GigKdVp7RDZWExN0r1OWZLuuKPtkkYEefW2tAd70OIGR4NX5GVwYuYjYu9rLp50klMPrFlAt9d-c7t4EPMJsw2HRyK-ZZXzHRQFPJjch7jkxEZkBdYUWGMgbYQiOK-e_Uyqp8lyffJeGnpDntZVC4Y4J7iI')"></div>
 <div class="flex-1 min-w-0">
 <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">Gran Premio $50,000</h4>
 <p class="text-xs text-gray-500">Cierra en: <span class="text-gray-400">1d 4h</span></p>
 </div>
-<button class="text-gray-400 hover:text-primary">
+<button onclick="event.stopPropagation(); viewRaffleDetails('Gran Premio $50,000')" class="text-gray-400 hover:text-primary">
 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
 </button>
 </div>
 </div>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<button class="w-full py-2 text-sm text-center text-slate-900 dark:text-white bg-gray-100 dark:bg-[#111621] hover:bg-gray-200 dark:hover:bg-[#2a3241] rounded-lg transition-colors font-medium">
+<button onclick="window.location.href='GeneradorGanadoresAdminstradores.html'" class="w-full py-2 text-sm text-center text-slate-900 dark:text-white bg-gray-100 dark:bg-[#111621] hover:bg-gray-200 dark:hover:bg-[#2a3241] rounded-lg transition-colors font-medium">
                                 Gestionar Ganadores
                             </button>
 </div>
@@ -329,8 +329,8 @@
 <p class="text-sm text-gray-500 dark:text-gray-400">Pagos que requieren tu atención inmediata.</p>
 </div>
 <div class="flex gap-2">
-<button class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Filtrar</button>
-<button class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Exportar</button>
+<button onclick="showPaymentFilters()" class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Filtrar</button>
+<button onclick="exportPaymentsTable()" class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Exportar</button>
 </div>
 </div>
 <div class="overflow-x-auto">
@@ -366,8 +366,8 @@
                                         </span>
 </td>
 <td class="py-4 px-6 text-right">
-<button class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
-<button class="text-gray-400 hover:text-red-500 transition-colors">
+<button onclick="validatePayment('REF-982342', 'Juan Pérez')" class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+<button onclick="rejectPayment('REF-982342', 'Juan Pérez')" class="text-gray-400 hover:text-red-500 transition-colors">
 <span class="material-symbols-outlined text-[20px]">block</span>
 </button>
 </td>
@@ -392,7 +392,7 @@
                                         </span>
 </td>
 <td class="py-4 px-6 text-right">
-<button class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
+<button onclick="viewPaymentDetails('REF-982343')" class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
 </td>
 </tr>
 <!-- Row 3 -->
@@ -415,7 +415,7 @@
                                         </span>
 </td>
 <td class="py-4 px-6 text-right">
-<button class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Detalles</button>
+<button onclick="viewPaymentDetails('REF-982344')" class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Detalles</button>
 </td>
 </tr>
 <!-- Row 4 -->
@@ -438,8 +438,8 @@
                                         </span>
 </td>
 <td class="py-4 px-6 text-right">
-<button class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
-<button class="text-gray-400 hover:text-red-500 transition-colors">
+<button onclick="validatePayment('REF-982345', 'Ana Sánchez')" class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+<button onclick="rejectPayment('REF-982345', 'Ana Sánchez')" class="text-gray-400 hover:text-red-500 transition-colors">
 <span class="material-symbols-outlined text-[20px]">block</span>
 </button>
 </td>
@@ -450,14 +450,260 @@
 <div class="p-4 border-t border-gray-200 dark:border-border-dark flex items-center justify-between">
 <p class="text-xs text-gray-500">Mostrando 4 de 23 pendientes</p>
 <div class="flex gap-2">
-<button class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
-<button class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
+<button id="prevPaymentsBtn" onclick="changePaymentsPage('prev')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
+<button id="nextPaymentsBtn" onclick="changePaymentsPage('next')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
 </div>
 </div>
 </div>
 </div>
 </main>
 </div>
+<script>
+/**
+ * DASHBOARD ADMINISTRADOR - Funcionalidades JavaScript
+ * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
+ */
+
+// ========== BÚSQUEDA GLOBAL ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const headerSearchInput = document.getElementById('headerSearchInput');
+    if (headerSearchInput) {
+        headerSearchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length > 2) {
+                performGlobalSearch(query);
+            }
+        });
+        
+        headerSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = e.target.value.toLowerCase().trim();
+                if (query.length > 0) {
+                    performGlobalSearch(query);
+                }
+            }
+        });
+    }
+});
+
+/**
+ * Realiza búsqueda global en sorteos y usuarios
+ * @param {string} query - Término de búsqueda
+ */
+function performGlobalSearch(query) {
+    // Redirigir a página de gestión con filtro aplicado
+    // En producción, esto haría una llamada API
+    console.log('Búsqueda global:', query);
+    showNotification(`Buscando: ${query}`, 'info');
+    // window.location.href = `CrudGestionSorteo.html?search=${encodeURIComponent(query)}`;
+}
+
+// ========== NOTIFICACIONES ==========
+/**
+ * Muestra panel de notificaciones
+ */
+function showNotifications() {
+    const notifications = [
+        { id: 1, type: 'payment', message: '3 pagos pendientes de validación', time: 'Hace 5 min', action: () => window.location.href = 'ValidacionPagosAdministrador.html' },
+        { id: 2, type: 'raffle', message: 'Sorteo "iPhone 15 Pro Max" finaliza en 2 horas', time: 'Hace 15 min', action: () => window.location.href = 'CrudGestionSorteo.html' },
+        { id: 3, type: 'winner', message: 'Ganador generado para sorteo #8820', time: 'Hace 1 hora', action: () => window.location.href = 'GeneradorGanadoresAdminstradores.html' }
+    ];
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    
+    modal.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Notificaciones</h3>
+                    <div class="space-y-3">
+                        ${notifications.map(n => `
+                            <div onclick="${n.action.toString().replace('function', '')}" class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer border border-gray-200 dark:border-border-dark">
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">${n.message}</p>
+                                <p class="text-xs text-gray-500 mt-1">${n.time}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="this.closest('.fixed').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ========== GRÁFICO DE VENTAS ==========
+/**
+ * Actualiza el período del gráfico de ventas
+ * @param {string} period - Período seleccionado (30days, week, year)
+ */
+function updateChartPeriod(period) {
+    console.log('Actualizando gráfico para período:', period);
+    showNotification(`Gráfico actualizado: ${period}`, 'success');
+    // En producción, esto haría una llamada API para obtener nuevos datos
+    // y actualizaría el SVG del gráfico
+}
+
+// ========== SORTEOS POR FINALIZAR ==========
+/**
+ * Muestra detalles de un sorteo
+ * @param {string} raffleName - Nombre del sorteo
+ */
+function viewRaffleDetails(raffleName) {
+    console.log('Ver detalles de sorteo:', raffleName);
+    window.location.href = `CrudGestionSorteo.html?raffle=${encodeURIComponent(raffleName)}`;
+}
+
+// ========== VALIDACIÓN DE PAGOS ==========
+/**
+ * Valida un pago pendiente
+ * @param {string} reference - Referencia del pago
+ * @param {string} userName - Nombre del usuario
+ */
+function validatePayment(reference, userName) {
+    if (!confirm(`¿Deseas aprobar el pago ${reference} de ${userName}?`)) {
+        return;
+    }
+    
+    // Simular validación
+    showNotification(`Pago ${reference} aprobado exitosamente`, 'success');
+    
+    // En producción: llamada API
+    // fetch(`/api/payments/${reference}/approve`, { method: 'POST' })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         showNotification('Pago aprobado', 'success');
+    //         location.reload();
+    //     });
+}
+
+/**
+ * Rechaza un pago pendiente
+ * @param {string} reference - Referencia del pago
+ * @param {string} userName - Nombre del usuario
+ */
+function rejectPayment(reference, userName) {
+    const motivo = prompt(`¿Por qué deseas rechazar el pago ${reference} de ${userName}?\n\nMotivo del rechazo:`);
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    // Simular rechazo
+    showNotification(`Pago ${reference} rechazado`, 'success');
+    
+    // En producción: llamada API
+    // fetch(`/api/payments/${reference}/reject`, { 
+    //     method: 'POST',
+    //     body: JSON.stringify({ motivo })
+    // })
+}
+
+/**
+ * Muestra detalles de un pago
+ * @param {string} reference - Referencia del pago
+ */
+function viewPaymentDetails(reference) {
+    window.location.href = `ValidacionPagosAdministrador.html?payment=${reference}`;
+}
+
+/**
+ * Muestra filtros para la tabla de pagos
+ */
+function showPaymentFilters() {
+    showNotification('Funcionalidad de filtros próximamente', 'info');
+    // En producción, mostraría un modal con opciones de filtrado
+}
+
+/**
+ * Exporta la tabla de pagos a CSV
+ */
+function exportPaymentsTable() {
+    const data = [
+        ['Usuario', 'Sorteo', 'Referencia', 'Monto', 'Estado'],
+        ['Juan Pérez', 'Sorteo Zapatillas Jordan', 'REF-982342', '$25.00', 'Pendiente'],
+        ['María Rodríguez', 'iPhone 15 Pro Max', 'REF-982343', '$50.00', 'Aprobado'],
+        ['Luis González', 'Gran Premio $50,000', 'REF-982344', '$100.00', 'Rechazado'],
+        ['Ana Sánchez', 'Sorteo Zapatillas Jordan', 'REF-982345', '$25.00', 'Pendiente']
+    ];
+    
+    const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `pagos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    showNotification('Tabla exportada exitosamente', 'success');
+}
+
+// ========== PAGINACIÓN DE PAGOS ==========
+let currentPaymentsPage = 1;
+const totalPaymentsPages = 6; // 23 pagos / 4 por página
+
+/**
+ * Cambia la página de la tabla de pagos
+ * @param {string} direction - 'prev' o 'next'
+ */
+function changePaymentsPage(direction) {
+    if (direction === 'prev' && currentPaymentsPage > 1) {
+        currentPaymentsPage--;
+    } else if (direction === 'next' && currentPaymentsPage < totalPaymentsPages) {
+        currentPaymentsPage++;
+    }
+    
+    // Actualizar botones
+    document.getElementById('prevPaymentsBtn').disabled = currentPaymentsPage === 1;
+    document.getElementById('nextPaymentsBtn').disabled = currentPaymentsPage === totalPaymentsPages;
+    
+    // En producción, cargaría los datos de la página
+    showNotification(`Página ${currentPaymentsPage} de ${totalPaymentsPages}`, 'info');
+}
+
+// ========== NOTIFICACIONES TOAST ==========
+/**
+ * Muestra una notificación toast
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo: 'success', 'error', 'info'
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+        type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+    }`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    
+    notification.innerHTML = `
+        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
+        <span class="font-medium">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 </body></html>
 
 //pagina para ver el dashboard como administrador despues de iniciar sesion

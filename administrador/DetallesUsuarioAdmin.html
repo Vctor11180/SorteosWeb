@@ -99,11 +99,11 @@
 </div>
 </div>
 <div class="flex gap-3 items-center">
-<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] border border-[#3b4354]">
+<button onclick="resetUserPassword()" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] border border-[#3b4354]">
 <span class="material-symbols-outlined mr-2 text-[18px]">lock_reset</span>
 <span class="truncate">Resetear Password</span>
 </button>
-<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<button onclick="editUserDetails()" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
 <span class="material-symbols-outlined mr-2 text-[18px]">edit</span>
 <span class="truncate">Editar Usuario</span>
 </button>
@@ -189,11 +189,11 @@
 </div>
 <div class="p-5 flex flex-col gap-3">
 <p class="text-[#9da6b9] text-sm mb-2">Estas acciones pueden restringir el acceso del usuario.</p>
-<button class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 text-sm font-medium transition-colors">
+<button onclick="suspendUser()" class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-500 text-sm font-medium transition-colors">
 <span>Suspender Temporalmente</span>
 <span class="material-symbols-outlined text-[18px]">pause_circle</span>
 </button>
-<button class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 text-sm font-medium transition-colors">
+<button onclick="banUser()" class="flex items-center justify-between w-full px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 text-sm font-medium transition-colors">
 <span>Banear Usuario</span>
 <span class="material-symbols-outlined text-[18px]">block</span>
 </button>
@@ -206,17 +206,17 @@
 <div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden flex flex-col h-full">
 <!-- Tabs Header -->
 <div class="flex border-b border-[#282d39] overflow-x-auto">
-<button class="px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap">
+<button id="ticketsTab" onclick="switchTab('tickets')" class="px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap">
 <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
                                         Historial de Boletos
                                     </button>
-<button class="px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
+<button id="paymentsTab" onclick="switchTab('payments')" class="px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
 <span class="material-symbols-outlined text-[18px]">receipt_long</span>
                                         Historial de Pagos
                                     </button>
 </div>
 <!-- Table: Tickets -->
-<div class="p-0 overflow-x-auto">
+<div id="ticketsContent" class="p-0 overflow-x-auto">
 <table class="w-full text-left border-collapse">
 <thead>
 <tr class="bg-[#282d39]/50 border-b border-[#282d39]">
@@ -330,11 +330,59 @@
 </button>
 </div>
 </div>
+<!-- Table: Payments (Hidden by default) -->
+<div id="paymentsContent" class="p-0 overflow-x-auto hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#282d39]/50 border-b border-[#282d39]">
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">ID Pago</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Fecha</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Método</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Monto</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Estado</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9921</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">28 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">credit_card</span> Visa</td>
+<td class="py-4 px-5 text-white text-sm font-bold">$25.00</td>
+<td class="py-4 px-5"><span class="text-green-400 text-xs font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Completado</span></td>
+<td class="py-4 px-5 text-right"><button onclick="viewPaymentDetails('PAY-9921')" class="text-[#9da6b9] hover:text-white transition-colors"><span class="material-symbols-outlined">visibility</span></button></td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9854</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">20 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> PayPal</td>
+<td class="py-4 px-5 text-white text-sm font-bold">$100.00</td>
+<td class="py-4 px-5"><span class="text-green-400 text-xs font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Completado</span></td>
+<td class="py-4 px-5 text-right"><button onclick="viewPaymentDetails('PAY-9854')" class="text-[#9da6b9] hover:text-white transition-colors"><span class="material-symbols-outlined">visibility</span></button></td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9812</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">10 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">credit_card</span> Visa</td>
+<td class="py-4 px-5 text-white text-sm font-bold">$50.00</td>
+<td class="py-4 px-5"><span class="text-red-400 text-xs font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">cancel</span> Fallido</span></td>
+<td class="py-4 px-5 text-right"><button onclick="viewPaymentDetails('PAY-9812')" class="text-[#9da6b9] hover:text-white transition-colors"><span class="material-symbols-outlined">visibility</span></button></td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 border-t border-[#282d39] flex justify-center">
+<button class="text-[#9da6b9] text-sm hover:text-white transition-colors flex items-center gap-1">
+                                        Ver historial completo
+                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
 <!-- Recent Transactions Summary (Mini Table) -->
 <div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden">
 <div class="px-5 py-4 border-b border-[#282d39] flex justify-between items-center">
 <h3 class="text-white text-lg font-bold">Pagos Recientes</h3>
-<button class="text-primary text-sm font-medium hover:underline">Ver Todos</button>
+<button onclick="window.location.href='ValidacionPagosAdministrador.html'" class="text-primary text-sm font-medium hover:underline">Ver Todos</button>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
@@ -398,6 +446,231 @@
 </div>
 </div>
 </body></html>
+<script>
+/**
+ * DETALLES DE USUARIO ADMINISTRADOR - Funcionalidades JavaScript
+ * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
+ */
+
+// ========== EDITAR USUARIO ==========
+/**
+ * Abre modal para editar detalles del usuario
+ */
+function editUserDetails() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    
+    modal.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Editar Usuario</h3>
+                    <form id="editUserForm" onsubmit="saveUserChanges(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre Completo</label>
+                            <input type="text" value="Juan Carlos Pérez" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                            <input type="email" value="juan.perez@email.com" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
+                            <input type="tel" value="+34 612 345 678" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dirección</label>
+                            <textarea class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" rows="3">Calle Mayor 123\n28001, Madrid\nEspaña</textarea>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
+                                Guardar Cambios
+                            </button>
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/**
+ * Guarda los cambios del usuario
+ * @param {Event} e - Evento del formulario
+ */
+function saveUserChanges(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    console.log('Guardar cambios de usuario:', Object.fromEntries(formData));
+    
+    showNotification('Cambios guardados exitosamente', 'success');
+    e.target.closest('.fixed').remove();
+    
+    // En producción: llamada API
+    // fetch(`/api/users/${userId}`, { method: 'PUT', body: JSON.stringify(data) })
+}
+
+// ========== RESETEAR PASSWORD ==========
+/**
+ * Resetea la contraseña del usuario
+ */
+function resetUserPassword() {
+    if (!confirm('¿Deseas resetear la contraseña de este usuario? Se enviará un email con la nueva contraseña.')) {
+        return;
+    }
+    
+    // Simular reset
+    showNotification('Contraseña reseteada. Email enviado al usuario.', 'success');
+    
+    // En producción: llamada API
+    // fetch(`/api/users/${userId}/reset-password`, { method: 'POST' })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         showNotification('Contraseña reseteada', 'success');
+    //     });
+}
+
+// ========== SUSPENDER USUARIO ==========
+/**
+ * Suspende temporalmente al usuario
+ */
+function suspendUser() {
+    const motivo = prompt('¿Por qué deseas suspender a este usuario?\n\nMotivo de la suspensión:');
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    const duracion = prompt('¿Por cuántos días? (dejar vacío para indefinido):');
+    
+    if (!confirm(`¿Confirmas suspender a este usuario${duracion ? ' por ' + duracion + ' días' : ' indefinidamente'}?`)) {
+        return;
+    }
+    
+    showNotification('Usuario suspendido exitosamente', 'success');
+    
+    // En producción: llamada API
+    // fetch(`/api/users/${userId}/suspend`, { 
+    //     method: 'POST',
+    //     body: JSON.stringify({ motivo, duracion })
+    // })
+}
+
+// ========== BANEAR USUARIO ==========
+/**
+ * Banea permanentemente al usuario
+ */
+function banUser() {
+    const motivo = prompt('¿Por qué deseas banear a este usuario?\n\nMotivo del baneo (esta acción es permanente):');
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    if (!confirm('⚠️ ADVERTENCIA: Esta acción es PERMANENTE y no se puede deshacer. ¿Estás seguro?')) {
+        return;
+    }
+    
+    if (!confirm('Última confirmación. ¿Realmente deseas banear a este usuario?')) {
+        return;
+    }
+    
+    showNotification('Usuario baneado permanentemente', 'success');
+    
+    // En producción: llamada API
+    // fetch(`/api/users/${userId}/ban`, { 
+    //     method: 'POST',
+    //     body: JSON.stringify({ motivo })
+    // })
+}
+
+// ========== TABS ==========
+/**
+ * Cambia entre tabs de historial
+ * @param {string} tab - 'tickets' o 'payments'
+ */
+function switchTab(tab) {
+    const ticketsTab = document.getElementById('ticketsTab');
+    const paymentsTab = document.getElementById('paymentsTab');
+    const ticketsContent = document.getElementById('ticketsContent');
+    const paymentsContent = document.getElementById('paymentsContent');
+    
+    if (tab === 'tickets') {
+        ticketsTab.classList.add('text-primary', 'font-bold', 'border-primary', 'bg-[#282d39]/50');
+        ticketsTab.classList.remove('text-[#9da6b9]', 'font-medium', 'border-transparent');
+        paymentsTab.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-[#282d39]/50');
+        paymentsTab.classList.add('text-[#9da6b9]', 'font-medium', 'border-transparent');
+        
+        ticketsContent.classList.remove('hidden');
+        paymentsContent.classList.add('hidden');
+    } else {
+        paymentsTab.classList.add('text-primary', 'font-bold', 'border-primary', 'bg-[#282d39]/50');
+        paymentsTab.classList.remove('text-[#9da6b9]', 'font-medium', 'border-transparent');
+        ticketsTab.classList.remove('text-primary', 'font-bold', 'border-primary', 'bg-[#282d39]/50');
+        ticketsTab.classList.add('text-[#9da6b9]', 'font-medium', 'border-transparent');
+        
+        paymentsContent.classList.remove('hidden');
+        ticketsContent.classList.add('hidden');
+    }
+}
+
+// ========== NOTIFICACIONES ==========
+/**
+ * Muestra una notificación toast
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo: 'success', 'error', 'info'
+ */
+/**
+ * Muestra detalles de un pago
+ * @param {string} paymentId - ID del pago
+ */
+function viewPaymentDetails(paymentId) {
+    window.location.href = `ValidacionPagosAdministrador.html?payment=${paymentId}`;
+}
+
+// ========== NOTIFICACIONES ==========
+/**
+ * Muestra una notificación toast
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo: 'success', 'error', 'info'
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+        type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+    }`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    
+    notification.innerHTML = `
+        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
+        <span class="font-medium">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
 
 //pagina para ver los detalles de un usuario como administrador despues de iniciar sesion
 //Se ve esta pagina para ver los detalles de un usuario y sus datos, los boletos comprados, los sorteos ganados, el total gastado y los pagos pendientes.
