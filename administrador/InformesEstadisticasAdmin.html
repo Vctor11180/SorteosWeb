@@ -17,13 +17,17 @@
                         "primary": "#2463eb",
                         "background-light": "#f6f6f8",
                         "background-dark": "#111621",
-                        "card-dark": "#1e2433", // Slightly lighter than bg-dark for contrast
+                        "card-dark": "#1e2433",
                         "border-dark": "#2a3241",
+                        "text-secondary": "#9da6b9",
+                        "success": "#0bda62",
+                        "danger": "#fa6538",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"]
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
@@ -128,25 +132,28 @@
 </header>
 <!-- Scrollable Content -->
 <div class="flex-1 overflow-y-auto p-6 space-y-6">
-<div class="max-w-[1200px] mx-auto w-full flex flex-col gap-6">
+<div class="max-w-[1200px] mx-auto w-full">
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-[#3b4354] scrollbar-track-transparent">
+<div class="max-w-[1200px] mx-auto flex flex-col gap-6">
 <!-- Filters -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div class="relative group">
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Rango de Fecha</label>
 <div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-text-secondary mr-2">date_range</span>
-<input id="dateRangeInput" onchange="updateReports()" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 placeholder-text-secondary" placeholder="Seleccionar fechas" type="text" value="01 Ene, 2023 - 31 Ene, 2023"/>
+<input class="bg-transparent border-none text-white text-sm w-full focus:ring-0 placeholder-text-secondary" placeholder="Seleccionar fechas" type="text" value="01 Ene, 2023 - 31 Ene, 2023"/>
 </div>
 </div>
 <div class="relative group">
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Filtrar por Sorteo</label>
 <div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-text-secondary mr-2">confirmation_number</span>
-<select id="raffleFilterSelect" onchange="updateReports()" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black">
-<option value="">Todos los Sorteos</option>
-<option value="gran-rifa-anual">Gran Rifa Anual</option>
-<option value="sorteo-verano">Sorteo de Verano</option>
-<option value="bono-escolar">Bono Escolar</option>
+<select class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black">
+<option>Todos los Sorteos</option>
+<option>Gran Rifa Anual</option>
+<option>Sorteo de Verano</option>
+<option>Bono Escolar</option>
 </select>
 </div>
 </div>
@@ -154,10 +161,10 @@
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Estado de Campaña</label>
 <div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-text-secondary mr-2">filter_alt</span>
-<select id="campaignStatusSelect" onchange="updateReports()" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black">
-<option value="">Todas las campañas</option>
-<option value="active">Activas</option>
-<option value="finished">Finalizadas</option>
+<select class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black">
+<option>Todas las campañas</option>
+<option>Activas</option>
+<option>Finalizadas</option>
 </select>
 </div>
 </div>
@@ -323,7 +330,7 @@
 <div class="bg-[#1c1f27] rounded-xl border border-[#282d39] p-6">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-white text-lg font-bold">Ventas por Sorteo</h3>
-<button onclick="viewSalesDetails()" class="text-primary text-sm font-medium hover:text-white transition-colors">Ver Detalles</button>
+<button class="text-primary text-sm font-medium hover:text-white transition-colors">Ver Detalles</button>
 </div>
 <div class="h-64 flex items-end justify-between gap-4">
 <!-- Bar 1 -->
@@ -438,180 +445,9 @@
 </div>
 </div>
 </div>
-</div>
 </main>
 </div>
-<script>
-/**
- * INFORMES Y ESTADÍSTICAS ADMINISTRADOR - Funcionalidades JavaScript
- * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
- */
-
-// ========== ACTUALIZAR REPORTES ==========
-/**
- * Actualiza los reportes según los filtros seleccionados
- */
-function updateReports() {
-    const dateRange = document.getElementById('dateRangeInput')?.value || '';
-    const raffleFilter = document.getElementById('raffleFilterSelect')?.value || '';
-    const campaignStatus = document.getElementById('campaignStatusSelect')?.value || '';
-    
-    console.log('Actualizando reportes con filtros:', { dateRange, raffleFilter, campaignStatus });
-    
-    // Mostrar loading
-    showNotification('Actualizando reportes...', 'info');
-    
-    // Simular actualización
-    setTimeout(() => {
-        // En producción: llamada API
-        // fetch(`/api/reports?dateRange=${dateRange}&raffle=${raffleFilter}&status=${campaignStatus}`)
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         updateCharts(data);
-        //         updateKPIs(data);
-        //         showNotification('Reportes actualizados', 'success');
-        //     });
-        
-        showNotification('Reportes actualizados exitosamente', 'success');
-    }, 1000);
-}
-
-// ========== VER DETALLES DE VENTAS ==========
-/**
- * Muestra detalles de ventas por sorteo
- */
-function viewSalesDetails() {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
-    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-    
-    modal.innerHTML = `
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
-            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-200 dark:border-border-dark">
-                <div class="px-4 pt-5 pb-4 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Detalles de Ventas por Sorteo</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 dark:bg-[#151a25] border-b border-gray-200 dark:border-border-dark">
-                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Sorteo</th>
-                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Boletos Vendidos</th>
-                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Ingresos</th>
-                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">% Vendido</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-border-dark">
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                                    <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">Navidad</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">1,700 / 2,000</td>
-                                    <td class="py-4 px-6 text-sm font-bold text-slate-900 dark:text-white">$85,000</td>
-                                    <td class="py-4 px-6 text-sm text-green-500 font-bold">85%</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                                    <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">Verano</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">900 / 2,000</td>
-                                    <td class="py-4 px-6 text-sm font-bold text-slate-900 dark:text-white">$45,000</td>
-                                    <td class="py-4 px-6 text-sm text-yellow-500 font-bold">45%</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                                    <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">Escolar</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">1,300 / 2,000</td>
-                                    <td class="py-4 px-6 text-sm font-bold text-slate-900 dark:text-white">$65,000</td>
-                                    <td class="py-4 px-6 text-sm text-blue-500 font-bold">65%</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                                    <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">Flash</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">600 / 2,000</td>
-                                    <td class="py-4 px-6 text-sm font-bold text-slate-900 dark:text-white">$30,000</td>
-                                    <td class="py-4 px-6 text-sm text-orange-500 font-bold">30%</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5">
-                                    <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">Anual</td>
-                                    <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">1,840 / 2,000</td>
-                                    <td class="py-4 px-6 text-sm font-bold text-slate-900 dark:text-white">$92,000</td>
-                                    <td class="py-4 px-6 text-sm text-green-500 font-bold">92%</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-4 flex justify-end gap-2">
-                        <button onclick="exportSalesReport()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 text-sm font-medium">
-                            Exportar CSV
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button onclick="this.closest('.fixed').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
-
-/**
- * Exporta reporte de ventas a CSV
- */
-function exportSalesReport() {
-    const data = [
-        ['Sorteo', 'Boletos Vendidos', 'Total Boletos', 'Ingresos', '% Vendido'],
-        ['Navidad', '1,700', '2,000', '$85,000', '85%'],
-        ['Verano', '900', '2,000', '$45,000', '45%'],
-        ['Escolar', '1,300', '2,000', '$65,000', '65%'],
-        ['Flash', '600', '2,000', '$30,000', '30%'],
-        ['Anual', '1,840', '2,000', '$92,000', '92%']
-    ];
-    
-    const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `reporte_ventas_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    
-    showNotification('Reporte exportado exitosamente', 'success');
-}
-
-// ========== NOTIFICACIONES ==========
-/**
- * Muestra una notificación toast
- * @param {string} message - Mensaje a mostrar
- * @param {string} type - Tipo: 'success', 'error', 'info'
- */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
-        type === 'success' ? 'bg-green-500 text-white' : 
-        type === 'error' ? 'bg-red-500 text-white' : 
-        'bg-blue-500 text-white'
-    }`;
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateX(100%)';
-    notification.style.transition = 'all 0.3s ease-in-out';
-    
-    notification.innerHTML = `
-        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
-        <span class="font-medium">${message}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-</script>
+</div>
 </body></html>
 
 //pagina para ver los informes y estadisticas como administrador despues de iniciar sesion

@@ -149,7 +149,7 @@
 <h1 class="text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Gestión de Usuarios</h1>
 <p class="text-[#9da6b9] text-base font-normal leading-normal">Administra los usuarios registrados, sus estados y permisos en la plataforma.</p>
 </div>
-<button onclick="showCreateUserModal()" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20">
+<button id="btnCrearUsuario" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20">
 <span class="material-symbols-outlined mr-2 !text-lg">add</span>
 <span class="truncate">Crear Nuevo Usuario</span>
 </button>
@@ -160,11 +160,11 @@
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-[#9da6b9]">search</span>
 </div>
-<input id="userSearchInput" oninput="filterUsers()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por nombre, email o ID..."/>
+<input id="searchInput" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por nombre, email o ID..."/>
 </div>
 <div class="flex gap-4 w-full md:w-auto">
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="statusFilterSelect" onchange="filterUsers()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<select id="estadoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
 <option value="">Estado: Todos</option>
 <option value="active">Activo</option>
 <option value="inactive">Inactivo</option>
@@ -175,7 +175,7 @@
 </div>
 </div>
 <div class="relative min-w-[160px] flex-1 md:flex-none">
-<select id="sortFilterSelect" onchange="filterUsers()" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
+<select id="ordenFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
 <option value="">Ordenar por: Recientes</option>
 <option value="oldest">Antiguos</option>
 <option value="name_asc">Nombre (A-Z)</option>
@@ -194,7 +194,7 @@
 <thead>
 <tr class="bg-surface-dark border-b border-border-dark">
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9] w-[60px] text-center">
-<input id="selectAllUsers" onclick="toggleSelectAllUsers()" class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary" type="checkbox"/>
 </th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Usuario</th>
 <th class="p-4 text-xs font-medium uppercase tracking-wider text-[#9da6b9]">Email / Teléfono</th>
@@ -205,9 +205,9 @@
 </thead>
 <tbody class="divide-y divide-border-dark">
 <!-- Row 1 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8293" data-status="active" data-name="Juan Pérez" data-email="juan.perez@example.com" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8293'">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8293" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8293'">
 <td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="user-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox" data-user-id="8293"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -235,19 +235,19 @@
 </td>
 <td class="p-4 text-right">
 <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8293'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8293'">
 <span class="material-symbols-outlined !text-[20px]">block</span>
 </button>
 </div>
 </td>
 </tr>
 <!-- Row 2 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8294" data-status="inactive" data-name="Maria Garcia" data-email="maria.garcia@example.com" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8294'">
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8294" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8294'">
 <td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="user-checkbox rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox" data-user-id="8294"/>
+<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
@@ -274,11 +274,11 @@
                                             </span>
 </td>
 <td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
+<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8294'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button onclick="event.stopPropagation(); toggleUserStatus('8294', 'Maria Garcia', 'inactive')" class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8294'">
 <span class="material-symbols-outlined !text-[20px]">check_circle</span>
 </button>
 </div>
@@ -315,10 +315,10 @@
 </td>
 <td class="p-4 text-right">
 <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8295'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8295'">
 <span class="material-symbols-outlined !text-[20px]">block</span>
 </button>
 </div>
@@ -354,11 +354,11 @@
                                             </span>
 </td>
 <td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
+<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8296'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta" onclick="event.stopPropagation()">
+<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8296'">
 <span class="material-symbols-outlined !text-[20px]">check</span>
 </button>
 </div>
@@ -395,10 +395,10 @@
 </td>
 <td class="p-4 text-right">
 <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8297'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
 </button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta">
+<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8297'">
 <span class="material-symbols-outlined !text-[20px]">block</span>
 </button>
 </div>
@@ -414,16 +414,16 @@
                             Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">245</span> usuarios
                         </p>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
-<a id="prevUsersPage" onclick="changeUsersPage('prev')" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
 <span class="sr-only">Previous</span>
 <span class="material-symbols-outlined !text-sm">chevron_left</span>
 </a>
-<a id="page1" onclick="changeUsersPage(1)" aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer">1</a>
-<a id="page2" onclick="changeUsersPage(2)" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">2</a>
-<a id="page3" onclick="changeUsersPage(3)" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors cursor-pointer">3</a>
+<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">2</a>
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">3</a>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
-<a id="page12" onclick="changeUsersPage(12)" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors cursor-pointer">12</a>
-<a id="nextUsersPage" onclick="changeUsersPage('next')" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors cursor-pointer">
+<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">12</a>
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
 <span class="sr-only">Next</span>
 <span class="material-symbols-outlined !text-sm">chevron_right</span>
 </a>
@@ -432,339 +432,5 @@
 </div>
 </main>
 </div>
-<script>
-/**
- * GESTIÓN DE USUARIOS ADMINISTRADOR - Funcionalidades JavaScript
- * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
- */
-
-// ========== ESTADO GLOBAL ==========
-let currentUsersPage = 1;
-let totalUsersPages = 12;
-let currentSearchQuery = '';
-let currentStatusFilter = '';
-let currentSortFilter = '';
-
-// ========== CREAR NUEVO USUARIO ==========
-/**
- * Muestra modal para crear nuevo usuario
- */
-function showCreateUserModal() {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
-    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-    
-    modal.innerHTML = `
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
-            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
-                <div class="px-4 pt-5 pb-4 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Crear Nuevo Usuario</h3>
-                    <form id="createUserForm" onsubmit="createUser(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre Completo</label>
-                            <input type="text" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" placeholder="Ej: Juan Pérez"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                            <input type="email" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" placeholder="usuario@email.com"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono</label>
-                            <input type="tel" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" placeholder="+34 612 345 678"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado Inicial</label>
-                            <select class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2">
-                                <option value="active">Activo</option>
-                                <option value="pending">Pendiente</option>
-                                <option value="inactive">Inactivo</option>
-                            </select>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
-                                Crear Usuario
-                            </button>
-                            <button type="button" onclick="this.closest('.fixed').remove()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                Cancelar
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
-
-/**
- * Crea un nuevo usuario
- * @param {Event} e - Evento del formulario
- */
-function createUser(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    console.log('Crear usuario:', Object.fromEntries(formData));
-    
-    showNotification('Usuario creado exitosamente', 'success');
-    e.target.closest('.fixed').remove();
-    
-    // En producción: llamada API
-    // fetch('/api/users', { method: 'POST', body: JSON.stringify(data) })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         showNotification('Usuario creado', 'success');
-    //         location.reload();
-    //     });
-}
-
-// ========== FILTRADO Y BÚSQUEDA ==========
-/**
- * Filtra usuarios según búsqueda, estado y orden
- */
-function filterUsers() {
-    const searchInput = document.getElementById('userSearchInput');
-    const statusFilter = document.getElementById('statusFilterSelect');
-    const sortFilter = document.getElementById('sortFilterSelect');
-    
-    currentSearchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    currentStatusFilter = statusFilter ? statusFilter.value : '';
-    currentSortFilter = sortFilter ? sortFilter.value : '';
-    
-    const rows = document.querySelectorAll('tbody tr[data-user-id]');
-    let visibleCount = 0;
-    
-    rows.forEach(row => {
-        let shouldShow = true;
-        const userId = row.getAttribute('data-user-id');
-        const userName = (row.getAttribute('data-name') || '').toLowerCase();
-        const userEmail = (row.getAttribute('data-email') || '').toLowerCase();
-        const userStatus = row.getAttribute('data-status');
-        
-        // Filtro de búsqueda
-        if (currentSearchQuery) {
-            if (!userName.includes(currentSearchQuery) && 
-                !userEmail.includes(currentSearchQuery) && 
-                !userId.includes(currentSearchQuery)) {
-                shouldShow = false;
-            }
-        }
-        
-        // Filtro de estado
-        if (shouldShow && currentStatusFilter) {
-            if (userStatus !== currentStatusFilter) {
-                shouldShow = false;
-            }
-        }
-        
-        // Mostrar u ocultar
-        if (shouldShow) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Ordenar filas visibles
-    if (currentSortFilter) {
-        sortUserRows(currentSortFilter);
-    }
-    
-    showNotification(`${visibleCount} usuario(s) encontrado(s)`, 'info');
-}
-
-/**
- * Ordena las filas de usuarios
- * @param {string} sortType - Tipo de ordenamiento
- */
-function sortUserRows(sortType) {
-    const tbody = document.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr[data-user-id]')).filter(r => r.style.display !== 'none');
-    
-    rows.sort((a, b) => {
-        if (sortType === 'name_asc') {
-            return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
-        } else if (sortType === 'name_desc') {
-            return (b.getAttribute('data-name') || '').localeCompare(a.getAttribute('data-name') || '');
-        } else if (sortType === 'oldest') {
-            // Ordenar por fecha de registro (implementar si hay datos)
-            return 0;
-        }
-        return 0;
-    });
-    
-    rows.forEach(row => tbody.appendChild(row));
-}
-
-// ========== SELECCIÓN MÚLTIPLE ==========
-/**
- * Selecciona/deselecciona todos los usuarios
- */
-function toggleSelectAllUsers() {
-    const selectAll = document.getElementById('selectAllUsers');
-    const checkboxes = document.querySelectorAll('.user-checkbox');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAll.checked;
-    });
-}
-
-// ========== EDITAR USUARIO ==========
-/**
- * Edita un usuario
- * @param {string} userId - ID del usuario
- * @param {string} userName - Nombre del usuario
- */
-function editUser(userId, userName) {
-    window.location.href = `DetallesUsuarioAdmin.html?userId=${userId}&action=edit`;
-}
-
-// ========== ACTIVAR/DESACTIVAR USUARIO ==========
-/**
- * Cambia el estado de un usuario (activo/inactivo)
- * @param {string} userId - ID del usuario
- * @param {string} userName - Nombre del usuario
- * @param {string} currentStatus - Estado actual
- */
-function toggleUserStatus(userId, userName, currentStatus) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const action = newStatus === 'active' ? 'activar' : 'desactivar';
-    
-    if (!confirm(`¿Deseas ${action} la cuenta de ${userName}?`)) {
-        return;
-    }
-    
-    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-    if (row) {
-        row.setAttribute('data-status', newStatus);
-        
-        // Actualizar badge de estado
-        const statusCell = row.cells[4];
-        if (newStatus === 'active') {
-            statusCell.innerHTML = `
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-                    <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                    Activo
-                </span>
-            `;
-        } else {
-            statusCell.innerHTML = `
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-500/10 px-2.5 py-1 text-xs font-medium text-gray-400 border border-gray-500/20">
-                    <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                    Inactivo
-                </span>
-            `;
-        }
-        
-        // Actualizar botón de acción
-        const actionsCell = row.cells[5];
-        const actionButton = actionsCell.querySelector('button:last-child');
-        if (newStatus === 'active') {
-            actionButton.setAttribute('onclick', `toggleUserStatus('${userId}', '${userName}', 'active')`);
-            actionButton.setAttribute('title', 'Desactivar cuenta');
-            actionButton.classList.remove('hover:text-green-400', 'hover:bg-green-400/10');
-            actionButton.classList.add('hover:text-red-400', 'hover:bg-red-400/10');
-        } else {
-            actionButton.setAttribute('onclick', `toggleUserStatus('${userId}', '${userName}', 'inactive')`);
-            actionButton.setAttribute('title', 'Activar cuenta');
-            actionButton.classList.remove('hover:text-red-400', 'hover:bg-red-400/10');
-            actionButton.classList.add('hover:text-green-400', 'hover:bg-green-400/10');
-        }
-    }
-    
-    showNotification(`Usuario ${action}do exitosamente`, 'success');
-    
-    // En producción: llamada API
-    // fetch(`/api/users/${userId}/status`, { 
-    //     method: 'PATCH',
-    //     body: JSON.stringify({ status: newStatus })
-    // })
-}
-
-// ========== PAGINACIÓN ==========
-/**
- * Cambia la página de usuarios
- * @param {string|number} direction - 'prev', 'next' o número de página
- */
-function changeUsersPage(direction) {
-    if (direction === 'prev' && currentUsersPage > 1) {
-        currentUsersPage--;
-    } else if (direction === 'next' && currentUsersPage < totalUsersPages) {
-        currentUsersPage++;
-    } else if (typeof direction === 'number') {
-        currentUsersPage = direction;
-    }
-    
-    // Actualizar números de página
-    for (let i = 1; i <= 12; i++) {
-        const pageEl = document.getElementById(`page${i}`);
-        if (pageEl) {
-            if (i === currentUsersPage) {
-                pageEl.classList.add('bg-primary', 'text-white');
-                pageEl.classList.remove('text-[#9da6b9]');
-                pageEl.setAttribute('aria-current', 'page');
-            } else {
-                pageEl.classList.remove('bg-primary', 'text-white');
-                pageEl.classList.add('text-[#9da6b9]');
-                pageEl.removeAttribute('aria-current');
-            }
-        }
-    }
-    
-    // Actualizar botones prev/next
-    const prevBtn = document.getElementById('prevUsersPage');
-    const nextBtn = document.getElementById('nextUsersPage');
-    
-    if (prevBtn) {
-        prevBtn.classList.toggle('opacity-50', currentUsersPage === 1);
-        prevBtn.classList.toggle('cursor-not-allowed', currentUsersPage === 1);
-    }
-    
-    if (nextBtn) {
-        nextBtn.classList.toggle('opacity-50', currentUsersPage === totalUsersPages);
-        nextBtn.classList.toggle('cursor-not-allowed', currentUsersPage === totalUsersPages);
-    }
-    
-    // En producción, cargaría los datos de la página
-    showNotification(`Página ${currentUsersPage} de ${totalUsersPages}`, 'info');
-}
-
-// ========== NOTIFICACIONES ==========
-/**
- * Muestra una notificación toast
- * @param {string} message - Mensaje a mostrar
- * @param {string} type - Tipo: 'success', 'error', 'info'
- */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
-        type === 'success' ? 'bg-green-500 text-white' : 
-        type === 'error' ? 'bg-red-500 text-white' : 
-        'bg-blue-500 text-white'
-    }`;
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateX(100%)';
-    notification.style.transition = 'all 0.3s ease-in-out';
-    
-    notification.innerHTML = `
-        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
-        <span class="font-medium">${message}</span>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-</script>
+<script src="../js/gestion-usuarios.js"></script>
 </body></html>
