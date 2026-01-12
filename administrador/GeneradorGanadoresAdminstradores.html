@@ -135,12 +135,18 @@
 <div class="flex-1 overflow-y-auto p-6 space-y-6">
 <div class="max-w-[1200px] mx-auto w-full">
 <!-- Breadcrumbs -->
-<div class="flex flex-wrap gap-2 px-4 pt-4">
-<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Inicio</a>
-<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
-<a class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal hover:text-primary transition-colors" href="#">Admin</a>
-<span class="text-[#9d9db9] text-sm md:text-base font-medium leading-normal">/</span>
-<span class="text-white text-sm md:text-base font-medium leading-normal">Generación de Ganadores</span>
+<div class="flex flex-wrap items-center gap-2 px-4 pt-4">
+<button onclick="navegarAtras()" class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" title="Volver">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+                            Atrás
+                        </button>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined !text-lg">dashboard</span>
+                            Dashboard
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Generación de Ganadores</span>
 </div>
 <!-- Page Heading -->
 <div class="flex flex-wrap justify-between gap-3 px-4">
@@ -149,7 +155,7 @@
 <p class="text-[#9d9db9] text-base font-normal leading-normal">Selecciona y gestiona los ganadores de los sorteos finalizados.</p>
 </div>
 <div class="flex items-center gap-2">
-<button class="flex items-center gap-2 bg-surface-dark hover:bg-[#34344a] text-white px-4 py-2 rounded-lg transition-colors border border-gray-700/50">
+<button onclick="exportarHistorialGanadoresCSV()" class="flex items-center gap-2 bg-surface-dark hover:bg-[#34344a] text-white px-4 py-2 rounded-lg transition-colors border border-gray-700/50">
 <span class="material-symbols-outlined text-[20px]">download</span>
 <span class="text-sm font-medium">Exportar Reporte</span>
 </button>
@@ -382,6 +388,9 @@
 let currentFilter = 'all';
 let searchQuery = '';
 
+// Historial de acciones (se puede persistir en localStorage)
+let historialAcciones = [];
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
@@ -392,6 +401,10 @@ document.addEventListener('DOMContentLoaded', function() {
             filtrarYBuscar();
         });
     }
+    
+    // Cargar historial desde localStorage si existe
+    cargarHistorial();
+    renderHistorial();
 });
 
 // Funciones de filtrado
@@ -523,7 +536,7 @@ function generarGanador(raffleId, button) {
         card.classList.add('border-success/30', 'shadow-success/5');
         
         mostrarNotificacion(`Ganador generado exitosamente: ${nombreGanador} - Boleto #${numeroBoleto}`, 'success');
-        actualizarHistorial(raffleId, nombreGanador);
+        actualizarHistorial(raffleId, nombreGanador, 'generado', raffleName, numeroBoleto);
     }, 1500);
 }
 
@@ -538,7 +551,11 @@ function anunciarGanador(raffleId, winnerName, button) {
         button.innerHTML = '<span class="material-symbols-outlined text-sm">check_circle</span> Anunciado';
         
         mostrarNotificacion(`Ganador ${winnerName} anunciado públicamente`, 'success');
-        actualizarHistorial(raffleId, winnerName, 'anunciado');
+        // Obtener información del sorteo
+        const card = document.querySelector(`[data-id="${raffleId}"]`);
+        const raffleName = card ? card.getAttribute('data-name') : `Sorteo #${raffleId}`;
+        const ticketNumber = card ? card.getAttribute('data-winner-ticket') : '';
+        actualizarHistorial(raffleId, winnerName, 'anunciado', raffleName, ticketNumber);
     }, 1200);
 }
 
@@ -552,13 +569,258 @@ function notificarGanador(raffleId, winnerName, button) {
         button.disabled = false;
         
         mostrarNotificacion(`Notificación enviada a ${winnerName}`, 'success');
-        actualizarHistorial(raffleId, winnerName, 'notificado');
+        // Obtener información del sorteo
+        const card = document.querySelector(`[data-id="${raffleId}"]`);
+        const raffleName = card ? card.getAttribute('data-name') : `Sorteo #${raffleId}`;
+        const ticketNumber = card ? card.getAttribute('data-winner-ticket') : '';
+        actualizarHistorial(raffleId, winnerName, 'notificado', raffleName, ticketNumber);
     }, 1000);
 }
 
-function actualizarHistorial(raffleId, winnerName, accion = 'generado') {
-    // Aquí se actualizaría la tabla de historial en el futuro
-    console.log(`Historial: Sorteo #${raffleId} - ${winnerName} - ${accion}`);
+/**
+ * Actualiza el historial con una nueva acción
+ * @param {string} raffleId - ID del sorteo
+ * @param {string} winnerName - Nombre del ganador
+ * @param {string} accion - Tipo de acción: 'generado', 'anunciado', 'notificado'
+ * @param {string} raffleName - Nombre del sorteo
+ * @param {string} ticketNumber - Número del boleto ganador
+ */
+function actualizarHistorial(raffleId, winnerName, accion = 'generado', raffleName = '', ticketNumber = '') {
+    // Obtener información del sorteo desde la tarjeta si no se proporciona
+    const card = document.querySelector(`[data-id="${raffleId}"]`);
+    if (card && !raffleName) {
+        raffleName = card.getAttribute('data-name') || `Sorteo #${raffleId}`;
+    }
+    if (card && !ticketNumber) {
+        ticketNumber = card.getAttribute('data-winner-ticket') || '';
+    }
+    
+    // Crear entrada de historial
+    const entrada = {
+        id: Date.now(), // ID único basado en timestamp
+        raffleId: raffleId,
+        raffleName: raffleName || `Sorteo #${raffleId}`,
+        fecha: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
+        fechaCompleta: new Date().toISOString(), // Para ordenamiento
+        ganador: winnerName,
+        boleto: ticketNumber || 'N/A',
+        estado: obtenerEstadoPorAccion(accion),
+        accion: accion,
+        imagen: card ? card.querySelector('.bg-cover')?.style.backgroundImage || '' : ''
+    };
+    
+    // Agregar al inicio del array (más reciente primero)
+    historialAcciones.unshift(entrada);
+    
+    // Limitar a las últimas 50 entradas
+    if (historialAcciones.length > 50) {
+        historialAcciones = historialAcciones.slice(0, 50);
+    }
+    
+    // Guardar en localStorage
+    guardarHistorial();
+    
+    // Actualizar la tabla
+    renderHistorial();
+    
+    console.log('Historial actualizado:', entrada);
+}
+
+/**
+ * Obtiene el estado visual según la acción
+ * @param {string} accion - Tipo de acción
+ * @returns {string} Estado para mostrar
+ */
+function obtenerEstadoPorAccion(accion) {
+    const estados = {
+        'generado': 'Generado',
+        'anunciado': 'Anunciado',
+        'notificado': 'Notificado',
+        'entregado': 'Entregado'
+    };
+    return estados[accion] || 'Generado';
+}
+
+/**
+ * Obtiene el badge de estado según la acción
+ * @param {string} accion - Tipo de acción
+ * @returns {string} HTML del badge
+ */
+function obtenerBadgeEstado(accion) {
+    const badges = {
+        'generado': '<span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20">Generado</span>',
+        'anunciado': '<span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">Anunciado</span>',
+        'notificado': '<span class="inline-flex items-center rounded-md bg-purple-400/10 px-2 py-1 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-400/20">Notificado</span>',
+        'entregado': '<span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Entregado</span>'
+    };
+    return badges[accion] || badges['generado'];
+}
+
+/**
+ * Renderiza la tabla de historial
+ */
+function renderHistorial() {
+    const tbody = document.querySelector('tbody');
+    if (!tbody) return;
+    
+    // Si no hay historial nuevo, mantener los datos estáticos
+    if (historialAcciones.length === 0) {
+        return; // Mantener los datos estáticos del HTML
+    }
+    
+    // Datos estáticos originales (para mantener algunos ejemplos si no hay suficientes datos nuevos)
+    const datosEstaticos = [
+        {
+            raffleName: 'PlayStation 5 Bundle',
+            fecha: '20 Oct 2023',
+            ganador: 'Maria G.',
+            boleto: '1024',
+            estado: 'Entregado',
+            accion: 'entregado',
+            imagen: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZr1D5zOrjUxp8UFLuK8N2iGa2hvsn1m-YJewZcNVpQVlzeXp5G3kTItVuMfPxD6gOFZLep1UitkuUgMdEu7mbpQYETRk-HD2NEzMv55FkqanXElU614jEaMt-RK0JZs0DyRlnjlJU97USBReAWHL89Zzon3P-kryJSYtkwbXYaKLMtgM2I9oitvBisCVcxYSd_-FsMbQ7Oh6EO6uMQnA2AQZS3EU3XRDYjVrLYvE0ot80eUnsUZMVDQsEWes2IHE-9_yjMfipdjc')"
+        },
+        {
+            raffleName: 'Viaje a Cancún',
+            fecha: '18 Oct 2023',
+            ganador: 'Roberto L.',
+            boleto: '0042',
+            estado: 'Anunciado',
+            accion: 'anunciado',
+            imagen: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBElVBab9nMar63tUEz0rEXQ4BP60uEW1mu3KnN03SIym3G3qmvkE6SnypXnHSMMKs81ZVe-JGxAWE1VmP4OKSCZJe13webr6o259jVoRYjyQYx274Qn5TcV6ParVGeRl1QMXqbtbICOb1Qs6plf_VeaPJwAEFS5shTOxlT7khxE2eT-WWYdXhxiFT-LjK9UWz5aEtLp5JhAG4L2TXs0oNs3LKEBW-M0nGknB7KD-nKtm2lQ7W_omgj17N3fJ126x2uRdkdraoTgXc')"
+        }
+    ];
+    
+    // Combinar historial nuevo (más reciente primero) con datos estáticos
+    const historialCompleto = [...historialAcciones, ...datosEstaticos];
+    
+    // Limitar a las 10 más recientes
+    const historialMostrar = historialCompleto.slice(0, 10);
+    
+    tbody.innerHTML = historialMostrar.map(entrada => {
+        // Obtener iniciales del ganador para avatar
+        const iniciales = entrada.ganador.split(' ').map(n => n[0]).join('').substring(0, 2);
+        const nombreCorto = entrada.ganador.split(' ')[0] + ' ' + (entrada.ganador.split(' ')[1]?.[0] || '');
+        
+        return `
+            <tr class="hover:bg-[#2c2c3e] transition-colors">
+                <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+                    <div class="size-8 rounded bg-gray-700 bg-cover bg-center" style="${entrada.imagen ? `background-image: ${entrada.imagen};` : ''}"></div>
+                    ${entrada.raffleName}
+                </td>
+                <td class="px-6 py-4">${entrada.fecha}</td>
+                <td class="px-6 py-4 flex items-center gap-2">
+                    <div class="size-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold border border-primary/30">
+                        ${iniciales}
+                    </div>
+                    <span class="text-white">${nombreCorto}</span>
+                </td>
+                <td class="px-6 py-4 font-mono text-success">#${entrada.boleto}</td>
+                <td class="px-6 py-4 text-right">
+                    ${obtenerBadgeEstado(entrada.accion)}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Guarda el historial en localStorage
+ */
+function guardarHistorial() {
+    try {
+        localStorage.setItem('historialGanadores', JSON.stringify(historialAcciones));
+    } catch (e) {
+        console.warn('No se pudo guardar en localStorage:', e);
+    }
+}
+
+/**
+ * Carga el historial desde localStorage
+ */
+function cargarHistorial() {
+    try {
+        const historialGuardado = localStorage.getItem('historialGanadores');
+        if (historialGuardado) {
+            historialAcciones = JSON.parse(historialGuardado);
+        }
+    } catch (e) {
+        console.warn('No se pudo cargar desde localStorage:', e);
+        historialAcciones = [];
+    }
+}
+
+// ========== EXPORTACIÓN DE DATOS ==========
+
+/**
+ * Exporta el historial de ganadores a CSV
+ */
+function exportarHistorialGanadoresCSV() {
+    // Combinar historial dinámico con datos estáticos si es necesario
+    const datosEstaticos = [
+        { raffleName: 'Gran Rifa de Navidad', fecha: '25 Dic, 2023', ganador: 'Carlos Ruiz', boleto: '0592', accion: 'Generado', imagen: null },
+        { raffleName: 'Sorteo Pro-Fondos', fecha: '30 Nov, 2023', ganador: 'Ana Sánchez', boleto: '1245', accion: 'Anunciado', imagen: null },
+        { raffleName: 'Rifa de Verano', fecha: '15 Ene, 2024', ganador: 'Luis Martínez', boleto: '0891', accion: 'Notificado', imagen: null }
+    ];
+    
+    const historialCompleto = [...historialAcciones, ...datosEstaticos];
+    
+    if (historialCompleto.length === 0) {
+        mostrarNotificacion('No hay historial para exportar', 'error');
+        return;
+    }
+    
+    // Preparar datos
+    const headers = ['Sorteo', 'Fecha', 'Ganador', 'Boleto Ganador', 'Acción'];
+    const datos = historialCompleto.map(entrada => {
+        const accionTexto = entrada.accion === 'Generado' ? 'Generado' : 
+                           entrada.accion === 'Anunciado' ? 'Anunciado' : 
+                           entrada.accion === 'Notificado' ? 'Notificado' : entrada.accion;
+        
+        return [
+            entrada.raffleName,
+            entrada.fecha,
+            entrada.ganador,
+            `#${entrada.boleto}`,
+            accionTexto
+        ];
+    });
+    
+    // Crear CSV
+    const csv = [headers, ...datos].map(row => 
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+    
+    // Agregar BOM para Excel
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    
+    // Descargar
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `historial_ganadores_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    mostrarNotificacion(`${historialCompleto.length} registro(s) exportado(s) exitosamente`, 'success');
+}
+
+// ========== NAVEGACIÓN CON HISTORIAL ==========
+
+/**
+ * Navega hacia atrás usando el historial del navegador
+ */
+function navegarAtras() {
+    try {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = 'DashboardAdmnistrador.html';
+        }
+    } catch (error) {
+        console.error('Error al navegar atrás:', error);
+        window.location.href = 'DashboardAdmnistrador.html';
+    }
 }
 
 // Función para mostrar notificaciones

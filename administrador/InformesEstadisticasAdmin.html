@@ -133,6 +133,20 @@
 <!-- Scrollable Content -->
 <div class="flex-1 overflow-y-auto p-6 space-y-6">
 <div class="max-w-[1200px] mx-auto w-full">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap items-center gap-2 px-4 py-2 mb-4">
+<button onclick="navegarAtras()" class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" title="Volver">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+                            Atrás
+                        </button>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<span class="material-symbols-outlined !text-lg">dashboard</span>
+                            Dashboard
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Informes y Estadísticas</span>
+</div>
 <!-- Scrollable Content -->
 <main class="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-[#3b4354] scrollbar-track-transparent">
 <div class="max-w-[1200px] mx-auto flex flex-col gap-6">
@@ -330,7 +344,7 @@
 <div class="bg-[#1c1f27] rounded-xl border border-[#282d39] p-6">
 <div class="flex justify-between items-center mb-6">
 <h3 class="text-white text-lg font-bold">Ventas por Sorteo</h3>
-<button class="text-primary text-sm font-medium hover:text-white transition-colors">Ver Detalles</button>
+<button onclick="viewSalesDetails()" class="text-primary text-sm font-medium hover:text-white transition-colors">Ver Detalles</button>
 </div>
 <div class="h-64 flex items-end justify-between gap-4">
 <!-- Bar 1 -->
@@ -448,6 +462,25 @@
 </main>
 </div>
 </div>
+<script>
+// ========== NAVEGACIÓN CON HISTORIAL ==========
+
+/**
+ * Navega hacia atrás usando el historial del navegador
+ */
+function navegarAtras() {
+    try {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = 'DashboardAdmnistrador.html';
+        }
+    } catch (error) {
+        console.error('Error al navegar atrás:', error);
+        window.location.href = 'DashboardAdmnistrador.html';
+    }
+}
+</script>
 </body></html>
 
 //pagina para ver los informes y estadisticas como administrador despues de iniciar sesion
