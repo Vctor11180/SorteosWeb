@@ -396,7 +396,67 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar funcionalidad de filtros FAQ
     initFAQFilters();
+    
+    // Verificar si hay un parámetro de sección en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const section = urlParams.get('section');
+    
+    if (section) {
+        // Esperar un momento para que el DOM esté completamente cargado
+        setTimeout(() => {
+            activateSection(section);
+        }, 100);
+    }
 });
+
+// Función para activar una sección específica
+function activateSection(sectionName) {
+    const filterButtons = document.querySelectorAll('.faq-filter-btn');
+    const faqSections = document.querySelectorAll('.faq-section');
+    
+    // Buscar el botón correspondiente
+    const targetButton = Array.from(filterButtons).find(btn => 
+        btn.getAttribute('data-filter') === sectionName
+    );
+    
+    if (targetButton) {
+        // Remover estilos activos de todos los botones
+        filterButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+            btn.classList.add('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+        });
+        
+        // Agregar estilos activos al botón objetivo
+        targetButton.classList.remove('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+        targetButton.classList.add('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+        
+        // Filtrar secciones
+        if (sectionName === 'todo') {
+            // Mostrar todas las secciones
+            faqSections.forEach(section => {
+                section.style.display = '';
+            });
+        } else {
+            // Mostrar solo la sección correspondiente
+            faqSections.forEach(section => {
+                const category = section.getAttribute('data-category');
+                if (category === sectionName) {
+                    section.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+        
+        // Scroll suave hacia la sección
+        const targetSection = document.querySelector(`.faq-section[data-category="${sectionName}"]`);
+        if (targetSection) {
+            setTimeout(() => {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+}
 
 // Función para inicializar filtros de FAQ
 function initFAQFilters() {
