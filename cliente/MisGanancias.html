@@ -54,7 +54,11 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen flex text-gray-900 dark:text-white">
 <!-- Sidebar -->
+<<<<<<< HEAD
 <aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full">
+=======
+<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39]/50 bg-gradient-to-b from-[#111318] to-[#151a23] h-full shadow-2xl shadow-black/20">
+>>>>>>> feature/ismael
 <div class="p-6 pb-2">
 <div class="flex items-center gap-3 mb-8">
 <div class="size-8 text-primary">
@@ -65,6 +69,7 @@
 <h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
 </div>
 <!-- User Mini Profile -->
+<<<<<<< HEAD
 <div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
 <div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
 </div>
@@ -97,12 +102,53 @@
 </a>
 <a id="nav-soporte" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="ContactoSoporteCliente.html">
 <span class="material-symbols-outlined text-[24px]">support_agent</span>
+=======
+<div class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-card-dark/80 to-[#151a23] mb-6 border border-[#282d39]/50 shadow-lg">
+<div class="relative">
+<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-2 ring-primary/30 ring-offset-2 ring-offset-[#111318] shadow-lg" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight">Juan Pérez</h1>
+<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate">Usuario Premium</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-2">
+<a id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="DashboardCliente.html">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a id="nav-sorteos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="ListadoSorteosActivos.html">
+<span class="material-symbols-outlined text-xl">local_activity</span>
+<p class="text-sm font-medium">Sorteos</p>
+</a>
+<a id="nav-boletos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="MisBoletosCliente.html">
+<span class="material-symbols-outlined text-xl">confirmation_number</span>
+<p class="text-sm font-medium">Mis Boletos</p>
+</a>
+<a id="nav-ganadores" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30" href="MisGanancias.html">
+<span class="material-symbols-outlined text-xl">emoji_events</span>
+<p class="text-sm font-bold">Ganadores</p>
+</a>
+<a id="nav-perfil" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="AjustesPefilCliente.html">
+<span class="material-symbols-outlined text-xl">person</span>
+<p class="text-sm font-medium">Perfil</p>
+</a>
+<a id="nav-soporte" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="ContactoSoporteCliente.html">
+<span class="material-symbols-outlined text-xl">support_agent</span>
+>>>>>>> feature/ismael
 <p class="text-sm font-medium">Soporte</p>
 </a>
 </nav>
 </div>
 <div class="mt-auto p-6">
+<<<<<<< HEAD
 <button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]">
+=======
+<button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-xl h-11 px-4 bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-[#9da6b9] hover:text-white text-sm font-bold transition-all duration-200 border border-[#3e4552]/50 shadow-lg hover:shadow-xl">
+>>>>>>> feature/ismael
 <span class="material-symbols-outlined text-[20px]">logout</span>
 <span>Cerrar Sesión</span>
 </button>
@@ -113,7 +159,11 @@
 <!-- Main Content -->
 <main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
 <!-- Top Header -->
+<<<<<<< HEAD
 <header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+=======
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39]/50 bg-gradient-to-r from-[#111318] via-[#151a23] to-[#111318] backdrop-blur-sm sticky top-0 z-20 shadow-lg shadow-black/10">
+>>>>>>> feature/ismael
 <!-- Mobile Menu Toggle -->
 <button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
 <span class="material-symbols-outlined">menu</span>
@@ -126,25 +176,47 @@
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
 <div class="max-w-[1280px] mx-auto">
 <!-- Page Header -->
+<<<<<<< HEAD
 <div class="mb-8 animate-fade-in-up">
 <h1 class="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">Mis Ganancias</h1>
 <p class="text-text-secondary text-base md:text-lg">
+=======
+<div class="mb-8">
+<h1 class="text-3xl md:text-4xl font-black text-white tracking-tight mb-3 bg-gradient-to-r from-white via-white to-[#9da6b9] bg-clip-text text-transparent">Mis Ganancias</h1>
+<p class="text-[#9da6b9] text-base md:text-lg leading-relaxed">
+>>>>>>> feature/ismael
                 ¡Felicidades por tus premios! Aquí puedes gestionar tus victorias y el estado de entrega.
             </p>
 </div>
 <!-- Stats Grid -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 <!-- Stat Card 1 -->
+<<<<<<< HEAD
 <div class="relative overflow-hidden rounded-xl bg-card-dark border border-[#282d39] p-6 shadow-lg group hover:border-[#3b4254] transition-all">
 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
 <span class="material-symbols-outlined text-6xl text-primary">emoji_events</span>
 </div>
 <div class="relative z-10 flex flex-col gap-1">
 <p class="text-text-secondary text-sm font-medium uppercase tracking-wider">Total Premios</p>
+=======
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-primary/30 transition-all duration-300 hover:shadow-primary/10 hover:-translate-y-1">
+<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+<span class="material-symbols-outlined text-6xl text-primary">emoji_events</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<div class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-xl">emoji_events</span>
+</div>
+<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Total Premios</p>
+</div>
+>>>>>>> feature/ismael
 <p class="text-white text-4xl font-black tracking-tight">3</p>
 </div>
 </div>
 <!-- Stat Card 2 -->
+<<<<<<< HEAD
 <div class="relative overflow-hidden rounded-xl bg-card-dark border border-[#282d39] p-6 shadow-lg group hover:border-[#3b4254] transition-all">
 <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
 <span class="material-symbols-outlined text-6xl text-green-500">payments</span>
@@ -162,11 +234,43 @@
 <div class="relative z-10 flex flex-col gap-1">
 <p class="text-text-secondary text-sm font-medium uppercase tracking-wider">Pendientes de Entrega</p>
 <p class="text-white text-4xl font-black tracking-tight text-yellow-500">1</p>
+=======
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-green-500/30 transition-all duration-300 hover:shadow-green-500/10 hover:-translate-y-1">
+<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+<span class="material-symbols-outlined text-6xl text-green-500">payments</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<div class="rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-2 border border-green-500/20">
+<span class="material-symbols-outlined text-green-400 text-xl">payments</span>
+</div>
+<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Valor Estimado</p>
+</div>
+<p class="text-white text-4xl font-black tracking-tight">$2,500 <span class="text-lg font-normal text-[#9da6b9]">USD</span></p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-yellow-500/30 transition-all duration-300 hover:shadow-yellow-500/10 hover:-translate-y-1">
+<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+<span class="material-symbols-outlined text-6xl text-yellow-500">local_shipping</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative z-10 flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<div class="rounded-lg bg-gradient-to-br from-yellow-500/20 to-amber-500/20 p-2 border border-yellow-500/20">
+<span class="material-symbols-outlined text-yellow-400 text-xl">local_shipping</span>
+</div>
+<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Pendientes de Entrega</p>
+</div>
+<p class="text-yellow-400 text-4xl font-black tracking-tight">1</p>
+>>>>>>> feature/ismael
 </div>
 </div>
 </div>
 <!-- Filters & Actions -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<<<<<<< HEAD
 <div class="flex gap-2 p-1 bg-card-dark rounded-lg border border-[#282d39]">
 <button class="px-4 py-1.5 rounded bg-[#282d39] text-white text-sm font-medium shadow-sm transition-all hover:bg-[#323846]">Todos</button>
 <button class="px-4 py-1.5 rounded text-text-secondary hover:text-white hover:bg-[#282d39] text-sm font-medium transition-all">Pendientes</button>
@@ -181,11 +285,28 @@
 </select>
 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400">
 <span class="material-symbols-outlined">expand_more</span>
+=======
+<div class="flex gap-2 p-1.5 bg-gradient-to-br from-card-dark to-[#151a23] rounded-xl border border-[#282d39]/50 shadow-lg">
+<button class="px-5 py-2 rounded-lg bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-0.5 active:translate-y-0">Todos</button>
+<button class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Pendientes</button>
+<button class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Entregados</button>
+</div>
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<div class="relative w-full sm:w-52">
+<select class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary block px-4 py-3 pr-10 appearance-none cursor-pointer transition-all duration-200 shadow-inner">
+<option class="bg-[#0d1117] text-white">Más recientes</option>
+<option class="bg-[#0d1117] text-white">Más antiguos</option>
+<option class="bg-[#0d1117] text-white">Mayor valor</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-[#9da6b9]">
+<span class="material-symbols-outlined text-xl">expand_more</span>
+>>>>>>> feature/ismael
 </div>
 </div>
 </div>
 </div>
 <!-- Main Table -->
+<<<<<<< HEAD
 <div class="rounded-xl border border-[#282d39] bg-card-dark overflow-hidden shadow-xl">
 <div class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
@@ -195,10 +316,22 @@
 <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[20%]">Fecha Ganada</th>
 <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[20%]">Estado</th>
 <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%] text-right">Acciones</th>
+=======
+<div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] overflow-hidden shadow-2xl shadow-black/20">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gradient-to-r from-[#1a1f28] via-[#1e2330] to-[#1a1f28] border-b border-[#282d39]/50">
+<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[35%]">Sorteo / Premio</th>
+<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">Fecha Ganada</th>
+<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">Estado</th>
+<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[25%] text-right">Acciones</th>
+>>>>>>> feature/ismael
 </tr>
 </thead>
 <tbody class="divide-y divide-[#282d39]">
 <!-- Row 1: Pending -->
+<<<<<<< HEAD
 <tr class="group hover:bg-[#282d39]/50 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-4">
@@ -217,18 +350,44 @@
 </td>
 <td class="px-6 py-4">
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-semibold">
+=======
+<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+<img alt="iPhone 15 Pro Max" class="w-full h-full object-cover" data-alt="Smartphone displaying a colorful gradient screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAub5nUbnJPBs-01XDg3mJUvVygvkojxY5qfDu1PvaHe5_zHLuy-pUFXPz7Zowu8c1c_kfrsFYay5aJ39E3Y02oggRP02sy49d2Y4qN7aS8WH7Y1-Vfrw9_v1FJPhUuZ3xcInIE3gNe9B8UsiCCh4Z91havDmfNHFxkYOAbaXxQTLYQfy5SHG53OykA9WxsXhKAj7MghjO_jmv97kDehXoO2DgjyyJP2cP4iiVpiacMrMtXzonk3QkJXl80TGYxCBEtMKwDNZEfVB8"/>
+</div>
+<div>
+<p class="text-white font-bold text-sm group-hover:text-white">Gran Sorteo iPhone 15</p>
+<p class="text-[#9da6b9] text-xs mt-1">iPhone 15 Pro Max - 256GB</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-white text-sm font-semibold">12 Oct 2023</span>
+<p class="text-[#566074] text-xs mt-1">Ticket #4921</p>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold shadow-lg shadow-yellow-500/10">
+>>>>>>> feature/ismael
 <span class="material-symbols-outlined text-[16px]">pending</span>
                                     Pendiente de Contacto
                                 </div>
 </td>
+<<<<<<< HEAD
 <td class="px-6 py-4 text-right">
 <button class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-medium transition-all shadow-lg shadow-primary/20">
+=======
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white text-sm font-bold transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0">
+>>>>>>> feature/ismael
 <span class="mr-2">Reclamar</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
 </td>
 </tr>
 <!-- Row 2: Delivered -->
+<<<<<<< HEAD
 <tr class="group hover:bg-[#282d39]/50 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-4">
@@ -247,17 +406,43 @@
 </td>
 <td class="px-6 py-4">
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-semibold">
+=======
+<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+<img alt="Cash Money Icon" class="w-full h-full object-cover" data-alt="Stack of dollar bills" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOnEsMJyCPwTsGwmiPDVgfIh5nwvOG_ensMiKv8aK-XkNDr9_lVIt9RXM8zJ2qx1wDN4Fng4nR6MdJzqe316A3HFOEQ_JfvCUcwJpAh9Bvd4_0Feti8gzuZXkcST7jsePWEVKj2nGCd24s_Y6PIzLjMx6HYFyIuHjCgOayZVKRr67ob4izJUMOxYLzl86y-PLpz88dGY6_dfyvCnirD9z1XxvC114rF0Thfrxeb_Q4vBSYk13WQoQi6WIUhv7wtp_ji4a4ZTvmSCs"/>
+</div>
+<div>
+<p class="text-white font-bold text-sm group-hover:text-white">Bono Efectivo Semanal</p>
+<p class="text-[#9da6b9] text-xs mt-1">$500 USD Transferencia</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-white text-sm font-semibold">05 Sep 2023</span>
+<p class="text-[#566074] text-xs mt-1">Ticket #8821</p>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-lg shadow-green-500/10">
+>>>>>>> feature/ismael
 <span class="material-symbols-outlined text-[16px]">check_circle</span>
                                     Entregado
                                 </div>
 </td>
+<<<<<<< HEAD
 <td class="px-6 py-4 text-right">
 <button class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-[#282d39] hover:bg-[#323846] text-white text-sm font-medium border border-[#3b4354] transition-all">
+=======
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+>>>>>>> feature/ismael
                                     Ver Detalles
                                 </button>
 </td>
 </tr>
 <!-- Row 3: Delivered -->
+<<<<<<< HEAD
 <tr class="group hover:bg-[#282d39]/50 transition-colors">
 <td class="px-6 py-4">
 <div class="flex items-center gap-4">
@@ -276,12 +461,37 @@
 </td>
 <td class="px-6 py-4">
 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-semibold">
+=======
+<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
+<td class="px-6 py-5">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+<img alt="Laptop Computer" class="w-full h-full object-cover" data-alt="Silver laptop computer open on a desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD--MpFx7gwrHP8KcJeEcxCdwf1X9rZfRXagGmnBNCuH0EqooxcFMYyj_tHwdoJ1VPZBwS9SlkaEXQ-QxF1ZvR_gJ8-0fHWuqxKv1kThZDnrxRUTjX0N9_VDZ4bQHVD9GJOaZzRFRYk1afHKrjhZXLvCYbbNznfMKGLQhBSEiV9zoQ_yVM3D9sZ6v7W5F0HwaOSTvsbk5N5HSvvYxUZusoQ5pc8AJ0-f-3fChxMcUx6vjaPFA9Ay7_-QhIpOh_XfMaj6MmQOxdMudw"/>
+</div>
+<div>
+<p class="text-white font-bold text-sm group-hover:text-white">Sorteo Laptop Gamer</p>
+<p class="text-[#9da6b9] text-xs mt-1">MacBook Pro 14"</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-white text-sm font-semibold">15 Ago 2023</span>
+<p class="text-[#566074] text-xs mt-1">Ticket #1029</p>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-lg shadow-green-500/10">
+>>>>>>> feature/ismael
 <span class="material-symbols-outlined text-[16px]">check_circle</span>
                                     Entregado
                                 </div>
 </td>
+<<<<<<< HEAD
 <td class="px-6 py-4 text-right">
 <button class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-[#282d39] hover:bg-[#323846] text-white text-sm font-medium border border-[#3b4354] transition-all">
+=======
+<td class="px-6 py-5 text-right">
+<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+>>>>>>> feature/ismael
                                     Ver Detalles
                                 </button>
 </td>
@@ -290,6 +500,7 @@
 </table>
 </div>
 <!-- Pagination -->
+<<<<<<< HEAD
 <div class="flex items-center justify-between px-6 py-4 border-t border-[#282d39] bg-card-dark">
 <p class="text-sm text-text-secondary">Mostrando 1-3 de 3 resultados</p>
 <div class="flex gap-2">
@@ -299,6 +510,17 @@
 <button class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-white text-sm font-medium">1</button>
 <button class="flex items-center justify-center w-8 h-8 rounded-lg bg-[#282d39] text-text-secondary hover:text-white hover:bg-[#323846] disabled:opacity-50 disabled:cursor-not-allowed">
 <span class="material-symbols-outlined text-sm">chevron_right</span>
+=======
+<div class="flex items-center justify-between px-6 py-5 border-t border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28] to-[#151a23]">
+<p class="text-sm text-[#9da6b9] font-medium">Mostrando 1-3 de 3 resultados</p>
+<div class="flex gap-2">
+<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20">1</button>
+<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+>>>>>>> feature/ismael
 </button>
 </div>
 </div>
@@ -313,10 +535,16 @@
 <button class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors">
                 Ver Sorteos Activos
             </button>
+<<<<<<< HEAD
 </div>
 </main>
 </div>
 </div>
+=======
+        </div>
+    </div>
+    </div>
+>>>>>>> feature/ismael
 </main>
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
@@ -351,12 +579,24 @@ function initMisGananciasButtons() {
 
 // Función para inicializar filtros (Todos, Pendientes, Entregados)
 function initGananciasFilters() {
+<<<<<<< HEAD
     const filterButtons = document.querySelectorAll('.flex.gap-2.p-1 button');
+=======
+    // Buscar el contenedor de filtros de manera más específica
+    const filtersSection = document.querySelector('div.flex.flex-col.sm\\:flex-row.justify-between');
+    if (!filtersSection) return;
+    
+    const filterContainer = filtersSection.querySelector('div.flex.gap-2');
+    if (!filterContainer) return;
+    
+    const filterButtons = filterContainer.querySelectorAll('button');
+>>>>>>> feature/ismael
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             // Remover clases activas de todos
             filterButtons.forEach(btn => {
+<<<<<<< HEAD
                 btn.classList.remove('bg-[#282d39]', 'text-white');
                 btn.classList.add('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]');
             });
@@ -364,6 +604,15 @@ function initGananciasFilters() {
             // Agregar clases activas al clickeado
             this.classList.remove('text-text-secondary', 'hover:text-white', 'hover:bg-[#282d39]');
             this.classList.add('bg-[#282d39]', 'text-white');
+=======
+                btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+                btn.classList.add('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
+            });
+            
+            // Agregar clases activas al clickeado
+            this.classList.remove('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
+            this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+>>>>>>> feature/ismael
             
             // Filtrar ganancias
             const filterText = this.textContent.trim().toLowerCase();
@@ -446,6 +695,7 @@ function sortGanancias(sortOption) {
 
 // Función para inicializar botones de acciones en la tabla
 function initGananciasActions() {
+<<<<<<< HEAD
     // Botón "Reclamar"
     const reclamarButtons = Array.from(document.querySelectorAll('button')).filter(
         btn => btn.textContent.includes('Reclamar')
@@ -458,6 +708,35 @@ function initGananciasActions() {
             const premioName = row.querySelector('p.text-text-secondary')?.textContent || 'Premio';
             const fecha = row.querySelector('td:nth-child(2) span')?.textContent || 'N/A';
             const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent || 'N/A';
+=======
+    // Buscar botones dentro de la tabla específicamente
+    const table = document.querySelector('table');
+    if (!table) return;
+    
+    // Botón "Reclamar"
+    const reclamarButtons = Array.from(table.querySelectorAll('button')).filter(
+        btn => {
+            const text = btn.textContent.trim();
+            return text.includes('Reclamar');
+        }
+    );
+    
+    reclamarButtons.forEach(button => {
+        // Evitar múltiples event listeners
+        button.removeEventListener('click', button._reclamarHandler);
+        button._reclamarHandler = function(e) {
+            e.stopPropagation();
+            const row = this.closest('tr');
+            if (!row) return;
+            
+            // Obtener el nombre del sorteo (primer párrafo en la primera columna)
+            const firstCol = row.querySelector('td:first-child');
+            const allParagraphs = firstCol ? Array.from(firstCol.querySelectorAll('p')) : [];
+            const sorteoName = allParagraphs[0]?.textContent?.trim() || 'Sorteo';
+            const premioName = allParagraphs[1]?.textContent?.trim() || allParagraphs[0]?.textContent?.trim() || 'Premio';
+            const fecha = row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent?.trim() || 'N/A';
+>>>>>>> feature/ismael
             
             customConfirm(`¿Deseas reclamar el premio "${premioName}" del sorteo "${sorteoName}"?\n\nFecha ganada: ${fecha}\n${ticketNumber}\n\nSe te pedirá que proporciones información de contacto para coordinar la entrega.`, 'Reclamar Premio', 'help').then(confirmed => {
                 if (confirmed) {
@@ -465,6 +744,7 @@ function initGananciasActions() {
                     // Aquí se podría actualizar el estado del premio o redirigir a un formulario
                 }
             });
+<<<<<<< HEAD
         });
     });
     
@@ -481,6 +761,37 @@ function initGananciasActions() {
             const fecha = row.querySelector('td:nth-child(2) span')?.textContent || 'N/A';
             const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent || 'N/A';
             const estado = row.querySelector('.inline-flex')?.textContent || 'N/A';
+=======
+        };
+        button.addEventListener('click', button._reclamarHandler);
+    });
+    
+    // Botones "Ver Detalles"
+    const verDetallesButtons = Array.from(table.querySelectorAll('button')).filter(
+        btn => {
+            const text = btn.textContent.trim();
+            return text.includes('Ver Detalles');
+        }
+    );
+    
+    verDetallesButtons.forEach(button => {
+        // Evitar múltiples event listeners
+        button.removeEventListener('click', button._detallesHandler);
+        button._detallesHandler = function(e) {
+            e.stopPropagation();
+            const row = this.closest('tr');
+            if (!row) return;
+            
+            // Obtener el nombre del sorteo (primer párrafo en la primera columna)
+            const firstCol = row.querySelector('td:first-child');
+            const allParagraphs = firstCol ? Array.from(firstCol.querySelectorAll('p')) : [];
+            const sorteoName = allParagraphs[0]?.textContent?.trim() || 'Sorteo';
+            const premioName = allParagraphs[1]?.textContent?.trim() || allParagraphs[0]?.textContent?.trim() || 'Premio';
+            const fecha = row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent?.trim() || 'N/A';
+            const estadoBadge = row.querySelector('.inline-flex');
+            const estado = estadoBadge ? estadoBadge.textContent.replace(/\s+/g, ' ').trim() : 'N/A';
+>>>>>>> feature/ismael
             
             customAlert(`Sorteo: ${sorteoName}\n` +
                   `Premio: ${premioName}\n` +
@@ -494,13 +805,26 @@ function initGananciasActions() {
                   `- Contacto del equipo de entrega`, 'Detalles del Premio', 'info');
             
             // Aquí se podría abrir un modal con más detalles o redirigir a una página de detalles
+<<<<<<< HEAD
         });
+=======
+        };
+        button.addEventListener('click', button._detallesHandler);
+>>>>>>> feature/ismael
     });
 }
 
 // Función para inicializar paginación
 function initPagination() {
+<<<<<<< HEAD
     const paginationButtons = document.querySelectorAll('.flex.gap-2 button');
+=======
+    // Buscar el contenedor de paginación específicamente (el div que contiene "Mostrando 1-3 de 3 resultados")
+    const paginationSection = document.querySelector('div.flex.items-center.justify-between.px-6.py-5');
+    if (!paginationSection) return;
+    
+    const paginationButtons = paginationSection.querySelectorAll('button');
+>>>>>>> feature/ismael
     
     paginationButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -523,15 +847,27 @@ function initPagination() {
                 
                 // Remover clase activa de todos los botones numéricos
                 paginationButtons.forEach(btn => {
+<<<<<<< HEAD
                     if (!isNaN(parseInt(btn.textContent.trim()))) {
                         btn.classList.remove('bg-primary', 'text-white');
                         btn.classList.add('bg-[#282d39]', 'text-text-secondary', 'hover:text-white', 'hover:bg-[#323846]');
+=======
+                    const btnText = btn.textContent.trim();
+                    if (!isNaN(parseInt(btnText)) && btnText !== '') {
+                        btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+                        btn.classList.add('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
+>>>>>>> feature/ismael
                     }
                 });
                 
                 // Agregar clase activa al clickeado
+<<<<<<< HEAD
                 this.classList.remove('bg-[#282d39]', 'text-text-secondary', 'hover:text-white', 'hover:bg-[#323846]');
                 this.classList.add('bg-primary', 'text-white');
+=======
+                this.classList.remove('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
+                this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+>>>>>>> feature/ismael
                 
                 customToast(`Cargando página ${pageNum}...`, 'info', 1500);
             }
@@ -552,6 +888,7 @@ function initEmptyStateButton() {
         });
     }
 }
+<<<<<<< HEAD
 
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
@@ -568,3 +905,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Página para ver las ganancias como cliente después de iniciar sesión
      Se ve esta página para ver las ganancias obtenidas por los sorteos ganados y el estado de entrega de los premios. -->
+=======
+</script>
+</body></html>
+>>>>>>> feature/ismael

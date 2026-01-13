@@ -194,6 +194,7 @@
 <div class="w-full px-6 lg:px-10 pb-20">
 <div class="max-w-4xl mx-auto">
 <!-- Category Chips -->
+<<<<<<< HEAD
 <div class="flex flex-wrap gap-3 py-6 mb-6">
 <button class="flex h-9 items-center justify-center px-5 rounded-full bg-primary text-white text-sm font-semibold shadow-md shadow-primary/20 transition-transform hover:scale-105">
                         Todo
@@ -211,6 +212,25 @@
                         Mi Cuenta
                     </button>
 <button class="flex h-9 items-center justify-center px-5 rounded-full bg-card-dark hover:bg-[#353b4b] border border-[#282d39] text-white text-sm font-medium transition-all hover:scale-105">
+=======
+<div class="flex flex-wrap gap-3 py-6 mb-6" id="faq-filter-buttons">
+<button data-filter="todo" class="faq-filter-btn flex h-9 items-center justify-center px-5 rounded-full bg-primary text-white text-sm font-semibold shadow-md shadow-primary/20 transition-transform hover:scale-105">
+                        Todo
+                    </button>
+<button data-filter="sorteos" class="faq-filter-btn flex h-9 items-center justify-center px-5 rounded-full bg-card-dark hover:bg-[#353b4b] border border-[#282d39] text-white text-sm font-medium transition-all hover:scale-105">
+<span class="material-symbols-outlined text-[18px] mr-2">confirmation_number</span>
+                        Sobre Sorteos
+                    </button>
+<button data-filter="pagos" class="faq-filter-btn flex h-9 items-center justify-center px-5 rounded-full bg-card-dark hover:bg-[#353b4b] border border-[#282d39] text-white text-sm font-medium transition-all hover:scale-105">
+<span class="material-symbols-outlined text-[18px] mr-2">payments</span>
+                        Pagos
+                    </button>
+<button data-filter="cuenta" class="faq-filter-btn flex h-9 items-center justify-center px-5 rounded-full bg-card-dark hover:bg-[#353b4b] border border-[#282d39] text-white text-sm font-medium transition-all hover:scale-105">
+<span class="material-symbols-outlined text-[18px] mr-2">account_circle</span>
+                        Mi Cuenta
+                    </button>
+<button data-filter="ganadores" class="faq-filter-btn flex h-9 items-center justify-center px-5 rounded-full bg-card-dark hover:bg-[#353b4b] border border-[#282d39] text-white text-sm font-medium transition-all hover:scale-105">
+>>>>>>> feature/ismael
 <span class="material-symbols-outlined text-[18px] mr-2">emoji_events</span>
                         Ganadores
                     </button>
@@ -218,7 +238,11 @@
 <!-- Questions List -->
 <div class="space-y-4">
 <!-- Section: Sobre Sorteos (Using Details/Summary for Accordion) -->
+<<<<<<< HEAD
 <div class="mb-8">
+=======
+<div class="mb-8 faq-section" data-category="sorteos">
+>>>>>>> feature/ismael
 <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">confirmation_number</span>
                             Sobre Sorteos
@@ -263,7 +287,11 @@
 </div>
 </div>
 <!-- Section: Pagos -->
+<<<<<<< HEAD
 <div class="mb-8">
+=======
+<div class="mb-8 faq-section" data-category="pagos">
+>>>>>>> feature/ismael
 <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">payments</span>
                             Pagos y Reembolsos
@@ -301,7 +329,11 @@
 </div>
 </div>
 <!-- Section: Mi Cuenta -->
+<<<<<<< HEAD
 <div class="mb-8">
+=======
+<div class="mb-8 faq-section" data-category="cuenta">
+>>>>>>> feature/ismael
 <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">account_circle</span>
                             Mi Cuenta
@@ -321,6 +353,42 @@
 </details>
 </div>
 </div>
+<<<<<<< HEAD
+=======
+<!-- Section: Ganadores -->
+<div class="mb-8 faq-section" data-category="ganadores">
+<h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">emoji_events</span>
+                            Ganadores
+                        </h3>
+<div class="space-y-3">
+<!-- Question 7 -->
+<details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden transition-all duration-300 hover:border-primary/50 open:ring-1 open:ring-primary/50">
+<summary class="flex items-center justify-between p-5 cursor-pointer select-none">
+<h4 class="text-base font-semibold text-white group-hover:text-primary transition-colors">¿Cómo sé si gané un sorteo?</h4>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-5 pb-5 pt-0">
+<p class="text-text-answer leading-relaxed text-sm">
+                                        Si resultas ganador, recibirás una notificación inmediata por correo electrónico y SMS. También puedes verificar tu estado en la sección de <a class="text-primary hover:underline" href="MisGanancias.html">Mis Ganancias</a> en tu cuenta, donde se mostrará un resumen de todos tus premios y su estado de entrega.
+                                    </p>
+</div>
+</details>
+<!-- Question 8 -->
+<details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden transition-all duration-300 hover:border-primary/50 open:ring-1 open:ring-primary/50">
+<summary class="flex items-center justify-between p-5 cursor-pointer select-none">
+<h4 class="text-base font-semibold text-white group-hover:text-primary transition-colors">¿Cómo reclamar mi premio?</h4>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-transform duration-300 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-5 pb-5 pt-0">
+<p class="text-text-answer leading-relaxed text-sm">
+                                        Una vez que recibas la notificación de que ganaste, ve a la sección de <a class="text-primary hover:underline" href="MisGanancias.html">Mis Ganancias</a> y haz clic en el botón "Reclamar" del premio correspondiente. Te pediremos que proporciones información de contacto para coordinar la entrega. Nuestro equipo se pondrá en contacto contigo en un plazo de 24-48 horas.
+                                    </p>
+</div>
+</details>
+</div>
+</div>
+>>>>>>> feature/ismael
 </div>
 <!-- Still need help? CTA -->
 <div class="mt-12 rounded-2xl bg-gradient-to-br from-card-dark to-[#0f1219] border border-[#282d39] p-8 text-center relative overflow-hidden">
@@ -360,7 +428,120 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('soporte');
     }
+<<<<<<< HEAD
 });
+=======
+    
+    // Inicializar funcionalidad de filtros FAQ
+    initFAQFilters();
+    
+    // Verificar si hay un parámetro de sección en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const section = urlParams.get('section');
+    
+    if (section) {
+        // Esperar un momento para que el DOM esté completamente cargado
+        setTimeout(() => {
+            activateSection(section);
+        }, 100);
+    }
+});
+
+// Función para activar una sección específica
+function activateSection(sectionName) {
+    const filterButtons = document.querySelectorAll('.faq-filter-btn');
+    const faqSections = document.querySelectorAll('.faq-section');
+    
+    // Buscar el botón correspondiente
+    const targetButton = Array.from(filterButtons).find(btn => 
+        btn.getAttribute('data-filter') === sectionName
+    );
+    
+    if (targetButton) {
+        // Remover estilos activos de todos los botones
+        filterButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+            btn.classList.add('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+        });
+        
+        // Agregar estilos activos al botón objetivo
+        targetButton.classList.remove('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+        targetButton.classList.add('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+        
+        // Filtrar secciones
+        if (sectionName === 'todo') {
+            // Mostrar todas las secciones
+            faqSections.forEach(section => {
+                section.style.display = '';
+            });
+        } else {
+            // Mostrar solo la sección correspondiente
+            faqSections.forEach(section => {
+                const category = section.getAttribute('data-category');
+                if (category === sectionName) {
+                    section.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+        
+        // Scroll suave hacia la sección
+        const targetSection = document.querySelector(`.faq-section[data-category="${sectionName}"]`);
+        if (targetSection) {
+            setTimeout(() => {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+}
+
+// Función para inicializar filtros de FAQ
+function initFAQFilters() {
+    const filterButtons = document.querySelectorAll('.faq-filter-btn');
+    const faqSections = document.querySelectorAll('.faq-section');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            // Remover estilos activos de todos los botones
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+                btn.classList.add('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+            });
+            
+            // Agregar estilos activos al botón clickeado
+            this.classList.remove('bg-card-dark', 'hover:bg-[#353b4b]', 'border', 'border-[#282d39]', 'text-white', 'font-medium');
+            this.classList.add('bg-primary', 'text-white', 'font-semibold', 'shadow-md', 'shadow-primary/20');
+            
+            // Filtrar secciones
+            if (filter === 'todo') {
+                // Mostrar todas las secciones
+                faqSections.forEach(section => {
+                    section.style.display = '';
+                });
+            } else {
+                // Mostrar solo la sección correspondiente
+                faqSections.forEach(section => {
+                    const category = section.getAttribute('data-category');
+                    if (category === filter) {
+                        section.style.display = '';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Scroll suave hacia arriba de las preguntas
+            const questionsContainer = document.querySelector('.space-y-4');
+            if (questionsContainer) {
+                questionsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+}
+>>>>>>> feature/ismael
 </script>
 
 </body></html>
