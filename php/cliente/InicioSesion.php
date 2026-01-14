@@ -21,10 +21,10 @@ $rolActual = isset($_GET['rol']) ? $_GET['rol'] : 'cliente';
 if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true) {
     $rolUsuario = $_SESSION['usuario_rol'] ?? '';
     if ($rolUsuario === 'Administrador') {
-        header('Location: administrador/DashboardAdmnistrador.html');
+        header('Location: ../administrador/DashboardAdmnistrador.php');
         exit;
     } else {
-        header('Location: cliente/DashboardCliente.html');
+        header('Location: DashboardCliente.php');
         exit;
     }
 }
@@ -112,10 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     
                     // Redirigir según el rol
                     if ($rolUsuario === 'Administrador') {
-                        header('Location: administrador/DashboardAdmnistrador.html');
+                        header('Location: ../administrador/DashboardAdmnistrador.php');
                         exit;
                     } else {
-                        header('Location: cliente/DashboardCliente.html');
+                        header('Location: DashboardCliente.php');
                         exit;
                     }
                 }
