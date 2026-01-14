@@ -73,7 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             }
             // Verificar contraseña
             elseif (!password_verify($password, $usuario['password_hash'])) {
-                $mensajeError = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+                // Verificar si el hash parece ser un hash válido (empieza con $2y$)
+                if (!str_starts_with($usuario['password_hash'], '$2y$') && 
+                    !str_starts_with($usuario['password_hash'], '$2a$') &&
+                    !str_starts_with($usuario['password_hash'], '$2b$')) {
+                    $mensajeError = 'Error: La contraseña en la base de datos no está hasheada correctamente. Contacta al administrador.';
+                    error_log("Usuario {$email} tiene un hash inválido: " . substr($usuario['password_hash'], 0, 20));
+                } else {
+                    $mensajeError = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+                }
             }
             // Verificar estado del usuario
             elseif ($usuario['estado'] !== 'Activo') {
@@ -245,7 +253,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">lock</span>
 </div>
-<input name="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="••••••••" type="password" required/>
+<input id="input-password-login" name="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-12 text-base font-normal leading-normal transition-all" placeholder="••••••••" type="password" required/>
+<button type="button" id="toggle-password-login" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9da6b9] hover:text-white transition-colors cursor-pointer" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 </div>
 <div class="flex justify-end mt-1">
 <a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="#">¿Olvidaste tu contraseña?</a>
@@ -259,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <div class="text-center pt-2">
 <p class="text-[#9da6b9] text-sm">
                                     ¿No tienes una cuenta? 
-                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="../../html-prototypes/CrearCuenta.html">Regístrate aquí</a>
+                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="CrearCuenta.php">Regístrate aquí</a>
 </p>
 </div>
 </form>
@@ -274,5 +285,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 </main>
 </div>
 </div>
+<script>
+// Función para toggle de mostrar/ocultar contraseña
+(function() {
+    'use strict';
+    
+    function initPasswordToggle() {
+        const input = document.getElementById('input-password-login');
+        const button = document.getElementById('toggle-password-login');
+        
+        if (!input || !button) return;
+        
+        button.addEventListener('click', function() {
+            const icon = button.querySelector('.material-symbols-outlined');
+            if (!icon) return;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+                button.setAttribute('aria-label', 'Ocultar contraseña');
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+                button.setAttribute('aria-label', 'Mostrar contraseña');
+            }
+        });
+    }
+    
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPasswordToggle);
+    } else {
+        initPasswordToggle();
+    }
+})();
+</script>
 </body>
 </html>

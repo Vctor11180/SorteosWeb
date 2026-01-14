@@ -98,6 +98,7 @@
         initPasswordValidations();
         initSavePersonalInfo();
         initChangePassword();
+        initPasswordToggle();
         loadNotificationPreferences();
         initNotificationSwitches();
         initSavePreferences();
@@ -717,31 +718,38 @@
      */
     async function verifyCurrentPassword(password) {
         try {
-            // Simular verificación con el servidor (en producción sería una llamada real)
-            await new Promise(resolve => setTimeout(resolve, 800));
+            const response = await fetch('api_verificar_password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    password: password
+                })
+            });
             
-            // Obtener contraseña almacenada (en producción esto vendría del servidor)
-            const storedData = localStorage.getItem('userPassword');
-            if (!storedData) {
-                // Si no hay contraseña almacenada, asumir que es la primera vez
-                // En producción, esto se verificaría contra la base de datos
-                return { valid: true, message: '' };
+            const result = await response.json();
+            
+            if (!response.ok || !result.success) {
+                return {
+                    valid: false,
+                    message: result.message || 'Error al verificar la contraseña'
+                };
             }
             
-            const hashedStored = JSON.parse(storedData);
-            const passwordHash = hashPassword(password);
-            
-            // Verificar contraseña
-            if (passwordHash !== hashedStored) {
-                return { valid: false, message: 'La contraseña actual es incorrecta' };
-            }
-            
-            return { valid: true, message: '' };
+            return {
+                valid: result.valid || false,
+                message: result.message || (result.valid ? 'Contraseña correcta' : 'Contraseña incorrecta')
+            };
         } catch (error) {
             console.error('Error al verificar contraseña:', error);
-            return { valid: false, message: 'Error al verificar la contraseña. Por favor intenta de nuevo.' };
+            return {
+                valid: false,
+                message: 'Error al verificar la contraseña. Inténtalo más tarde.'
+            };
         }
     }
+    
     
     /**
      * Inicializa las validaciones en tiempo real de los campos del formulario
@@ -1038,10 +1046,43 @@
             setButtonLoading(true);
             
             try {
-                // Simular envío al servidor (en producción sería una llamada real)
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Enviar datos al servidor
+                const response = await fetch('api_actualizar_perfil.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        email: email,
+                        telefono: telefono,
+                        direccion: direccion
+                    })
+                });
                 
-                // Preparar datos para guardar
+                console.log('Respuesta del servidor - Status:', response.status);
+                
+                // Leer el texto de la respuesta primero para debugging
+                const responseText = await response.text();
+                console.log('Respuesta del servidor - Texto crudo:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Error al parsear JSON de la respuesta:', e);
+                    console.error('Texto de respuesta:', responseText);
+                    throw new Error('Error al procesar la respuesta del servidor. Por favor intenta de nuevo.');
+                }
+                
+                console.log('Respuesta del servidor - Resultado parseado:', result);
+                
+                if (!response.ok || !result.success) {
+                    console.error('Error en la respuesta del servidor:', result);
+                    throw new Error(result.message || 'Error al actualizar el perfil');
+                }
+                
+                // Preparar datos para guardar en localStorage
                 const profileData = {
                     nombre: nombre,
                     email: email,
@@ -1050,24 +1091,7 @@
                     fechaActualizacion: new Date().toISOString()
                 };
                 
-                // Encriptar datos sensibles antes de guardar
-                const encryptedData = encryptData({
-                    email: email,
-                    telefono: telefono,
-                    direccion: direccion
-                });
-                
-                // Guardar en localStorage
-                const dataToStore = {
-                    nombre: nombre,
-                    email: email, // Mantener sin encriptar para mostrar
-                    telefono: telefono, // Mantener sin encriptar para mostrar
-                    direccion: direccion, // Mantener sin encriptar para mostrar
-                    encrypted: encryptedData, // Versión encriptada para seguridad
-                    fechaActualizacion: new Date().toISOString()
-                };
-                
-                localStorage.setItem('profileData', JSON.stringify(dataToStore));
+                localStorage.setItem('profileData', JSON.stringify(profileData));
                 
                 // Actualizar también en clientData si existe
                 const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
@@ -1083,19 +1107,41 @@
                 
                 // Mostrar mensaje de éxito
                 if (typeof customToast === 'function') {
-                    customToast('Información personal guardada exitosamente', 'success', 3000);
+                    customToast(result.message || 'Información personal guardada exitosamente', 'success', 3000);
                 } else if (typeof customAlert === 'function') {
-                    customAlert('Información personal guardada exitosamente', 'Éxito', 'success');
+                    customAlert(result.message || 'Información personal guardada exitosamente', 'Éxito', 'success');
                 }
                 
             } catch (error) {
                 console.error('Error al guardar información:', error);
+                console.error('Stack trace:', error.stack);
                 setButtonLoading(false);
                 
+                let errorMessage = 'Error al guardar la información. Por favor intenta de nuevo.';
+                
+                // Si el error tiene un mensaje más específico, usarlo
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                // Si hay una respuesta del servidor con un mensaje, usarlo
+                if (error.response) {
+                    try {
+                        const errorData = await error.response.json();
+                        if (errorData.message) {
+                            errorMessage = errorData.message;
+                        }
+                    } catch (e) {
+                        // Ignorar si no se puede parsear
+                    }
+                }
+                
                 if (typeof customToast === 'function') {
-                    customToast('Error al guardar la información. Por favor intenta de nuevo.', 'error');
+                    customToast(errorMessage, 'error', 5000);
                 } else if (typeof customAlert === 'function') {
-                    customAlert('Error al guardar la información. Por favor intenta de nuevo.', 'Error', 'error');
+                    customAlert(errorMessage, 'Error', 'error');
+                } else {
+                    alert(errorMessage);
                 }
             }
         });
@@ -1354,21 +1400,44 @@
             setPasswordButtonLoading(true);
             
             try {
-                // Simular envío al servidor (en producción sería una llamada real)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Encriptar la nueva contraseña
-                const hashedPassword = hashPassword(nuevaPassword);
-                
-                // Guardar contraseña encriptada (en producción esto se haría en el servidor)
-                localStorage.setItem('userPassword', JSON.stringify(hashedPassword));
-                
-                // Guardar fecha de actualización
-                const passwordData = {
-                    fechaActualizacion: new Date().toISOString(),
-                    hash: hashedPassword
+                // Preparar datos para enviar
+                const datosEnvio = {
+                    password_actual: actualPassword,
+                    password_nueva: nuevaPassword
                 };
-                localStorage.setItem('passwordData', JSON.stringify(passwordData));
+                
+                console.log('Enviando datos de contraseña al servidor');
+                
+                // Enviar datos al servidor
+                const response = await fetch('api_actualizar_password.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(datosEnvio)
+                });
+                
+                console.log('Respuesta del servidor (password) - Status:', response.status);
+                
+                // Leer el texto de la respuesta primero para debugging
+                const responseText = await response.text();
+                console.log('Respuesta del servidor (password) - Texto crudo:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Error al parsear JSON de la respuesta (password):', e);
+                    console.error('Texto de respuesta:', responseText);
+                    throw new Error('Error al procesar la respuesta del servidor. Por favor intenta de nuevo.');
+                }
+                
+                console.log('Respuesta del servidor (password) - Resultado parseado:', result);
+                
+                if (!response.ok || !result.success) {
+                    console.error('Error en la respuesta del servidor (password):', result);
+                    throw new Error(result.message || 'Error al actualizar la contraseña');
+                }
                 
                 // Limpiar campos
                 passwordActualInput.value = '';
@@ -1388,19 +1457,28 @@
                 
                 // Mostrar mensaje de éxito
                 if (typeof customToast === 'function') {
-                    customToast('Contraseña actualizada exitosamente', 'success', 3000);
+                    customToast(result.message || 'Contraseña actualizada exitosamente', 'success', 3000);
                 } else if (typeof customAlert === 'function') {
-                    customAlert('Contraseña actualizada exitosamente', 'Éxito', 'success');
+                    customAlert(result.message || 'Contraseña actualizada exitosamente', 'Éxito', 'success');
                 }
                 
             } catch (error) {
                 console.error('Error al actualizar contraseña:', error);
                 setPasswordButtonLoading(false);
                 
+                const errorMessage = error.message || 'Error al actualizar la contraseña. Por favor intenta de nuevo.';
+                
+                // Mostrar error específico en el campo correspondiente
+                if (errorMessage.includes('actual') || errorMessage.includes('incorrecta')) {
+                    showFieldError('input-password-actual', 'error-password-actual', errorMessage);
+                } else if (errorMessage.includes('nueva') || errorMessage.includes('diferente')) {
+                    showFieldError('input-password-nueva', 'error-password-nueva', errorMessage);
+                }
+                
                 if (typeof customToast === 'function') {
-                    customToast('Error al actualizar la contraseña. Por favor intenta de nuevo.', 'error');
+                    customToast(errorMessage, 'error');
                 } else if (typeof customAlert === 'function') {
-                    customAlert('Error al actualizar la contraseña. Por favor intenta de nuevo.', 'Error', 'error');
+                    customAlert(errorMessage, 'Error', 'error');
                 }
             }
         });
@@ -3024,6 +3102,39 @@
         
         // Cargar datos iniciales
         loadHistorialData();
+    }
+
+    /**
+     * Inicializa los botones de mostrar/ocultar contraseña
+     */
+    function initPasswordToggle() {
+        // Función para toggle de contraseña
+        function togglePassword(inputId, buttonId) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            
+            if (!input || !button) return;
+            
+            button.addEventListener('click', function() {
+                const icon = button.querySelector('.material-symbols-outlined');
+                if (!icon) return;
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = 'visibility_off';
+                    button.setAttribute('aria-label', 'Ocultar contraseña');
+                } else {
+                    input.type = 'password';
+                    icon.textContent = 'visibility';
+                    button.setAttribute('aria-label', 'Mostrar contraseña');
+                }
+            });
+        }
+        
+        // Inicializar toggles para cada campo de contraseña
+        togglePassword('input-password-actual', 'toggle-password-actual');
+        togglePassword('input-password-nueva', 'toggle-password-nueva');
+        togglePassword('input-password-confirmar', 'toggle-password-confirmar');
     }
 
     // Exportar funciones principales para uso externo si es necesario

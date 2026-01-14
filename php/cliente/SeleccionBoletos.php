@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * SeleccionBoletos
  * Sistema de Sorteos Web
@@ -361,8 +361,8 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 </main>
 
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
@@ -812,8 +812,8 @@ function saveSelectedTickets() {
 </script>
 
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * LandingPage
  * Sistema de Sorteos Web
@@ -13,7 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SorteosWeb - Gana Premios IncreÃ­bles</title>
+<title>SorteosWeb - Gana Premios Increíbles</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
@@ -56,11 +56,11 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="flex items-center gap-9">
 <a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.php">Inicio</a>
 <a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.php">Sorteos</a>
-<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.php">CÃ³mo Funciona</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.php">Cómo Funciona</a>
 <a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="index.php">Preguntas Frecuentes</a>
-<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="cliente/InicioSesion.php">Iniciar SesiÃ³n</a>
+<a class="text-sm font-medium leading-normal hover:text-primary transition-colors dark:text-gray-300 dark:hover:text-primary" href="cliente/InicioSesion.php">Iniciar Sesión</a>
 </nav>
-<a href="CrearCuenta.php" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary hover:bg-blue-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-blue-500/20">
+<a href="cliente/CrearCuenta.php" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary hover:bg-blue-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-blue-500/20">
 <span class="truncate">Registrarse</span>
 </a>
 </div>
@@ -74,10 +74,10 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="rounded-xl overflow-hidden relative min-h-[520px] flex flex-col items-center justify-center p-8 text-center bg-cover bg-center" data-alt="Excited people celebrating a victory with confetti in the background" style='background-image: linear-gradient(rgba(17, 24, 39, 0.7) 0%, rgba(17, 24, 39, 0.9) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBSlgNW9fJdrT5AdiqrOwvYQ226-o029jtB3KF4662QUnjyNWP_rBwZ4mkMeP3EfumRjv3akFDDVCVKpIAhqjbFOyAKDukTwwa2NlKlIRImqWYyYMaQQXF55xCOP35XwqwYOia6tuo89d6EMNg6DATMjllx1IiX3fzOnUk0axys3sxdur4pfSpYf5a--EuVYsvIcS5zHgJfURsd_fAPzBJM7lIUyHtKKARmkijjsFGg73R6ZJf5ODsBroCgjgPPpTwangVs07N_tCU");'>
 <div class="flex flex-col gap-4 max-w-[800px] z-10">
 <h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight drop-shadow-sm">
-                                Participa y Gana Premios IncreÃ­bles
+                                Participa y Gana Premios Increíbles
                             </h1>
 <h2 class="text-gray-300 text-base md:text-lg font-medium leading-relaxed max-w-2xl mx-auto">
-                                La plataforma mÃ¡s segura para participar en sorteos exclusivos. Compra tus boletos hoy y sÃ© el prÃ³ximo ganador de autos, viajes y tecnologÃ­a.
+                                La plataforma más segura para participar en sorteos exclusivos. Compra tus boletos hoy y sé el próximo ganador de autos, viajes y tecnología.
                             </h2>
 <div class="pt-6">
 <a href="index.php" class="inline-flex h-12 md:h-14 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-white shadow-lg shadow-blue-900/30 transition-transform hover:scale-105 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -91,8 +91,8 @@ if (session_status() === PHP_SESSION_NONE) {
 <section class="px-4 py-12 md:px-10 lg:px-40 flex flex-1 justify-center bg-white dark:bg-background-dark">
 <div class="w-full max-w-[1280px]">
 <div class="mb-12 text-center md:text-left">
-<h2 class="text-[#111318] dark:text-white text-3xl font-bold leading-tight tracking-tight mb-4">CÃ³mo Funciona</h2>
-<p class="text-gray-500 dark:text-gray-400 text-lg max-w-2xl">Participar es muy fÃ¡cil. Sigue estos tres sencillos pasos para entrar en la acciÃ³n hoy mismo.</p>
+<h2 class="text-[#111318] dark:text-white text-3xl font-bold leading-tight tracking-tight mb-4">Cómo Funciona</h2>
+<p class="text-gray-500 dark:text-gray-400 text-lg max-w-2xl">Participar es muy fácil. Sigue estos tres sencillos pasos para entrar en la acción hoy mismo.</p>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 <div class="flex flex-col gap-5 rounded-xl border border-[#e5e7eb] dark:border-dark-border bg-background-light dark:bg-dark-card p-8 transition-all hover:shadow-lg hover:-translate-y-1">
@@ -102,7 +102,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="flex flex-col gap-2">
 <h3 class="text-[#111318] dark:text-white text-xl font-bold">1. Elige tu Sorteo</h3>
 <p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-                                    Navega por nuestra lista de sorteos activos y selecciona el premio que mÃ¡s te guste, desde tecnologÃ­a hasta viajes.
+                                    Navega por nuestra lista de sorteos activos y selecciona el premio que más te guste, desde tecnología hasta viajes.
                                 </p>
 </div>
 </div>
@@ -113,7 +113,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="flex flex-col gap-2">
 <h3 class="text-[#111318] dark:text-white text-xl font-bold">2. Compra tus Boletos</h3>
 <p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">
-                                    Selecciona la cantidad de boletos que deseas. Cuantos mÃ¡s boletos, Â¡mÃ¡s oportunidades tienes de ganar!
+                                    Selecciona la cantidad de boletos que deseas. Cuantos más boletos, ¡más oportunidades tienes de ganar!
                                 </p>
 </div>
 </div>
@@ -150,7 +150,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="flex flex-col flex-1 p-5 gap-4">
 <div>
 <h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">MacBook Pro M3 Max</h3>
-<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">La potencia definitiva. Gana la Ãºltima MacBook Pro con procesador M3 Max.</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">La potencia definitiva. Gana la última MacBook Pro con procesador M3 Max.</p>
 </div>
 <div class="flex flex-col gap-2">
 <div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -179,7 +179,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="flex flex-col flex-1 p-5 gap-4">
 <div>
 <h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">Chevrolet Corvette 2024</h3>
-<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">Velocidad y estilo. LlÃ©vate a casa este deportivo de lujo totalmente equipado.</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">Velocidad y estilo. Llévate a casa este deportivo de lujo totalmente equipado.</p>
 </div>
 <div class="flex flex-col gap-2">
 <div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -210,8 +210,8 @@ if (session_status() === PHP_SESSION_NONE) {
 </div>
 <div class="flex flex-col flex-1 p-5 gap-4">
 <div>
-<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">Viaje a CancÃºn Todo Incluido</h3>
-<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">7 dÃ­as y 6 noches para 2 personas en un resort 5 estrellas.</p>
+<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight mb-1">Viaje a Cancún Todo Incluido</h3>
+<p class="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">7 días y 6 noches para 2 personas en un resort 5 estrellas.</p>
 </div>
 <div class="flex flex-col gap-2">
 <div class="flex justify-between text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -250,8 +250,8 @@ if (session_status() === PHP_SESSION_NONE) {
                             RegÃ­strate hoy y recibe un 10% de descuento en tu primera compra de boletos. Â¡No dejes pasar la oportunidad!
                         </p>
 <div class="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-<input class="flex-1 rounded-lg border-0 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-white/50 placeholder:text-gray-500 outline-none" placeholder="Tu correo electrÃ³nico" type="email"/>
-<a href="CrearCuenta.php" class="bg-white text-blue-700 hover:bg-gray-100 px-6 py-3 rounded-lg font-bold transition-colors shadow-lg text-center">
+<input class="flex-1 rounded-lg border-0 px-4 py-3 text-gray-900 focus:ring-2 focus:ring-white/50 placeholder:text-gray-500 outline-none" placeholder="Tu correo electrónico" type="email"/>
+<a href="cliente/CrearCuenta.php" class="bg-white text-blue-700 hover:bg-gray-100 px-6 py-3 rounded-lg font-bold transition-colors shadow-lg text-center">
                                 Empezar Ahora
                             </a>
 </div>
@@ -272,7 +272,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <span class="text-lg font-bold">SorteosWeb</span>
 </div>
 <p class="text-sm text-gray-500 dark:text-gray-400">
-                            La plataforma lÃ­der en sorteos online. Transparencia, seguridad y premios reales.
+                            La plataforma líder en sorteos online. Transparencia, seguridad y premios reales.
                         </p>
 </div>
 <div class="flex flex-col gap-3">
@@ -284,8 +284,8 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="flex flex-col gap-3">
 <h4 class="text-sm font-bold uppercase tracking-wider text-[#111318] dark:text-white">Soporte</h4>
 <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Ayuda</a>
-<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">TÃ©rminos y Condiciones</a>
-<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">PolÃ­tica de Privacidad</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Términos y Condiciones</a>
+<a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Política de Privacidad</a>
 </div>
 <div class="flex flex-col gap-3">
 <h4 class="text-sm font-bold uppercase tracking-wider text-[#111318] dark:text-white">Contacto</h4>
@@ -300,7 +300,7 @@ if (session_status() === PHP_SESSION_NONE) {
 </div>
 </div>
 <div class="w-full border-t border-[#e5e7eb] dark:border-dark-border py-6 text-center">
-<p class="text-sm text-gray-400">Â© 2024 SorteosWeb. Todos los derechos reservados.</p>
+<p class="text-sm text-gray-400">© 2024 SorteosWeb. Todos los derechos reservados.</p>
 </div>
 </footer>
 </div>

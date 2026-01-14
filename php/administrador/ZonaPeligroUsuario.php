@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * ZonaPeligroUsuario
  * Sistema de Sorteos Web - Administrador
@@ -113,7 +113,7 @@ require_once 'config.php';
 </nav>
 </div>
 <div class="px-2">
-<button class="flex items-center gap-2 text-[#b99d9d] hover:text-primary transition-colors text-sm font-medium">
+<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="flex items-center gap-2 text-[#b99d9d] hover:text-primary transition-colors text-sm font-medium">
 <span class="material-symbols-outlined text-[20px]">logout</span>
                         Cerrar Sesión
                    </button>
@@ -322,4 +322,31 @@ require_once 'config.php';
     </div>
     -->
     <script src="../js/zona-peligro-usuario.js"></script>
+    <script src="custom-alerts.js"></script>
+    <script>
+    // Función para manejar el logout del administrador
+    function handleLogoutAdmin() {
+        // Usar customConfirm para mantener consistencia con el resto de la aplicación
+        if (typeof customConfirm === 'function') {
+            customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+                if (confirmed) {
+                    // Redirigir al logout.php que destruye la sesión del servidor
+                    window.location.href = 'logout.php';
+                }
+            });
+        } else {
+            // Si customConfirm no está disponible, esperar a que se cargue
+            setTimeout(() => {
+                if (typeof customConfirm === 'function') {
+                    handleLogoutAdmin();
+                } else {
+                    // Fallback si customConfirm no se carga
+                    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                        window.location.href = 'logout.php';
+                    }
+                }
+            }, 200);
+        }
+    }
+    </script>
 </body></html>
