@@ -415,7 +415,7 @@ const ClientLayout = {
                 sessionStorage.removeItem('clientData');
             
             // Redirigir a la página de inicio de sesión
-            window.location.href = '../InicioSesion.html';
+            window.location.href = '../InicioSesion.php';
         }
     },
 
