@@ -1,11 +1,11 @@
 /**
  * Cliente Layout Module
- * Layout lateral reutilizable para todas las páginas del cliente
- * Incluye sidebar con navegación, perfil de usuario y menú móvil
+ * Layout lateral reutilizable para todas las p?ginas del cliente
+ * Incluye sidebar con navegaci?n, perfil de usuario y men? m?vil
  */
 
 const ClientLayout = {
-    // Configuración de rutas de navegación
+    // Configuraci?n de rutas de navegaci?n
     navigationRoutes: {
         dashboard: {
             path: 'DashboardCliente.php',
@@ -53,8 +53,8 @@ const ClientLayout = {
     },
 
     /**
-     * Inicializa el layout en la página
-     * @param {string} currentPageId - ID de la página actual para marcar como activa
+     * Inicializa el layout en la p?gina
+     * @param {string} currentPageId - ID de la p?gina actual para marcar como activa
      */
     init(currentPageId = null) {
         this.state.currentPage = currentPageId || this.detectCurrentPage();
@@ -66,7 +66,7 @@ const ClientLayout = {
     },
 
     /**
-     * Detecta la página actual basándose en el nombre del archivo
+     * Detecta la p?gina actual bas?ndose en el nombre del archivo
      */
     detectCurrentPage() {
         const currentPath = window.location.pathname.split('/').pop() || '';
@@ -116,17 +116,20 @@ const ClientLayout = {
      * Carga los datos del cliente desde localStorage/sessionStorage
      */
     loadClientData() {
+        // Valores por defecto (solo se usan si no hay datos en localStorage)
         let clientData = {
-            nombre: 'Juan Pérez',
+            nombre: 'Usuario',
             tipoUsuario: 'Usuario Premium',
             fotoPerfil: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
-            saldo: 1250.00
+            saldo: 0.00
         };
 
         try {
+            // Priorizar datos de localStorage (que vienen de la sesi?n PHP)
             const storedData = localStorage.getItem('clientData');
             if (storedData) {
                 const parsed = JSON.parse(storedData);
+                // Usar los datos de localStorage, especialmente nombre y tipoUsuario
                 clientData = { ...clientData, ...parsed };
             }
         } catch (e) {
@@ -142,7 +145,7 @@ const ClientLayout = {
     renderSidebar() {
         const sidebarContainer = document.getElementById('client-sidebar-container');
         if (!sidebarContainer) {
-            console.error('No se encontró el contenedor del sidebar: #client-sidebar-container');
+            console.error('No se encontr? el contenedor del sidebar: #client-sidebar-container');
             return;
         }
         
@@ -150,7 +153,7 @@ const ClientLayout = {
         // Los estilos se manejan con clases Tailwind en el aside (hidden lg:flex)
 
         sidebarContainer.innerHTML = `
-            <aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full" id="client-sidebar" role="navigation" aria-label="Navegación principal">
+            <aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full" id="client-sidebar" role="navigation" aria-label="Navegaci?n principal">
                 <div class="p-6 pb-2">
                     <!-- Logo Header -->
                     <div class="flex items-center gap-3 mb-8">
@@ -187,26 +190,26 @@ const ClientLayout = {
                 <div class="mt-auto p-6">
                     <button id="logout-btn" 
                             class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]"
-                            aria-label="Cerrar sesión">
+                            aria-label="Cerrar sesi?n">
                         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
-                        <span>Cerrar Sesión</span>
+                        <span>Cerrar Sesi?n</span>
                     </button>
                 </div>
             </aside>
         `;
 
-        // El sidebar se muestra automáticamente con las clases Tailwind (hidden lg:flex)
+        // El sidebar se muestra autom?ticamente con las clases Tailwind (hidden lg:flex)
 
-        // Actualizar datos del usuario si hay elementos específicos en la página
+        // Actualizar datos del usuario si hay elementos espec?ficos en la p?gina
         this.updateUserInfo();
     },
 
     /**
-     * Los enlaces de navegación ahora están directamente en el HTML
+     * Los enlaces de navegaci?n ahora est?n directamente en el HTML
      */
 
     /**
-     * Renderiza el menú móvil
+     * Renderiza el men? m?vil
      */
     renderMobileMenu() {
         const mobileMenuContainer = document.getElementById('client-mobile-menu-container');
@@ -219,14 +222,14 @@ const ClientLayout = {
                  aria-hidden="true"
                  role="dialog"
                  aria-modal="true"
-                 aria-label="Menú de navegación móvil">
+                 aria-label="Men? de navegaci?n m?vil">
             </div>
             
             <!-- Mobile Menu Sidebar -->
             <aside id="mobile-sidebar" 
                    class="fixed top-0 left-0 h-full w-72 bg-[#111318] border-r border-[#282d39] z-50 lg:hidden transform -translate-x-full transition-transform duration-300 flex flex-col"
                    role="navigation"
-                   aria-label="Navegación móvil">
+                   aria-label="Navegaci?n m?vil">
                 <div class="p-6 pb-2">
                     <!-- Mobile Header -->
                     <div class="flex items-center justify-between mb-8">
@@ -238,7 +241,7 @@ const ClientLayout = {
                         </div>
                         <button id="close-mobile-menu" 
                                 class="text-white hover:text-text-secondary transition-colors"
-                                aria-label="Cerrar menú">
+                                aria-label="Cerrar men?">
                             <span class="material-symbols-outlined text-2xl">close</span>
                         </button>
                     </div>
@@ -258,7 +261,7 @@ const ClientLayout = {
                     </div>
                     
                     <!-- Mobile Navigation -->
-                    <nav class="flex flex-col gap-1.5" aria-label="Menú de navegación móvil">
+                    <nav class="flex flex-col gap-1.5" aria-label="Men? de navegaci?n m?vil">
                         ${this.renderNavigationLinks()}
                     </nav>
                 </div>
@@ -267,9 +270,9 @@ const ClientLayout = {
                 <div class="mt-auto p-6">
                     <button id="mobile-logout-btn" 
                             class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]"
-                            aria-label="Cerrar sesión">
+                            aria-label="Cerrar sesi?n">
                         <span class="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
-                        <span>Cerrar Sesión</span>
+                        <span>Cerrar Sesi?n</span>
                     </button>
                 </div>
             </aside>
@@ -280,47 +283,64 @@ const ClientLayout = {
      * Adjunta event listeners
      */
     attachEventListeners() {
-        // Toggle móvil
+        // Toggle m?vil
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
         if (mobileMenuToggle) {
             mobileMenuToggle.addEventListener('click', () => this.toggleMobileMenu());
         }
 
-        // Cerrar menú móvil
+        // Cerrar men? m?vil
         const closeMobileMenu = document.getElementById('close-mobile-menu');
         if (closeMobileMenu) {
             closeMobileMenu.addEventListener('click', () => this.closeMobileMenu());
         }
 
-        // Overlay para cerrar menú móvil
+        // Overlay para cerrar men? m?vil
         const overlay = document.getElementById('mobile-menu-overlay');
         if (overlay) {
             overlay.addEventListener('click', () => this.closeMobileMenu());
         }
 
-        // Botones de logout
+        // Botones de logout - usar delegaci?n de eventos para asegurar que funcione
+        // incluso si los botones se agregan din?micamente
+        document.addEventListener('click', (e) => {
+            const logoutBtn = e.target.closest('#logout-btn, #mobile-logout-btn');
+            if (logoutBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleLogout();
+            }
+        });
+        
+        // Tambi?n agregar listeners directos como respaldo
         const logoutBtn = document.getElementById('logout-btn');
         const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
         
         [logoutBtn, mobileLogoutBtn].forEach(btn => {
             if (btn) {
-                btn.addEventListener('click', () => this.handleLogout());
+                // Remover listeners anteriores si existen para evitar duplicados
+                btn.removeEventListener('click', this.handleLogout);
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.handleLogout();
+                });
             }
         });
 
-        // Cerrar menú móvil al hacer clic en un enlace (pero permitir la navegación)
+        // Cerrar men? m?vil al hacer clic en un enlace (pero permitir la navegaci?n)
         document.addEventListener('click', (e) => {
             const mobileLink = e.target.closest('#mobile-sidebar a');
             if (mobileLink) {
                 // Permitir que el enlace funcione normalmente
-                // Solo cerrar el menú después de un pequeño delay para mejorar UX
+                // Solo cerrar el men? despu?s de un peque?o delay para mejorar UX
                 setTimeout(() => {
                     this.closeMobileMenu();
                 }, 100);
             }
         });
 
-        // Cerrar menú móvil con tecla Escape
+        // Cerrar men? m?vil con tecla Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.state.mobileMenuOpen) {
                 this.closeMobileMenu();
@@ -329,7 +349,7 @@ const ClientLayout = {
     },
 
     /**
-     * Actualiza la navegación activa
+     * Actualiza la navegaci?n activa
      */
     updateActiveNavigation() {
         Object.entries(this.navigationRoutes).forEach(([key, route]) => {
@@ -351,7 +371,7 @@ const ClientLayout = {
     },
 
     /**
-     * Abre el menú móvil
+     * Abre el men? m?vil
      */
     openMobileMenu() {
         this.state.mobileMenuOpen = true;
@@ -373,7 +393,7 @@ const ClientLayout = {
     },
 
     /**
-     * Cierra el menú móvil
+     * Cierra el men? m?vil
      */
     closeMobileMenu() {
         this.state.mobileMenuOpen = false;
@@ -395,7 +415,7 @@ const ClientLayout = {
     },
 
     /**
-     * Toggle del menú móvil
+     * Toggle del men? m?vil
      */
     toggleMobileMenu() {
         if (this.state.mobileMenuOpen) {
@@ -406,32 +426,40 @@ const ClientLayout = {
     },
 
     /**
-     * Maneja el cierre de sesión
+     * Maneja el cierre de sesi?n
      */
     handleLogout() {
+        // Usar customConfirm para mantener consistencia con el resto de la aplicaci?n
         if (typeof customConfirm === 'function') {
-            customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+            customConfirm('?Est?s seguro de que deseas cerrar sesi?n?', 'Cerrar Sesi?n', 'warning').then(confirmed => {
                 if (confirmed) {
-                    // Limpiar datos de sesión
+                    // Limpiar datos de sesi?n del cliente (localStorage/sessionStorage)
                     localStorage.removeItem('clientData');
                     sessionStorage.removeItem('clientData');
-                    window.location.href = '../index.html';
+                    
+                    // Redirigir al logout.php que destruye la sesi?n del servidor
+                    window.location.href = 'logout.php';
                 }
             });
         } else {
-            // Fallback si customConfirm no está disponible
-            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                // Limpiar datos de sesión
-                localStorage.removeItem('clientData');
-                sessionStorage.removeItem('clientData');
-            
-                // Redirigir a la página de inicio de sesión
-                window.location.href = 'InicioSesion.php';
+            // Si customConfirm no est? disponible, esperar a que se cargue
+            // o usar confirm nativo como ?ltimo recurso
+            setTimeout(() => {
+                if (typeof customConfirm === 'function') {
+                    this.handleLogout();
+                } else {
+                    if (confirm('?Est?s seguro de que deseas cerrar sesi?n?')) {
+                        localStorage.removeItem('clientData');
+                        sessionStorage.removeItem('clientData');
+                        window.location.href = 'logout.php';
+                    }
+                }
+            }, 100);
         }
     },
 
     /**
-     * Actualiza la información del usuario en el sidebar
+     * Actualiza la informaci?n del usuario en el sidebar
      */
     updateUserInfo() {
         const updateElement = (id, value, attribute = 'textContent') => {
@@ -482,4 +510,81 @@ const ClientLayout = {
 // Exportar para uso global
 window.ClientLayout = ClientLayout;
 
+// Inicializar logout globalmente para que funcione incluso si ClientLayout.init() no se llama
+(function() {
+    'use strict';
+    
+    // Función global de logout que puede ser llamada desde cualquier lugar
+    window.handleGlobalLogout = function() {
+        const executeLogout = () => {
+            localStorage.removeItem('clientData');
+            sessionStorage.removeItem('clientData');
+            window.location.href = 'logout.php';
+        };
+        
+        if (window.ClientLayout && typeof window.ClientLayout.handleLogout === 'function') {
+            window.ClientLayout.handleLogout();
+        } else {
+            // Fallback si ClientLayout no está disponible
+            if (typeof customConfirm === 'function') {
+                customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+                    if (confirmed) {
+                        executeLogout();
+                    }
+                }).catch(() => {
+                    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                        executeLogout();
+                    }
+                });
+            } else {
+                setTimeout(() => {
+                    if (typeof customConfirm === 'function') {
+                        window.handleGlobalLogout();
+                    } else {
+                        if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                            executeLogout();
+                        }
+                    }
+                }, 200);
+            }
+        }
+    };
+    
+    // Agregar listener global para botones de logout (funciona incluso antes de que ClientLayout se inicialice)
+    // Usar capture phase para capturar antes que otros listeners
+    document.addEventListener('click', function(e) {
+        const logoutBtn = e.target.closest('#logout-btn, #mobile-logout-btn');
+        if (logoutBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.handleGlobalLogout();
+        }
+    }, true);
+    
+    // También intentar adjuntar listeners directos cuando el DOM esté listo
+    function attachGlobalLogoutListeners() {
+        const logoutBtn = document.getElementById('logout-btn');
+        const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+        
+        [logoutBtn, mobileLogoutBtn].forEach(btn => {
+            if (btn && !btn.hasAttribute('data-global-logout-attached')) {
+                btn.setAttribute('data-global-logout-attached', 'true');
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.handleGlobalLogout();
+                });
+            }
+        });
+    }
+    
+    // Intentar adjuntar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachGlobalLogoutListeners);
+    } else {
+        attachGlobalLogoutListeners();
+        // También intentar después de un pequeño delay por si los botones se cargan después
+        setTimeout(attachGlobalLogoutListeners, 500);
+    }
+})();
 

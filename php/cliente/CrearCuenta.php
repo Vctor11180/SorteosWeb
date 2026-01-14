@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * CrearCuenta - Registro de Usuarios
  * Sistema de Sorteos Web
@@ -275,7 +275,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">lock</span>
 </div>
-<input name="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password" required minlength="6"/>
+<input id="input-password-registro" name="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-12 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password" required minlength="6"/>
+<button type="button" id="toggle-password-registro" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9da6b9] hover:text-white transition-colors cursor-pointer" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 </div>
 </label>
 <label class="flex flex-col gap-2">
@@ -284,7 +287,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registro'])) {
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">lock_reset</span>
 </div>
-<input name="password_confirm" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password" required minlength="6"/>
+<input id="input-password-confirm-registro" name="password_confirm" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-12 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password" required minlength="6"/>
+<button type="button" id="toggle-password-confirm-registro" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9da6b9] hover:text-white transition-colors cursor-pointer" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 </div>
 </label>
 <label class="flex items-start gap-3 cursor-pointer mt-1">
@@ -320,5 +326,47 @@ He leído y acepto los <a href="TerminosCondicionesCliente.php" class="text-prim
 </main>
 </div>
 </div>
+<script>
+// Función para toggle de mostrar/ocultar contraseña
+(function() {
+    'use strict';
+    
+    function initPasswordToggle() {
+        // Función auxiliar para toggle de contraseña
+        function togglePassword(inputId, buttonId) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            
+            if (!input || !button) return;
+            
+            button.addEventListener('click', function() {
+                const icon = button.querySelector('.material-symbols-outlined');
+                if (!icon) return;
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = 'visibility_off';
+                    button.setAttribute('aria-label', 'Ocultar contraseña');
+                } else {
+                    input.type = 'password';
+                    icon.textContent = 'visibility';
+                    button.setAttribute('aria-label', 'Mostrar contraseña');
+                }
+            });
+        }
+        
+        // Inicializar toggles para ambos campos de contraseña
+        togglePassword('input-password-registro', 'toggle-password-registro');
+        togglePassword('input-password-confirm-registro', 'toggle-password-confirm-registro');
+    }
+    
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPasswordToggle);
+    } else {
+        initPasswordToggle();
+    }
+})();
+</script>
 </body>
 </html>

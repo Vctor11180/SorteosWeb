@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * AjustesPefilCliente
  * Sistema de Sorteos Web
@@ -15,6 +15,44 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
     header('Location: InicioSesion.php');
     exit;
 }
+
+// Obtener datos del usuario desde la base de datos
+require_once __DIR__ . '/includes/user-data.php';
+
+// Verificar que el usuario_id en la sesión esté presente
+if (!isset($_SESSION['usuario_id'])) {
+    error_log("AjustesPefilCliente - ERROR: No hay usuario_id en la sesión");
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+error_log("AjustesPefilCliente - Usuario ID en sesión: " . $_SESSION['usuario_id']);
+error_log("AjustesPefilCliente - Email en sesión: " . ($_SESSION['usuario_email'] ?? 'NO DEFINIDO'));
+
+$datosUsuario = obtenerDatosUsuarioCompletos();
+if (!$datosUsuario) {
+    error_log("AjustesPefilCliente - ERROR: No se pudieron obtener los datos del usuario. Usuario ID: " . $_SESSION['usuario_id']);
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+error_log("AjustesPefilCliente - Datos obtenidos - ID: " . $datosUsuario['id_usuario'] . ", Nombre: " . $datosUsuario['nombre'] . ", Email: " . $datosUsuario['email']);
+
+// Verificar que los datos obtenidos correspondan al usuario de la sesión
+if ($datosUsuario['id_usuario'] != $_SESSION['usuario_id']) {
+    error_log("AjustesPefilCliente - ERROR CRÍTICO: Los datos obtenidos no corresponden al usuario de la sesión!");
+    error_log("AjustesPefilCliente - Sesión usuario_id: " . $_SESSION['usuario_id'] . ", Datos usuario_id: " . $datosUsuario['id_usuario']);
+    // Forzar recarga de datos
+    session_regenerate_id(true);
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+$usuarioNombre = $datosUsuario['nombre'];
+$usuarioEmail = $datosUsuario['email'];
+$usuarioSaldo = $datosUsuario['saldo'];
+$usuarioAvatar = $datosUsuario['avatar'];
+$tipoUsuario = $datosUsuario['tipoUsuario'];
 ?>
 <!DOCTYPE html>
 
@@ -97,8 +135,8 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
 </div>
 <div class="flex flex-col overflow-hidden">
-<h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate">Juan Pérez</h1>
-<p id="sidebar-user-type" class="text-text-secondary text-xs truncate">Usuario Premium</p>
+<h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p id="sidebar-user-type" class="text-text-secondary text-xs truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
 </div>
 </div>
 <!-- Navigation -->
@@ -161,8 +199,8 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <div class="flex items-center gap-4 mb-8 pb-6 border-b border-[#282d39]">
 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="User avatar small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBrupAsp5FgxLWvA_4eDdbO6IBv60Wu2kUzWPNIeip67-oe7I9b2nzaS82HH1OLDR3kt3eIpanzRITFMLGrGYsXnYYc9VA7cfYcoXpQAV1ZQ-hf-DJpgeVpZ2V8DWaQFUHaeUoD_hKmPFlDXfF9XUj5aA9UwMFZqIMKCl-VjIMi1AeKlxdFIXwIkUzXtyq30ajvF07xm95jeC5M4OIFYr8wXRjuU9unKPkk0g_KAcx7iySUtEgz0MBnnruUiSrXMXHZKuiIMrFkg4");'></div>
 <div class="flex flex-col">
-<h1 id="profile-sidebar-name" class="text-white text-base font-bold">Juan Pérez</h1>
-<p class="text-text-secondary text-xs">Cliente VIP</p>
+<h1 id="profile-sidebar-name" class="text-white text-base font-bold"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p class="text-text-secondary text-xs"><?php echo htmlspecialchars($tipoUsuario); ?></p>
 </div>
 </div>
 <!-- Navigation Links -->
@@ -235,7 +273,7 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <label class="text-white text-sm font-medium">Nombre Completo</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">person</span>
-<input id="input-nombre" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu nombre" type="text" value="Juan Pérez"/>
+<input id="input-nombre" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu nombre" type="text" value="<?php echo htmlspecialchars($usuarioNombre); ?>"/>
 <span id="error-nombre" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -243,7 +281,7 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <label class="text-white text-sm font-medium">Correo Electrónico</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">mail</span>
-<input id="input-email" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="email@ejemplo.com" type="email" value="juan.perez@email.com"/>
+<input id="input-email" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="email@ejemplo.com" type="email" value="<?php echo htmlspecialchars($usuarioEmail); ?>"/>
 <span id="error-email" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -251,7 +289,7 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <label class="text-white text-sm font-medium">Teléfono</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">call</span>
-<input id="input-telefono" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="+1 234 567 890" type="tel" value="+34 612 345 678"/>
+<input id="input-telefono" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="+1 234 567 890" type="tel" value="<?php echo htmlspecialchars($datosUsuario['telefono'] ?? ''); ?>"/>
 <span id="error-telefono" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -286,14 +324,20 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <div class="flex flex-col gap-2">
 <label class="text-white text-sm font-medium">Contraseña Actual</label>
 <div class="relative">
-<input id="input-password-actual" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<input id="input-password-actual" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-3 pr-10 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<button type="button" id="toggle-password-actual" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white transition-colors" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 <span id="error-password-actual" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
 <div class="flex flex-col gap-2">
 <label class="text-white text-sm font-medium">Nueva Contraseña</label>
 <div class="relative">
-<input id="input-password-nueva" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<input id="input-password-nueva" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-3 pr-10 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<button type="button" id="toggle-password-nueva" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white transition-colors" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 <span id="error-password-nueva" class="hidden text-red-400 text-xs mt-1"></span>
 <div id="password-strength" class="hidden mt-2">
 <div class="flex gap-1 mb-1">
@@ -309,7 +353,10 @@ if (in_array('AjustesPefilCliente', $protectedPages) && (!isset($_SESSION['is_lo
 <div class="flex flex-col gap-2">
 <label class="text-white text-sm font-medium">Confirmar Nueva</label>
 <div class="relative">
-<input id="input-password-confirmar" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent px-3 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<input id="input-password-confirmar" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-3 pr-10 py-2.5 placeholder-[#566074]" placeholder="********" type="password"/>
+<button type="button" id="toggle-password-confirmar" class="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-white transition-colors" aria-label="Mostrar contraseña">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
 <span id="error-password-confirmar" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -626,10 +673,56 @@ Siguiente
 </div>
 </main>
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script src="js/ajustes-perfil-cliente.js"></script>
 <script>
+// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+const userSessionData = {
+    id: <?php echo intval($datosUsuario['id_usuario']); ?>,
+    nombre: '<?php echo addslashes($usuarioNombre); ?>',
+    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+    email: '<?php echo addslashes($usuarioEmail); ?>',
+    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+};
+
+// Limpiar localStorage ANTES de actualizar con los nuevos datos (para evitar datos de sesiones anteriores)
+console.log('AjustesPefilCliente - Limpiando localStorage y actualizando con datos del usuario:', userSessionData);
+
+// Verificar si hay datos antiguos en localStorage que no correspondan al usuario actual
+const oldClientData = localStorage.getItem('clientData');
+if (oldClientData) {
+    try {
+        const parsed = JSON.parse(oldClientData);
+        // Si el ID del usuario en localStorage no coincide con el de la sesión, limpiar todo
+        if (parsed.id && parsed.id !== userSessionData.id) {
+            console.warn('AjustesPefilCliente - Detectados datos de otro usuario en localStorage. Limpiando...');
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+    } catch (e) {
+        console.warn('AjustesPefilCliente - Error al verificar datos antiguos, limpiando localStorage:', e);
+        localStorage.clear();
+        sessionStorage.clear();
+    }
+}
+
+// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+if (userSessionData.nombre && userSessionData.tipoUsuario) {
+    const sessionClientData = {
+        id: userSessionData.id,
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        email: userSessionData.email,
+        saldo: userSessionData.saldo,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+    };
+    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    console.log('AjustesPefilCliente - localStorage actualizado con datos del usuario:', sessionClientData);
+}
+
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {

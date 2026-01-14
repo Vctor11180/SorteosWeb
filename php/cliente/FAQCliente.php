@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * FAQCliente
  * Sistema de Sorteos Web
@@ -402,8 +402,8 @@ if (in_array('FAQCliente', $protectedPages) && (!isset($_SESSION['is_logged_in']
 </main>
 
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {

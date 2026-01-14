@@ -110,9 +110,12 @@ Participa en emocionantes sorteos y gana premios increíbles. Elige tu rol para 
 </div>
 
 <!-- Additional Info -->
-<div class="mt-12 text-center">
+<div class="mt-12 text-center space-y-4">
 <p class="text-gray-500 text-sm">
 ¿No tienes cuenta? <a href="cliente/CrearCuenta.php" class="text-primary hover:text-blue-400 font-medium">Regístrate aquí</a>
+</p>
+<p class="text-gray-400 text-xs">
+O visita nuestra <a href="LandingPage.php" class="text-primary hover:text-blue-400 font-medium underline">Landing Page</a> para más información
 </p>
 </div>
 </div>

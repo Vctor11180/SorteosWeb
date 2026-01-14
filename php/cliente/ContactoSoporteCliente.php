@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * ContactoSoporteCliente
  * Sistema de Sorteos Web
@@ -15,6 +15,19 @@ if (in_array('ContactoSoporteCliente', $protectedPages) && (!isset($_SESSION['is
     header('Location: InicioSesion.php');
     exit;
 }
+
+// Obtener datos del usuario desde la base de datos
+require_once __DIR__ . '/includes/user-data.php';
+$datosUsuario = obtenerDatosUsuarioCompletos();
+if (!$datosUsuario) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+$usuarioNombre = $datosUsuario['nombre'];
+$usuarioEmail = $datosUsuario['email'];
+$usuarioSaldo = $datosUsuario['saldo'];
+$usuarioAvatar = $datosUsuario['avatar'];
+$tipoUsuario = $datosUsuario['tipoUsuario'];
 ?>
 <!DOCTYPE html>
 
@@ -105,8 +118,8 @@ if (in_array('ContactoSoporteCliente', $protectedPages) && (!isset($_SESSION['is
 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
 </div>
 <div class="flex flex-col overflow-hidden">
-<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight">Juan Pérez</h1>
-<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate">Usuario Premium</p>
+<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
 </div>
 </div>
 <!-- Navigation -->
@@ -354,6 +367,7 @@ Información de Contacto
 </div>
 </main>
 <!-- Client Layout Script -->
+<script src="js/custom-alerts.js"></script>
 <script src="js/client-layout.js"></script>
 <!-- EmailJS SDK -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -365,6 +379,28 @@ const EMAILJS_SERVICE_ID = 'service_t6dgdll';
 const EMAILJS_TEMPLATE_ID = 'template_lrz706t';
 const EMAILJS_PUBLIC_KEY = 'AbarWURbTBo53jPRO';
 const RECIPIENT_EMAIL = 'ismaeldev04@gmail.com'; // Correo destinatario
+
+// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+const userSessionData = {
+    nombre: '<?php echo addslashes($usuarioNombre); ?>',
+    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+    email: '<?php echo addslashes($usuarioEmail); ?>',
+    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+};
+
+// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+if (userSessionData.nombre && userSessionData.tipoUsuario) {
+    const sessionClientData = {
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        email: userSessionData.email,
+        saldo: userSessionData.saldo,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+    };
+    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+}
 
 // Inicializar EmailJS cuando el SDK esté cargado
 document.addEventListener('DOMContentLoaded', function() {

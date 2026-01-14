@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * ListadoSorteosActivos
  * Sistema de Sorteos Web
@@ -14,6 +14,30 @@ $protectedPages = ['DashboardCliente', 'AjustesPefilCliente', 'MisBoletosCliente
 if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true)) {
     header('Location: InicioSesion.php');
     exit;
+}
+
+// Obtener datos del usuario desde la base de datos
+require_once __DIR__ . '/includes/user-data.php';
+$datosUsuario = obtenerDatosUsuarioCompletos();
+if (!$datosUsuario) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+$usuarioNombre = $datosUsuario['nombre'];
+$usuarioEmail = $datosUsuario['email'];
+$usuarioSaldo = $datosUsuario['saldo'];
+$usuarioAvatar = $datosUsuario['avatar'];
+$tipoUsuario = $datosUsuario['tipoUsuario'];
+
+// Obtener todos los sorteos activos desde la base de datos
+require_once __DIR__ . '/includes/sorteos-data.php';
+$sorteosActivos = obtenerSorteosActivos(0); // 0 = sin límite
+
+// DEBUG: Verificar qué se está obteniendo (eliminar después de verificar)
+if (empty($sorteosActivos)) {
+    error_log("DEBUG ListadoSorteosActivos: No se obtuvieron sorteos. Verificar base de datos.");
+} else {
+    error_log("DEBUG ListadoSorteosActivos: Se obtuvieron " . count($sorteosActivos) . " sorteos activos.");
 }
 ?>
 <!DOCTYPE html>
@@ -90,8 +114,8 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
 </div>
 <div class="flex flex-col overflow-hidden">
-<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight">Juan Pérez</h1>
-<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate">Usuario Premium</p>
+<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
 </div>
 </div>
 <!-- Navigation -->
@@ -164,11 +188,24 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 <!-- Scrollable Content Area -->
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
 <!-- Hero Section -->
+<?php if (!empty($sorteosActivos)): 
+    $sorteoDestacado = $sorteosActivos[0]; // Primer sorteo como destacado
+    $imagenHero = !empty($sorteoDestacado['imagen_url']) 
+        ? htmlspecialchars($sorteoDestacado['imagen_url']) 
+        : 'https://via.placeholder.com/800x400?text=Sorteo';
+    $tiempoHero = $sorteoDestacado['tiempo_restante'];
+    $diasHero = $tiempoHero['dias'];
+    $horasHero = $tiempoHero['horas'];
+    $minutosHero = $tiempoHero['minutos'];
+    $textoTiempoHero = $diasHero > 0 
+        ? sprintf("%dd %dh %dm", $diasHero, $horasHero, $minutosHero)
+        : sprintf("%dh %dm", $horasHero, $minutosHero);
+?>
 <div class="w-full bg-gradient-to-b from-[#111318] to-[#161b26] rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12">
 <div class="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
 <div class="@container">
 <div class="flex flex-col gap-6 rounded-xl bg-card-dark p-6 shadow-lg border border-[#282d39] @[864px]:flex-row @[864px]:items-center">
-<div class="w-full bg-center bg-no-repeat bg-cover rounded-lg aspect-video @[864px]:w-1/2 min-h-[250px]" data-alt="Red sports car on a dark road" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6VJybytSxdbyHLz_biyHiqFh8RcWYf1c-M8zrfKX-_q3c5SpyP3ZIEbWGoJXox_cQlmjJ7liVyBds4LMtGvvIUyGaTA86g4Pp5dGRA2Purm28eGPUVVVrCslc-kP9U8OFPqHiKNX9iSRLnu1W4mPOCHuWx-Jq35OzD6y2sHRui9zm_pCZZeAzhYBxXanD6leNoj7k2eVumdOmJy-PUVhEEh8y4RVKH81QtXIRRwmroSSt3kCihJUArNv2zIT30wCHv6krd5796E8");'>
+<div class="w-full bg-center bg-no-repeat bg-cover rounded-lg aspect-video @[864px]:w-1/2 min-h-[250px]" data-alt="<?php echo htmlspecialchars($sorteoDestacado['titulo']); ?>" style='background-image: url("<?php echo $imagenHero; ?>");'>
 <div class="w-full h-full flex items-start justify-end p-4">
 <span class="bg-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-md">Destacado</span>
 </div>
@@ -176,21 +213,21 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 <div class="flex flex-col gap-6 @[864px]:w-1/2 @[864px]:pl-6">
 <div class="flex flex-col gap-3 text-left">
 <h1 class="text-white text-3xl font-black leading-tight tracking-[-0.033em] md:text-5xl">
-                                        Sorteo Especial de Verano
+                                        <?php echo htmlspecialchars($sorteoDestacado['titulo']); ?>
                                     </h1>
 <p class="text-[#9da6b9] text-base font-normal leading-relaxed">
-                                        Participa por un auto deportivo 0km. El tiempo se acaba, ¡asegura tu boleto hoy y cambia tu vida!
+                                        <?php echo htmlspecialchars($sorteoDestacado['descripcion'] ?: 'Participa y gana este increíble premio. El tiempo se acaba, ¡asegura tu boleto hoy!'); ?>
                                     </p>
 <div class="flex items-center gap-2 mt-2">
 <span class="material-symbols-outlined text-primary">timer</span>
-<span class="text-white font-mono font-medium">Cierra en: 02d 14h 30m</span>
+<span class="text-white font-mono font-medium">Cierra en: <?php echo $textoTiempoHero; ?></span>
 </div>
 </div>
 <div class="flex flex-wrap gap-4">
-<a href="SeleccionBoletos.php" onclick="viewSorteoDetails('auto-deportivo'); return true;" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
+<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoDestacado['id_sorteo']; ?>" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
 <span class="truncate">Participar Ahora</span>
 </a>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('auto-deportivo')" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
+<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoDestacado['id_sorteo']; ?>" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
 <span class="truncate">Ver Detalles</span>
 </a>
 </div>
@@ -199,6 +236,7 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 </div>
 </div>
 </div>
+<?php endif; ?>
 <!-- Main Content Area -->
 <div class="w-full flex flex-col gap-8">
 <!-- Page Heading & Search -->
@@ -242,195 +280,85 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 </div>
 <!-- Raffles Grid -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Card 1 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('iphone15'); window.location.href='SorteoClienteDetalles.php';">
-<div class="relative h-48 bg-cover bg-center" data-alt="Modern smartphone with colorful screen" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwAteQmSypGlj9rSJ2j8n67Um8qCfT0urHKQWggVYR2cnoUFNnLWz-dGV7qYF10it_zdMasYWluSGMVYQdUNQyZE3KWtAvxAveYl5nZwURTXZfPeflDRyId90eHL8A26eUtXRFMySbpjoDaZ7V4cMQ0M5uvKDjBxP8mR-3SWfov41dT9pCJshLRbhyh7j2Qg8kAflsEmjL7Ql4ntewUh7oJWn_oT8rRQdiuYtDyQdlrGrGpXdxwisJ7Yt487kUdH_GU3mzz66yI70");'>
-<div class="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
-                                    NUEVO
-                                </div>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $50.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">iPhone 15 Pro Max</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Participa para ganar el último modelo de smartphone con 1TB de almacenamiento.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">125 / 500</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-primary h-2 rounded-full" style="width: 25%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-orange-400">
-<span class="material-symbols-outlined text-[18px]">timer</span>
-<span class="text-sm font-medium tabular-nums">15d 04h 22m</span>
-</div>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('iphone15'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-</div>
-</div>
-</div>
-<!-- Card 2 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('ps5'); window.location.href='SorteoClienteDetalles.php';">
-<div class="relative h-48 bg-cover bg-center" data-alt="Playstation 5 console with controller" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCcO2dR5Fdg9m2KqgG183uyb2umz475hYy-yTJR5KEpvO5oDC-FWcZ_DiEANzBJzKzFC8qptcOn__j-LUvhz0nQZaXVvtGH3QywOs2VWZzzJ6h4raEVt8Iz2WDnKq5zweGni-aT6furgSfHfoqXbwIEzgtsK_Qhr-ZhBHExOgld_Wc67QrYwyy6Puh0wDsKrdn8liqFv1Zl7_qSc7-eplab4OryXdIA-PXbeK3b2jZGdKoDUOj3wpCd_huPq8oEjzZ54ZiGJSZ1m0");'>
-<div class="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
-                                    POPULAR
-                                </div>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $25.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">Pack Gamer PS5</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Consola PS5, 2 controles DualSense y 3 juegos a elección.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">850 / 1000</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-red-400">
-<span class="material-symbols-outlined text-[18px]">timer</span>
-<span class="text-sm font-medium tabular-nums">02d 11h 05m</span>
-</div>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('ps5'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-</div>
-</div>
-</div>
-<!-- Card 3 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('efectivo50k'); window.location.href='SorteoClienteDetalles.php';">
-<div class="relative h-48 bg-cover bg-center" data-alt="Stack of cash money" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBni1zSCl1SpVKwv0Qzm2qy0axrUNGSlJoyeLynnw4JXMvqQzI8GAx1M8zjD1GEJUVpbLE5wqHnKtrg320kCXMdIC7WxRYlhlIw5YagaaQ8KQy9kj6bNM0vGj996zk-egNCej6aVw1WvVXqw_P7UpgzlwoxP86l-7HjmB2qxduMOMjxGBjme2Jdz_AuIFhr5kHtbnJ__Am9OZcEgcmwPFkFfT-gKR5nGLbO1A6W1C39FLnSwzIL35ckKnwIcHRBs0U5uKBSAB8FtBg");'>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $100.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">Premio en Efectivo $50k</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Participa por un premio de $50,000 USD libre de impuestos.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">45 / 200</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-primary h-2 rounded-full" style="width: 22%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-[#9da6b9]">
-<span class="material-symbols-outlined text-[18px]">timer</span>
-<span class="text-sm font-medium tabular-nums">25d 10h 00m</span>
-</div>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('efectivo50k'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-</div>
-</div>
-</div>
-<!-- Card 4 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('moto'); window.location.href='SorteoClienteDetalles.php';">
-<div class="relative h-48 bg-cover bg-center" data-alt="Modern motorcycle on display" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAU2WNCPMJw0aGIUeAuwgz1ZtHOcl46nPPEtFilClUQyWD3IpJP4IsC50QJlcR2jbcLLVlXJI6RKrYiYOlJuG-PHcTKm7vahl3WDBzS_g5vYNmO4BmSdBeBUHYdUxv-PCRTHphG137xvV6rd9ISxjNaKtsnKybQND6FvSzHturGw0IgV4qhm1coXPsFz_8kHiM2-zJRq3yD_Q7CJ117JKUjVRdHmleKjY50m0Qe4NVinX4eoxVTGVEq-9ZbUbnctsS-mYsN2uedePA");'>
-<div class="absolute top-3 left-3 bg-red-500/90 text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
-                                    ÚLTIMOS BOLETOS
-                                </div>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $35.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">Moto Deportiva 2024</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Siente la velocidad con esta increíble motocicleta de alta gama.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">290 / 300</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-red-500 h-2 rounded-full" style="width: 96%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-red-500 animate-pulse">
-<span class="material-symbols-outlined text-[18px]">timer</span>
-<span class="text-sm font-bold tabular-nums">04h 30m 15s</span>
-</div>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('moto'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-</div>
-</div>
-</div>
-<!-- Card 5 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="viewSorteoDetails('reloj'); window.location.href='SorteoClienteDetalles.php';">
-<div class="relative h-48 bg-cover bg-center" data-alt="High end luxury watch" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7pgaFepp8kfDhmtFNHSgQjDgnZ0uhmGyqg6LNTbHk013102sQnnoX2twAiYlfOjcCcscK9gpQmt-0m3PnS3eMJHvZylYdgxRpuA7I2uCL9BKIQssDk0fALe8f9cFZSQvOF7UZBQOYz9k_qbTLd37IxWdJbaRIKG1lAEsGbtrXw8-_ODIxGE_Q5CoTKQr0yRsXQzxcxPlNxDLX6qbX9oisn0cj-TXfPNuo_j8ofLCiVZfrKDpeVAaDnTocyO7DbkbxTYhaJIh2Mw");'>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $80.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">Reloj de Lujo</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Elegancia y precisión en tu muñeca. Edición limitada.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">40 / 100</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-primary h-2 rounded-full" style="width: 40%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-[#9da6b9]">
-<span class="material-symbols-outlined text-[18px]">timer</span>
-<span class="text-sm font-medium tabular-nums">12d 08h 45m</span>
-</div>
-<a href="SorteoClienteDetalles.php" onclick="viewSorteoDetails('reloj'); event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-</div>
-</div>
-</div>
-<!-- Card 6 -->
-<div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1">
-<div class="relative h-48 bg-cover bg-center" data-alt="Modern 4k television in living room" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACRCLZG71i-ihavDRhf86fUjF-0WB0zzedmL8K5XMX752FJg2Jq3oTONdd4dsYV3xv6afZiRyxz3oG6gctvCiTw0v8uTxF5lZXRN8qFxqYaB7CZgE3bBKQeP4LtSqiBkK38IVMGVuTY1V1gffzPvpzFOpzWPmklIZL8fFi0yc5CLCnlYYU1MDYgbc_nS5ZgG4KdEs-KzlUiHXimNbu-IdpxvD_OifXTwRqwHR1rk1qSLpaZv-NVKu0dNF5uaja0Sca9touPX5LTlM");'>
-<div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-<span class="material-symbols-outlined text-[16px]">confirmation_number</span> $15.00 / boleto
-                                </div>
-</div>
-<div class="flex flex-col p-5 gap-4 flex-1">
-<div>
-<h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">Smart TV 4K 65"</h3>
-<p class="text-[#9da6b9] text-sm line-clamp-2">Cine en casa con la mejor resolución y colores vibrantes.</p>
-</div>
-<div class="mt-auto flex flex-col gap-2">
-<div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-<span>Boletos vendidos</span>
-<span class="text-white">500 / 500</span>
-</div>
-<div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-<div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-<div class="flex items-center gap-1.5 text-green-500">
-<span class="material-symbols-outlined text-[18px]">check_circle</span>
-<span class="text-sm font-bold">Finalizado</span>
-</div>
-<button class="text-[#9da6b9] text-sm font-medium cursor-not-allowed">Ver Ganador</button>
-</div>
-</div>
-</div>
+<?php if (empty($sorteosActivos)): ?>
+    <!-- Mensaje cuando no hay sorteos -->
+    <div class="col-span-3 text-center py-12">
+        <p class="text-[#9da6b9] text-lg">No hay sorteos disponibles en este momento.</p>
+    </div>
+<?php else: ?>
+    <?php foreach ($sorteosActivos as $sorteo): 
+        $imagenUrl = !empty($sorteo['imagen_url']) 
+            ? htmlspecialchars($sorteo['imagen_url']) 
+            : 'https://via.placeholder.com/400x200?text=Sorteo';
+        $tiempoRestante = $sorteo['tiempo_restante'];
+        $segundosTotales = $tiempoRestante['total_segundos'];
+        $diasRestantes = $tiempoRestante['dias'];
+        $horasRestantes = $tiempoRestante['horas'];
+        $minutosRestantes = $tiempoRestante['minutos'];
+        
+        // Formatear tiempo restante
+        if ($diasRestantes > 0) {
+            $textoTiempo = $diasRestantes . 'd ' . $horasRestantes . 'h ' . $minutosRestantes . 'm';
+            $colorTiempo = $sorteo['esta_por_finalizar'] ? 'text-red-400' : 'text-orange-400';
+        } else {
+            $textoTiempo = sprintf("%02dh %02dm", $horasRestantes, $minutosRestantes);
+            $colorTiempo = 'text-red-500 animate-pulse';
+        }
+        
+        $porcentajeVendido = $sorteo['porcentaje_vendido'];
+        $colorBarra = $porcentajeVendido >= 90 ? 'bg-red-500' : ($porcentajeVendido >= 50 ? 'bg-primary' : 'bg-primary');
+        
+        // Badge según estado
+        $badge = '';
+        $badgeColor = '';
+        if ($sorteo['porcentaje_vendido'] >= 90) {
+            $badge = 'ÚLTIMOS BOLETOS';
+            $badgeColor = 'bg-red-500/90';
+        } elseif ($sorteo['porcentaje_vendido'] >= 50) {
+            $badge = 'POPULAR';
+            $badgeColor = 'bg-primary/90';
+        } else {
+            $badge = 'NUEVO';
+            $badgeColor = 'bg-green-500/90';
+        }
+    ?>
+    <!-- Card -->
+    <div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="window.location.href='SorteoClienteDetalles.php?id=<?php echo $sorteo['id_sorteo']; ?>';">
+        <div class="relative h-48 bg-cover bg-center" data-alt="<?php echo htmlspecialchars($sorteo['titulo']); ?>" style='background-image: url("<?php echo $imagenUrl; ?>");'>
+            <?php if ($badge): ?>
+            <div class="absolute top-3 left-3 <?php echo $badgeColor; ?> text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
+                <?php echo $badge; ?>
+            </div>
+            <?php endif; ?>
+            <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $<?php echo number_format($sorteo['precio_boleto'], 2, '.', ''); ?> / boleto
+            </div>
+        </div>
+        <div class="flex flex-col p-5 gap-4 flex-1">
+            <div>
+                <h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors"><?php echo htmlspecialchars($sorteo['titulo']); ?></h3>
+                <p class="text-[#9da6b9] text-sm line-clamp-2"><?php echo htmlspecialchars($sorteo['descripcion'] ?: 'Participa y gana este increíble premio.'); ?></p>
+            </div>
+            <div class="mt-auto flex flex-col gap-2">
+                <div class="flex justify-between text-xs font-medium text-[#9da6b9]">
+                    <span>Boletos vendidos</span>
+                    <span class="text-white"><?php echo $sorteo['boletos_vendidos']; ?> / <?php echo $sorteo['total_boletos']; ?></span>
+                </div>
+                <div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
+                    <div class="<?php echo $colorBarra; ?> h-2 rounded-full" style="width: <?php echo $porcentajeVendido; ?>%"></div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
+                <div class="flex items-center gap-1.5 <?php echo $colorTiempo; ?>">
+                    <span class="material-symbols-outlined text-[18px]">timer</span>
+                    <span class="text-sm font-medium tabular-nums"><?php echo $textoTiempo; ?></span>
+                </div>
+                <a href="SorteoClienteDetalles.php?id=<?php echo $sorteo['id_sorteo']; ?>" onclick="event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+<?php endif; ?>
 </div>
 <!-- Pagination / Load More -->
 <div class="flex justify-center mt-8 mb-8">
@@ -445,9 +373,34 @@ if (in_array('ListadoSorteosActivos', $protectedPages) && (!isset($_SESSION['is_
 </main>
 
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script>
+// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+const userSessionData = {
+    nombre: '<?php echo addslashes($usuarioNombre); ?>',
+    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+    email: '<?php echo addslashes($usuarioEmail); ?>',
+    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+};
+
+// Datos de los sorteos desde PHP (base de datos)
+const sorteosDataFromDB = <?php echo json_encode($sorteosActivos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
+
+// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+if (userSessionData.nombre && userSessionData.tipoUsuario) {
+    const sessionClientData = {
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        email: userSessionData.email,
+        saldo: userSessionData.saldo,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+    };
+    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+}
+
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el layout con 'sorteos' como página activa
@@ -462,94 +415,108 @@ document.addEventListener('DOMContentLoaded', function() {
     initRaffleCardTimers();
 });
 
-// Datos de los sorteos disponibles
-const sorteosData = {
-    'auto-deportivo': {
-        id: 'auto-deportivo',
-        titulo: 'Gran Sorteo de Verano: Auto Deportivo 2024',
-        subtitulo: 'Auto Deportivo 2024 - Edición Limitada',
-        descripcion: 'Participa y gana el auto de tus sueños con todas las comodidades.',
-        descripcionCompleta: 'Experimenta la máxima potencia con el nuevo modelo deportivo 2024. Este vehículo no es solo un medio de transporte, es una declaración de estilo y rendimiento. Equipado con un motor V8 biturbo, interiores de cuero italiano cosido a mano y un sistema de sonido envolvente de última generación. El ganador recibirá el vehículo con todos los gastos de envío e impuestos cubiertos. Además, incluimos un año de seguro completo y mantenimiento preventivo gratuito.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSThToNJgK8_ebirDUoyudrls3AYTANGq9M7Zs9ix3l8WlMm_iwssMcgcBKtbPqip5f7LCFIqfkHZEYAgosO1pXgUgY-odysLX9t_CMGNLHE6DVzjSA616V4V4d5G3EAG4p4beU1iktaix9DpdKy4WkFUzJqAQ7pU_Dj4DGa6m6Yhiys5YpRrcuf2hPWh6-cQ6hHdLRK54xyf5ZwlJx4PzuBLOLqV0yLu6X3Pl-4TYDmjte2U-sf3aAZ3uDIaa7aiEDTZ_xY_bJXA',
-        precio: 50.00,
-        boletosVendidos: 375,
-        boletosTotales: 500,
-        tiempoRestante: { dias: 3, horas: 12, minutos: 45, segundos: 30 },
-        badge: 'Premium'
-    },
-    'iphone15': {
-        id: 'iphone15',
-        titulo: 'iPhone 15 Pro Max',
-        subtitulo: 'Smartphone de última generación - 1TB',
-        descripcion: 'Participa para ganar el último modelo de smartphone con 1TB de almacenamiento.',
-        descripcionCompleta: 'Gana el iPhone 15 Pro Max con 1TB de almacenamiento. Incluye chip A17 Pro, cámara de 48MP, pantalla Super Retina XDR de 6.7 pulgadas, y resistencia al agua IP68. El ganador recibirá el dispositivo nuevo y sellado con todos los accesorios originales y un año de garantía Apple.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDwAteQmSypGlj9rSJ2j8n67Um8qCfT0urHKQWggVYR2cnoUFNnLWz-dGV7qYF10it_zdMasYWluSGMVYQdUNQyZE3KWtAvxAveYl5nZwURTXZfPeflDRyId90eHL8A26eUtXRFMySbpjoDaZ7V4cMQ0M5uvKDjBxP8mR-3SWfov41dT9pCJshLRbhyh7j2Qg8kAflsEmjL7Ql4ntewUh7oJWn_oT8rRQdiuYtDyQdlrGrGpXdxwisJ7Yt487kUdH_GU3mzz66yI70',
-        precio: 50.00,
-        boletosVendidos: 125,
-        boletosTotales: 500,
-        tiempoRestante: { dias: 15, horas: 4, minutos: 22, segundos: 0 },
-        badge: 'NUEVO'
-    },
-    'ps5': {
-        id: 'ps5',
-        titulo: 'Pack Gamer PS5',
-        subtitulo: 'Consola PS5 + 2 Controles + 3 Juegos',
-        descripcion: 'Consola PS5, 2 controles DualSense y 3 juegos a elección.',
-        descripcionCompleta: 'Pack completo gamer con consola PlayStation 5, 2 controles DualSense inalámbricos, 3 juegos a elección de nuestro catálogo disponible, y suscripción de 3 meses a PlayStation Plus. Incluye cable HDMI 2.1, cable de carga para controles, y garantía extendida de 2 años.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDCcO2dR5Fdg9m2KqgG183uyb2umz475hYy-yTJR5KEpvO5oDC-FWcZ_DiEANzBJzKzFC8qptcOn__j-LUvhz0nQZaXVvtGH3QywOs2VWZzzJ6h4raEVt8Iz2WDnKq5zweGni-aT6furgSfHfoqXbwIEzgtsK_Qhr-ZhBHExOgld_Wc67QrYwyy6Puh0wDsKrdn8liqFv1Zl7_qSc7-eplab4OryXdIA-PXbeK3b2jZGdKoDUOj3wpCd_huPq8oEjzZ54ZiGJSZ1m0',
-        precio: 25.00,
-        boletosVendidos: 850,
-        boletosTotales: 1000,
-        tiempoRestante: { dias: 2, horas: 11, minutos: 5, segundos: 0 },
-        badge: 'POPULAR'
-    },
-    'efectivo50k': {
-        id: 'efectivo50k',
-        titulo: 'Premio en Efectivo $50k',
-        subtitulo: '$50,000 USD - Libre de impuestos',
-        descripcion: 'Participa por un premio de $50,000 USD libre de impuestos.',
-        descripcionCompleta: 'Gana $50,000 USD en efectivo, libre de impuestos. El premio se entregará mediante transferencia bancaria directa o cheque certificado según prefiera el ganador. No hay restricciones sobre el uso del premio y se entregará dentro de 7 días hábiles después del sorteo.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBni1zSCl1SpVKwv0Qzm2qy0axrUNGSlJoyeLynnw4JXMvqQzI8GAx1M8zjD1GEJUVpbLE5wqHnKtrg320kCXMdIC7WxRYlhlIw5YagaaQ8KQy9kj6bNM0vGj996zk-egNCej6aVw1WvVXqw_P7UpgzlwoxP86l-7HjmB2qxduMOMjxGBjme2Jdz_AuIFhr5kHtbnJ__Am9OZcEgcmwPFkFfT-gKR5nGLbO1A6W1C39FLnSwzIL35ckKnwIcHRBs0U5uKBSAB8FtBg',
-        precio: 100.00,
-        boletosVendidos: 45,
-        boletosTotales: 200,
-        tiempoRestante: { dias: 25, horas: 10, minutos: 0, segundos: 0 },
-        badge: null
-    },
-    'moto': {
-        id: 'moto',
-        titulo: 'Moto Deportiva 2024',
-        subtitulo: 'Moto de Alta Gama - Modelo 2024',
-        descripcion: 'Siente la velocidad con esta increíble motocicleta de alta gama.',
-        descripcionCompleta: 'Moto deportiva de última generación modelo 2024. Incluye motor de alto rendimiento, sistema de frenos ABS, suspensión ajustable, y todos los equipos de seguridad. El ganador recibirá la moto nueva con todos los documentos en regla, placa, y un curso de manejo seguro incluido.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAU2WNCPMJw0aGIUeAuwgz1ZtHOcl46nPPEtFilClUQyWD3IpJP4IsC50QJlcR2jbcLLVlXJI6RKrYiYOlJuG-PHcTKm7vahl3WDBzS_g5vYNmO4BmSdBeBUHYdUxv-PCRTHphG137xvV6rd9ISxjNaKtsnKybQND6FvSzHturGw0IgV4qhm1coXPsFz_8kHiM2-zJRq3yD_Q7CJ117JKUjVRdHmleKjY50m0Qe4NVinX4eoxVTGVEq-9ZbUbnctsS-mYsN2uedePA',
-        precio: 35.00,
-        boletosVendidos: 290,
-        boletosTotales: 300,
-        tiempoRestante: { dias: 0, horas: 4, minutos: 30, segundos: 15 },
-        badge: 'ÚLTIMOS BOLETOS'
-    },
-    'reloj': {
-        id: 'reloj',
-        titulo: 'Reloj de Lujo',
-        subtitulo: 'Edición Limitada - Precisión Suiza',
-        descripcion: 'Elegancia y precisión en tu muñeca. Edición limitada.',
-        descripcionCompleta: 'Reloj de lujo de edición limitada con mecanismo suizo de precisión. Incluye caja de presentación exclusiva, certificado de autenticidad, y garantía internacional de 5 años. El diseño elegante combina funcionalidad y estilo para ocasiones especiales.',
-        imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDZ7pgaFepp8kfDhmtFNHSgQjDgnZ0uhmGyqg6LNTbHk013102sQnnoX2twAiYlfOjcCcscK9gpQmt-0m3PnS3eMJHvZylYdgxRpuA7I2uCL9BKIQssDk0fALe8f9cFZSQvOF7UZBQOYz9k_qbTLd37IxWdJbaRIKG1lAEsGbtrXw8-_ODIxGE_Q5CoTKQr0yRsXQzxcxPlNxDLX6qbX9oisn0cj-TXfPNuo_j8ofLCiVZfrKDpeVAaDnTocyO7DbkbxTYhaJIh2Mw',
-        precio: 80.00,
-        boletosVendidos: 40,
-        boletosTotales: 100,
-        tiempoRestante: { dias: 12, horas: 8, minutos: 45, segundos: 0 },
-        badge: null
-    }
-};
+// Función para convertir datos de BD a formato esperado por JavaScript
+function convertirSorteoParaJS(sorteo) {
+    return {
+        id: sorteo.id_sorteo.toString(),
+        titulo: sorteo.titulo,
+        descripcion: sorteo.descripcion || '',
+        precio: sorteo.precio_boleto,
+        boletosVendidos: sorteo.boletos_vendidos,
+        boletosTotales: sorteo.total_boletos,
+        tiempoRestante: sorteo.tiempo_restante,
+        imagen: sorteo.imagen_url || ''
+    };
+}
+
+// Datos de los sorteos disponibles (convertidos desde BD)
+const sorteosData = {};
+if (sorteosDataFromDB && Array.isArray(sorteosDataFromDB)) {
+    sorteosDataFromDB.forEach(sorteo => {
+        sorteosData[sorteo.id_sorteo.toString()] = convertirSorteoParaJS(sorteo);
+    });
+}
 
 // Función para ver detalles del sorteo
 function viewSorteoDetails(sorteoId) {
-    const sorteo = sorteosData[sorteoId];
+    // sorteoId puede ser un número (ID) o un string
+    const sorteo = sorteosData[sorteoId.toString()];
     if (sorteo) {
         localStorage.setItem('selectedSorteo', JSON.stringify(sorteo));
     }
+}
+
+// Función para inicializar contadores de tiempo
+function initRaffleCardTimers() {
+    // Buscar todos los elementos con data-seconds
+    const countdownElements = document.querySelectorAll('[id^="countdown-card-"]');
+    
+    countdownElements.forEach((element, index) => {
+        const seconds = parseInt(element.getAttribute('data-seconds')) || 0;
+        
+        if (seconds <= 0) {
+            element.textContent = 'Finalizado';
+            element.classList.add('text-red-500');
+            return;
+        }
+        
+        // Calcular tiempo de finalización basado en los datos del sorteo
+        const sorteoId = element.closest('.raffle-card')?.getAttribute('data-raffle-id');
+        if (sorteoId && sorteosData[sorteoId]) {
+            const sorteo = sorteosData[sorteoId];
+            const tiempoRestante = sorteo.tiempoRestante;
+            const totalSegundos = tiempoRestante.total_segundos || 
+                (tiempoRestante.dias * 86400 + tiempoRestante.horas * 3600 + 
+                 tiempoRestante.minutos * 60 + tiempoRestante.segundos);
+            
+            const endTime = Math.floor(Date.now() / 1000) + totalSegundos;
+            element.setAttribute('data-end-time', endTime.toString());
+        } else {
+            // Fallback: usar los segundos del atributo
+            const endTime = Math.floor(Date.now() / 1000) + seconds;
+            element.setAttribute('data-end-time', endTime.toString());
+        }
+        
+        // Función para actualizar el contador
+        const updateCountdown = () => {
+            const endTime = parseInt(element.getAttribute('data-end-time')) || 0;
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = endTime - now;
+            
+            if (remaining <= 0) {
+                element.textContent = 'Finalizado';
+                element.classList.add('text-red-500');
+                element.classList.remove('text-yellow-500', 'text-orange-400');
+                return;
+            }
+            
+            const days = Math.floor(remaining / 86400);
+            const hours = Math.floor((remaining % 86400) / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const secs = remaining % 60;
+            
+            // Actualizar texto
+            if (days > 0) {
+                element.textContent = `${days}d ${hours}h ${minutes}m`;
+            } else if (hours > 0) {
+                element.textContent = `${hours}h ${minutes}m ${secs}s`;
+            } else {
+                element.textContent = `${minutes}m ${secs}s`;
+            }
+            
+            // Cambiar color si está por finalizar
+            if (remaining < 86400) {
+                element.classList.remove('text-yellow-500', 'text-orange-400');
+                element.classList.add('text-red-400', 'animate-pulse');
+            }
+        };
+        
+        // Actualizar inmediatamente
+        updateCountdown();
+        
+        // Actualizar cada segundo
+        setInterval(updateCountdown, 1000);
+    });
 }
 
 // Función para inicializar funcionalidades de botones
@@ -745,8 +712,8 @@ function initViewWinnerButton() {
 </script>
 
 <!-- Client Layout Script -->
-<script src="js/client-layout.js"></script>
 <script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
 <script>
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {

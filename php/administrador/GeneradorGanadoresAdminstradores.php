@@ -104,13 +104,17 @@ $conn = getDBConnection();
                 </a>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3">
+<div class="flex items-center gap-3 mb-3">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
 <div class="flex flex-col">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
 </div>
+<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+Cerrar Sesión
+</button>
 </div>
 </aside>
 <!-- Main Content -->
@@ -534,5 +538,32 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 function exportarHistorialGanadoresCSV() {
     alert("Función disponible próximamente");
 }
+
+// Función para manejar el logout del administrador
+function handleLogoutAdmin() {
+    // Usar customConfirm para mantener consistencia con el resto de la aplicación
+    if (typeof customConfirm === 'function') {
+        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+            if (confirmed) {
+                // Redirigir al logout.php que destruye la sesión del servidor
+                window.location.href = 'logout.php';
+            }
+        });
+    } else {
+        // Si customConfirm no está disponible, esperar a que se cargue
+        setTimeout(() => {
+            if (typeof customConfirm === 'function') {
+                handleLogoutAdmin();
+            } else {
+                // Fallback si customConfirm no se carga
+                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                    window.location.href = 'logout.php';
+                }
+            }
+        }, 200);
+    }
+}
 </script>
+<!-- Cargar custom-alerts.js para usar alertas personalizadas -->
+<script src="custom-alerts.js"></script>
 </body></html>

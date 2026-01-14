@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * DashboardCliente
  * Sistema de Sorteos Web
@@ -15,6 +15,27 @@ if (in_array('DashboardCliente', $protectedPages) && (!isset($_SESSION['is_logge
     header('Location: InicioSesion.php');
     exit;
 }
+
+// Obtener datos del usuario desde la base de datos
+require_once __DIR__ . '/includes/user-data.php';
+$datosUsuario = obtenerDatosUsuarioCompletos();
+
+// Si no se pueden obtener los datos, redirigir al login
+if (!$datosUsuario) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+// Variables para usar en el HTML
+$usuarioNombre = $datosUsuario['nombre'];
+$usuarioEmail = $datosUsuario['email'];
+$usuarioSaldo = $datosUsuario['saldo'];
+$usuarioAvatar = $datosUsuario['avatar'];
+$tipoUsuario = $datosUsuario['tipoUsuario'];
+
+// Obtener sorteos activos desde la base de datos (máximo 4 para el dashboard)
+require_once __DIR__ . '/includes/sorteos-data.php';
+$sorteosActivos = obtenerSorteosActivos(4);
 ?>
 <!DOCTYPE html>
 
@@ -136,8 +157,8 @@ if (in_array('DashboardCliente', $protectedPages) && (!isset($_SESSION['is_logge
 <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
 </div>
 <div class="flex flex-col overflow-hidden">
-<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight">Juan Pérez</h1>
-<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate">Usuario Premium</p>
+<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
 </div>
 </div>
 <!-- Navigation -->
@@ -228,29 +249,46 @@ if (in_array('DashboardCliente', $protectedPages) && (!isset($_SESSION['is_logge
 <!-- Scrollable Content Area -->
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
 <!-- Hero Section -->
-<section class="rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12 group" data-alt="Abstract dark background with floating shiny particles representing luck and lottery" style='background-image: linear-gradient(180deg, rgba(17,19,24,0) 0%, rgba(17,19,24,0.8) 60%, rgba(17,19,24,1) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBTGKTlTcTG4BHXQPfktzMWQHteochjDzWHtgPaEwftulmS7I2sXlx6-jahQ3bp2ruGdUAzPNDyh5VDcNApqNfpPi2WtgHPLdgOg1oRmva8Y9UpWEwqxpqclIzjKB2bMIS00VQ3RMgHhDqB8xHWRvXPxiwUK0geRKlCjUGt7BXbcLyBHaQtdogcRn_4mvMP56-RdqImA8uF6PRRpRTjIUM3ul88-nSyc9yXdsAhhmSjC05v1P53xI_XNKw3pyw4ZAdVMLkzseqUHto"); background-size: cover; background-position: center;'>
+<?php if (!empty($sorteosActivos)): 
+    $sorteoHero = $sorteosActivos[0]; // Primer sorteo para el hero
+    $imagenHero = !empty($sorteoHero['imagen_url']) 
+        ? htmlspecialchars($sorteoHero['imagen_url']) 
+        : 'https://via.placeholder.com/1200x400?text=Sorteo';
+    $tiempoHero = $sorteoHero['tiempo_restante'];
+    $segundosHero = $tiempoHero['total_segundos'];
+    $diasHero = $tiempoHero['dias'];
+    $horasHero = $tiempoHero['horas'];
+    $minutosHero = $tiempoHero['minutos'];
+    $segundosRestantes = $tiempoHero['segundos'];
+    $formatoTiempoHero = sprintf("%02d:%02d:%02d", $horasHero, $minutosHero, $segundosRestantes);
+    $mostrarTerminaPronto = $sorteoHero['esta_por_finalizar'];
+?>
+<section class="rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12 group" data-alt="<?php echo htmlspecialchars($sorteoHero['titulo']); ?>" style='background-image: linear-gradient(180deg, rgba(17,19,24,0) 0%, rgba(17,19,24,0.8) 60%, rgba(17,19,24,1) 100%), url("<?php echo $imagenHero; ?>"); background-size: cover; background-position: center;'>
 <div class="absolute inset-0 bg-primary/10 mix-blend-overlay group-hover:bg-primary/20 transition-all duration-500"></div>
 <div class="relative z-10 max-w-2xl">
+<?php if ($mostrarTerminaPronto): ?>
 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold uppercase tracking-wider mb-4 animate-pulse">
 <span class="size-2 bg-red-500 rounded-full"></span>
                         Termina Pronto
                     </div>
+<?php endif; ?>
 <h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
-                        ¡Gana el nuevo <span class="text-primary">iPhone 15 Pro</span>!
+                        ¡Gana <span class="text-primary"><?php echo htmlspecialchars($sorteoHero['titulo']); ?></span>!
                     </h1>
 <p class="text-gray-300 text-lg mb-8 max-w-lg">
-                        El sorteo cierra en <span id="countdown-hero" class="text-white font-mono font-bold bg-card-dark px-2 py-0.5 rounded" data-seconds="15490">04:23:10</span>. No te quedes sin tu oportunidad de ganar tecnología de punta.
+                        El sorteo cierra en <span id="countdown-hero" class="text-white font-mono font-bold bg-card-dark px-2 py-0.5 rounded" data-seconds="<?php echo $segundosHero; ?>"><?php echo $formatoTiempoHero; ?></span>. <?php echo htmlspecialchars($sorteoHero['descripcion'] ?: 'No te quedes sin tu oportunidad de ganar este increíble premio.'); ?>
                     </p>
 <div class="flex flex-wrap gap-4">
-<button id="buy-tickets-hero-btn" class="bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white px-8 py-3.5 rounded-xl font-bold text-base shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
+<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoHero['id_sorteo']; ?>" id="buy-tickets-hero-btn" class="bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white px-8 py-3.5 rounded-xl font-bold text-base shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
                             Comprar Boletos Ahora
-                        </button>
-<button id="view-details-hero-btn" class="bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white px-6 py-3.5 rounded-xl font-semibold text-base border border-[#3e4552]/50 shadow-lg hover:shadow-xl transition-all duration-200">
+                        </a>
+<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoHero['id_sorteo']; ?>" id="view-details-hero-btn" class="bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white px-6 py-3.5 rounded-xl font-semibold text-base border border-[#3e4552]/50 shadow-lg hover:shadow-xl transition-all duration-200">
                             Ver Detalles
-                        </button>
+                        </a>
 </div>
 </div>
 </section>
+<?php endif; ?>
 <!-- Stats Overview -->
 <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 <!-- Stat Card 1 -->
@@ -466,90 +504,56 @@ Ver Preguntas Frecuentes
 </div>
 </div>
 <div id="raffles-container" class="flex gap-6 overflow-x-auto scrollbar-hide lg:grid lg:grid-cols-4 lg:overflow-visible" style="scroll-behavior: smooth;">
-<!-- Raffle Card 1 -->
-<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="ducati-panigale">
-<div class="h-40 bg-cover bg-center relative" data-alt="Red motorcycle parked in a studio setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmoyYDhgLhe24sBQ_d4ZJKBG2B6w0Ml47veU2fB8l9ENOIJ9RkWIGLTF9hDp8i9lt1Oag8-NoZd5RSJu3JO0Yd2AoZKNXkOVpCIzsGVskrWydzG361Xfg18f4KMG_8whDRs1deQoc6gYBxhU24OcSx6urh588_06I930OoNOsLg0IeZf5yvU94zBoRIB-lsau2zlrDTsa3wtI_pNy5DsdvORYv4-Ejx2jVrCFOkWLULvNSigNDr_eaM1_agBK2aYy5XpkkXoW-D34");'>
-<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
-                                $5.00 / boleto
-                            </div>
-</div>
-<div class="p-4">
-<h4 class="text-lg font-bold text-white mb-1 truncate">Ducati Panigale V4</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 150 boletos</span>
-                            <span id="countdown-card-1" class="text-xs font-mono text-yellow-500" data-seconds="86340">23:59:00</span>
-</div>
-<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
-</div>
-<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="ducati-panigale" data-raffle-name="Ducati Panigale V4">
-                                Participar
-                            </button>
-</div>
-</div>
-<!-- Raffle Card 2 -->
-<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="macbook-pro">
-<div class="h-40 bg-cover bg-center relative" data-alt="High-end laptop on a desk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhHqy8PUURfhnrtv6fmG5RhuYNK1sMtZ7tObgDNGTVF-8W0La1xgRdmmBK3uHl9KRm08mHzfCx4O5XE3mvC__xPjPeKX7MnZVjo-CRWOoPViOxAXz00ALd5InieV9AbWPL5HCkX2vvZxIcBvkpOaxIUbC2lgRX0pBgs8umcZoPSmhYyVEvbb7s7A2VBkrA9lA-O7YC46xSaUBetbQng8aVjjYdo-lB7PzfthfKw00h-nP7aZikTcRrbJ7b61VOmKQrte9ODM5fTvM");'>
-<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
-                                $2.00 / boleto
-                            </div>
-</div>
-<div class="p-4">
-<h4 class="text-lg font-bold text-white mb-1 truncate">MacBook Pro M3</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 430 boletos</span>
-<span class="text-xs font-mono text-yellow-500">2 Días</span>
-</div>
-<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 35%"></div>
-</div>
-<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="macbook-pro" data-raffle-name="MacBook Pro M3">
-                                Participar
-                            </button>
-</div>
-</div>
-<!-- Raffle Card 3 -->
-<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="cash-prize">
-<div class="h-40 bg-cover bg-center relative" data-alt="Stack of gold coins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdrq7HXprS3_eVeuYorN_bZSnRy8yWQNV0RCwllNYlD-3hBNHLSCs2B4RrvhF6i3_qx9XeY0cwDo3Px0L734oW3YIK_EgaHSFCyI-IXItFOY8mZTk1L4tCYBd5eLUtMhHH1-9GzKQ2jyDRm8rcxh_W5Z2ulz5zrOz697rgfT84RoqF6UQgwMy46ENlmNQ9u0tMQbDx1XsicWJ8qcU-6ADkFjX-1_QZISnkcLzPCNURQ1gReLf3019_EXUKEX7601K1khjV_AdaPhw");'>
-<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
-                                $10.00 / boleto
-                            </div>
-</div>
-<div class="p-4">
-<h4 class="text-lg font-bold text-white mb-1 truncate">$5,000 en Efectivo</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 20 boletos</span>
-                            <span id="countdown-card-3" class="text-xs font-mono text-red-400 animate-pulse" data-seconds="2712">00:45:12</span>
-</div>
-<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 92%"></div>
-</div>
-<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="cash-prize" data-raffle-name="$5,000 en Efectivo">
-                                Participar
-                            </button>
-</div>
-</div>
-<!-- Raffle Card 4 -->
-<div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="rolex-submariner">
-<div class="h-40 bg-cover bg-center relative" data-alt="Luxury watch on a dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA_X34U5RwE868OA2ZDc3-KIuFL0HO1RhC4iYcu30MaouU6wEzcOcUvPyOwNjz-uh9fg45dA7mqhN7FnULIkt8hpUUM7NOIIg_c_Rhr5UptB7OH77OdNLigqKfGN38JTJUR6E0485v_9gJg4f7JwiKo-1BesqigVP9ZL8ZxBBo3uuYW5mVzKWfFDQVrw3DzeITMldCi7H1ReUEy1gAA4YASsN3YC2VZKXqjJIwpxAvwmZU2pen8U_ssmba0vgNZEGBtiJkcPGIVkf4");'>
-<div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
-                                $15.00 / boleto
-                            </div>
-</div>
-<div class="p-4">
-<h4 class="text-lg font-bold text-white mb-1 truncate">Rolex Submariner</h4>
-<div class="flex items-center justify-between mb-4">
-<span class="text-xs text-text-secondary">Quedan 800 boletos</span>
-<span class="text-xs font-mono text-text-secondary">5 Días</span>
-</div>
-<div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
-</div>
-<button class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors" data-raffle-id="rolex-submariner" data-raffle-name="Rolex Submariner">
-                                Participar
-                            </button>
-</div>
-</div>
+<?php if (empty($sorteosActivos)): ?>
+    <!-- Mensaje cuando no hay sorteos -->
+    <div class="col-span-4 text-center py-12">
+        <p class="text-text-secondary text-lg">No hay sorteos disponibles en este momento.</p>
+    </div>
+<?php else: ?>
+    <?php 
+    $cardIndex = 1;
+    foreach ($sorteosActivos as $sorteo): 
+        $imagenUrl = !empty($sorteo['imagen_url']) 
+            ? htmlspecialchars($sorteo['imagen_url']) 
+            : 'https://via.placeholder.com/400x200?text=Sorteo';
+        $tiempoRestante = $sorteo['tiempo_restante'];
+        $segundosTotales = $tiempoRestante['total_segundos'];
+        $horasRestantes = floor($segundosTotales / 3600);
+        $minutosRestantes = floor(($segundosTotales % 3600) / 60);
+        $segundosRestantes = $segundosTotales % 60;
+        $formatoTiempo = sprintf("%02d:%02d:%02d", $horasRestantes, $minutosRestantes, $segundosRestantes);
+        $diasRestantes = $tiempoRestante['dias'];
+        $textoTiempo = $diasRestantes > 0 ? $diasRestantes . ' Día' . ($diasRestantes > 1 ? 's' : '') : $formatoTiempo;
+        $colorTiempo = $sorteo['esta_por_finalizar'] ? 'text-red-400 animate-pulse' : 'text-yellow-500';
+        $boletosDisponibles = $sorteo['boletos_disponibles'];
+        $porcentajeVendido = $sorteo['porcentaje_vendido'];
+    ?>
+    <!-- Raffle Card -->
+    <div class="raffle-card flex-shrink-0 w-72 lg:w-auto lg:flex-shrink bg-card-dark rounded-xl border border-[#282d39] overflow-hidden group hover:-translate-y-1 transition-transform duration-300" data-raffle-id="<?php echo $sorteo['id_sorteo']; ?>">
+        <div class="h-40 bg-cover bg-center relative" data-alt="<?php echo htmlspecialchars($sorteo['titulo']); ?>" style='background-image: url("<?php echo $imagenUrl; ?>");'>
+            <div class="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded">
+                $<?php echo number_format($sorteo['precio_boleto'], 2, '.', ''); ?> / boleto
+            </div>
+        </div>
+        <div class="p-4">
+            <h4 class="text-lg font-bold text-white mb-1 truncate"><?php echo htmlspecialchars($sorteo['titulo']); ?></h4>
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs text-text-secondary">Quedan <?php echo $boletosDisponibles; ?> boletos</span>
+                <span id="countdown-card-<?php echo $cardIndex; ?>" class="text-xs font-mono <?php echo $colorTiempo; ?>" data-seconds="<?php echo $segundosTotales; ?>"><?php echo $textoTiempo; ?></span>
+            </div>
+            <div class="w-full bg-[#111318] rounded-full h-1.5 mb-4 overflow-hidden">
+                <div class="bg-primary h-1.5 rounded-full" style="width: <?php echo $porcentajeVendido; ?>%"></div>
+            </div>
+            <a href="SorteoClienteDetalles.php?id=<?php echo $sorteo['id_sorteo']; ?>" class="participate-btn w-full py-2 rounded-lg bg-[#353b4b] hover:bg-primary text-white text-sm font-semibold transition-colors block text-center" data-raffle-id="<?php echo $sorteo['id_sorteo']; ?>" data-raffle-name="<?php echo htmlspecialchars($sorteo['titulo']); ?>">
+                Participar
+            </a>
+        </div>
+    </div>
+    <?php 
+    $cardIndex++;
+    endforeach; 
+    ?>
+<?php endif; ?>
 </div>
 </div>
 <!-- Footer Spacing -->
@@ -557,11 +561,34 @@ Ver Preguntas Frecuentes
 </div>
 </main>
 
+<!-- Custom Alerts Script (debe cargarse antes de client-layout.js) -->
+<script src="js/custom-alerts.js"></script>
 <!-- Client Layout Script -->
 <script src="js/client-layout.js"></script>
-<script src="js/custom-alerts.js"></script>
 <script>
-// Inicializar layout del cliente
+// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+const userSessionData = {
+    nombre: '<?php echo addslashes($usuarioNombre); ?>',
+    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+    email: '<?php echo addslashes($usuarioEmail); ?>',
+    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+};
+
+// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+if (userSessionData.nombre && userSessionData.tipoUsuario) {
+    const sessionClientData = {
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        email: userSessionData.email,
+        saldo: userSessionData.saldo,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+    };
+    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+}
+
+// Inicializar layout del cliente DESPUÉS de actualizar localStorage
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el layout con 'dashboard' como página activa
     if (window.ClientLayout) {
@@ -571,14 +598,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Función para cargar datos del cliente
 function loadClientData() {
-    // Obtener datos del cliente desde localStorage o sessionStorage
-    // Si no existen, usar valores por defecto o hacer una petición al servidor
-    
+    // Usar datos de la sesión PHP como base
     let clientData = {
-        nombre: 'Juan Pérez',
-        tipoUsuario: 'Usuario Premium',
-        fotoPerfil: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
-        saldo: 1250.00,
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
+        saldo: userSessionData.saldo,
         boletosActivos: 12,
         boletosNuevos: 2,
         gananciasTotales: 1250.00,
@@ -587,28 +612,29 @@ function loadClientData() {
         nivelLealtad: 'Nivel Plata'
     };
 
-    // Intentar obtener datos desde localStorage
+    // Intentar obtener datos adicionales desde localStorage (pero mantener nombre y tipoUsuario de la sesión)
     const storedData = localStorage.getItem('clientData');
     if (storedData) {
         try {
             const parsedData = JSON.parse(storedData);
-            clientData = { ...clientData, ...parsedData };
+            // Mantener nombre y tipoUsuario de la sesión, pero usar otros datos de localStorage si existen
+            clientData = { 
+                ...clientData, 
+                ...parsedData,
+                nombre: userSessionData.nombre, // Forzar nombre de sesión
+                tipoUsuario: userSessionData.tipoUsuario // Forzar tipoUsuario de sesión
+            };
         } catch (e) {
             console.error('Error al parsear datos del cliente:', e);
         }
     }
+    
+    // Guardar datos actualizados en localStorage
+    localStorage.setItem('clientData', JSON.stringify(clientData));
 
-    // Intentar obtener datos desde sessionStorage
-    const sessionData = sessionStorage.getItem('clientData');
-    if (sessionData) {
-        try {
-            const parsedSessionData = JSON.parse(sessionData);
-            clientData = { ...clientData, ...parsedSessionData };
-        } catch (e) {
-            console.error('Error al parsear datos de sesión del cliente:', e);
-        }
-    }
-
+    // Guardar también en sessionStorage
+    sessionStorage.setItem('clientData', JSON.stringify(clientData));
+    
     // Actualizar elementos del DOM con los datos del cliente
     updateDashboard(clientData);
 
@@ -619,21 +645,21 @@ function loadClientData() {
 // Función para actualizar el dashboard con los datos del cliente
 function updateDashboard(data) {
     // Actualizar información del usuario en el sidebar
-    const userNameEl = document.getElementById('user-name');
-    const userTypeEl = document.getElementById('user-type');
-    const userAvatarEl = document.getElementById('user-avatar');
+    const sidebarUserNameEl = document.getElementById('sidebar-user-name');
+    const sidebarUserTypeEl = document.getElementById('sidebar-user-type');
+    const sidebarUserAvatarEl = document.getElementById('sidebar-user-avatar');
     const userBalanceEl = document.getElementById('user-balance');
 
-    if (userNameEl && data.nombre) {
-        userNameEl.textContent = data.nombre;
+    if (sidebarUserNameEl && data.nombre) {
+        sidebarUserNameEl.textContent = data.nombre;
     }
 
-    if (userTypeEl && data.tipoUsuario) {
-        userTypeEl.textContent = data.tipoUsuario;
+    if (sidebarUserTypeEl && data.tipoUsuario) {
+        sidebarUserTypeEl.textContent = data.tipoUsuario;
     }
 
-    if (userAvatarEl && data.fotoPerfil) {
-        userAvatarEl.style.backgroundImage = `url("${data.fotoPerfil}")`;
+    if (sidebarUserAvatarEl && data.fotoPerfil) {
+        sidebarUserAvatarEl.style.backgroundImage = `url("${data.fotoPerfil}")`;
     }
 
     if (userBalanceEl && data.saldo !== undefined) {
@@ -1214,6 +1240,9 @@ document.addEventListener('DOMContentLoaded', function() {
             saveClientData(event.detail);
         }
     });
+    
+    // El logout se maneja automáticamente por ClientLayout.init() en client-layout.js
+    // No es necesario agregar código adicional aquí
 });
 
 // Ejemplo de uso: Para actualizar datos desde otras partes de la aplicación, puedes usar:
