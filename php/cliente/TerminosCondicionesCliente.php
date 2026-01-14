@@ -1,0 +1,416 @@
+﻿<?php
+/**
+ * TerminosCondicionesCliente
+ * Sistema de Sorteos Web
+ */
+
+// Iniciar sesión
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar autenticación para páginas protegidas
+$protectedPages = ['DashboardCliente', 'AjustesPefilCliente', 'MisBoletosCliente', 'MisGanancias', 'SeleccionBoletos', 'SorteoClienteDetalles', 'FinalizarPagoBoletos'];
+if (in_array('TerminosCondicionesCliente', $protectedPages) && (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true)) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Términos y Condiciones - Sorteos Web</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111318",
+                        "card-dark": "#282d39",
+                        "text-secondary": "#9da6b9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white font-display overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full">
+<div class="p-6 pb-2">
+<div class="flex items-center gap-3 mb-8">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
+</div>
+<!-- User Mini Profile -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
+<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate">Juan Pérez</h1>
+<p id="sidebar-user-type" class="text-text-secondary text-xs truncate">Usuario Premium</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1.5">
+<a id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="DashboardCliente.php">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a id="nav-sorteos" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="ListadoSorteosActivos.php">
+<span class="material-symbols-outlined text-[24px]">local_activity</span>
+<p class="text-sm font-medium">Sorteos</p>
+</a>
+<a id="nav-boletos" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="MisBoletosCliente.php">
+<span class="material-symbols-outlined text-[24px]">confirmation_number</span>
+<p class="text-sm font-medium">Mis Boletos</p>
+</a>
+<a id="nav-ganadores" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="MisGanancias.php">
+<span class="material-symbols-outlined text-[24px]">emoji_events</span>
+<p class="text-sm font-medium">Ganadores</p>
+</a>
+<a id="nav-perfil" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="AjustesPefilCliente.php">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-sm font-medium">Perfil</p>
+</a>
+<a id="nav-soporte" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white group transition-colors" href="ContactoSoporteCliente.php">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+<p class="text-sm font-medium">Soporte</p>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6">
+<button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Page Title -->
+<div class="flex-1 text-center lg:text-left">
+<h1 class="text-lg font-bold text-white">Términos y Condiciones</h1>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<a href="DashboardCliente.php" class="flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+<span class="hidden sm:inline">Volver</span>
+</a>
+</div>
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+<div class="mx-auto flex w-full max-w-[1280px] flex-col gap-8 lg:flex-row lg:gap-12">
+<!-- Sidebar Navigation - Tabla de Contenidos (Sticky on Desktop) -->
+<aside class="hidden lg:block w-64 shrink-0">
+<div class="sticky top-24 flex flex-col gap-6">
+<div>
+<h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-gray-500">Tabla de Contenidos</h3>
+<nav class="flex flex-col gap-1">
+<a class="group flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary transition-all hover:bg-primary/20" href="#intro">
+<span class="material-symbols-outlined text-[20px]">info</span>
+<span class="text-sm font-medium">1. Introducción</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#definiciones">
+<span class="material-symbols-outlined text-[20px]">book</span>
+<span class="text-sm font-medium">2. Definiciones</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#obligaciones">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="text-sm font-medium">3. Obligaciones</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#pagos">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+<span class="text-sm font-medium">4. Pagos y Reembolsos</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#mecanica">
+<span class="material-symbols-outlined text-[20px]">casino</span>
+<span class="text-sm font-medium">5. Mecánica del Sorteo</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#responsabilidad">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="text-sm font-medium">6. Responsabilidad</span>
+</a>
+<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 transition-all hover:bg-[#282d39] hover:text-white" href="#privacidad">
+<span class="material-symbols-outlined text-[20px]">privacy_tip</span>
+<span class="text-sm font-medium">7. Privacidad</span>
+</a>
+</nav>
+</div>
+<!-- Support Card Mini -->
+<div class="rounded-xl bg-card-dark p-4 border border-[#282d39]">
+<div class="flex items-center gap-3 mb-2">
+<div class="flex items-center justify-center size-8 rounded-full bg-blue-500/20 text-blue-400">
+<span class="material-symbols-outlined text-sm">support_agent</span>
+</div>
+<p class="text-sm font-semibold text-white">¿Necesitas ayuda?</p>
+</div>
+<p class="text-xs text-gray-400 mb-3">Si tienes dudas sobre los términos, contáctanos.</p>
+<a href="ContactoSoporteCliente.php?focus=mensaje" class="w-full rounded-lg bg-[#282d39] px-3 py-2 text-xs font-medium text-white hover:bg-[#374151] transition-colors inline-block text-center">
+                        Contactar Soporte
+                    </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Column -->
+<div class="flex-1 min-w-0">
+<!-- Mobile Table of Contents Dropdown (Visible only on mobile) -->
+<div class="lg:hidden mb-6">
+<details class="group rounded-xl bg-[#1a202c] border border-[#282d39]">
+<summary class="flex cursor-pointer items-center justify-between p-4 font-medium text-white">
+<span>Tabla de Contenidos</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-[#282d39] px-4 py-3">
+<nav class="flex flex-col gap-2">
+<a class="text-sm text-primary" href="#intro">1. Introducción</a>
+<a class="text-sm text-gray-400" href="#definiciones">2. Definiciones</a>
+<a class="text-sm text-gray-400" href="#obligaciones">3. Obligaciones</a>
+<a class="text-sm text-gray-400" href="#pagos">4. Pagos y Reembolsos</a>
+<a class="text-sm text-gray-400" href="#mecanica">5. Mecánica del Sorteo</a>
+<a class="text-sm text-gray-400" href="#responsabilidad">6. Responsabilidad</a>
+</nav>
+</div>
+</details>
+</div>
+<!-- Header Card (White Background as requested) -->
+<div class="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
+<div class="relative px-6 py-10 sm:px-10 sm:py-12">
+<!-- Decorative pattern -->
+<div class="absolute right-0 top-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl" data-alt="Abstract blue glow"></div>
+<div class="relative">
+<span class="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
+                            Documento Legal
+                        </span>
+<h1 class="mb-4 text-3xl font-black leading-tight tracking-tight text-[#111827] sm:text-4xl lg:text-5xl">
+                            Términos y Condiciones
+                        </h1>
+<p class="max-w-2xl text-lg text-gray-600">
+                            Por favor lea atentamente estos términos de servicio antes de utilizar nuestra plataforma de sorteos. Su uso implica la aceptación de estas reglas.
+                        </p>
+</div>
+</div>
+<div class="border-t border-gray-100 bg-gray-50 px-6 py-3 sm:px-10">
+<p class="flex items-center gap-2 text-sm font-medium text-gray-500">
+<span class="material-symbols-outlined text-[18px]">update</span>
+                        Última actualización: 24 de Octubre de 2023
+                    </p>
+</div>
+</div>
+<!-- Document Content -->
+<div class="flex flex-col gap-12 text-base leading-relaxed text-gray-300">
+<!-- Section 1 -->
+<section class="scroll-mt-32" id="intro">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">1</span>
+                        Introducción
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>
+                            Bienvenido a <strong>Sorteos Web</strong>. Al acceder y utilizar nuestros servicios, usted ("el Usuario") acepta cumplir con los siguientes términos y condiciones establecidos en este documento legal. Si no está de acuerdo con alguna parte de estos términos, no podrá acceder al servicio.
+                        </p>
+<p>
+                            Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación en el sitio web. Es su responsabilidad revisar periódicamente estos términos para estar informado de las actualizaciones.
+                        </p>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 2 -->
+<section class="scroll-mt-32" id="definiciones">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">2</span>
+                        Definiciones
+                    </h2>
+<div class="grid gap-4 md:grid-cols-2">
+<div class="rounded-xl bg-[#1a202c] p-5 border border-[#282d39]">
+<h3 class="mb-2 text-lg font-semibold text-white">Sorteo</h3>
+<p class="text-sm text-gray-400">Evento promocional donde se seleccionan ganadores al azar entre los participantes que han adquirido un boleto válido.</p>
+</div>
+<div class="rounded-xl bg-[#1a202c] p-5 border border-[#282d39]">
+<h3 class="mb-2 text-lg font-semibold text-white">Boleto</h3>
+<p class="text-sm text-gray-400">Entrada digital única, identificada por un número de serie o código QR, que otorga el derecho a participar en un sorteo específico.</p>
+</div>
+<div class="rounded-xl bg-[#1a202c] p-5 border border-[#282d39]">
+<h3 class="mb-2 text-lg font-semibold text-white">Usuario</h3>
+<p class="text-sm text-gray-400">Cualquier persona física mayor de edad que se registra en la plataforma y participa en los sorteos disponibles.</p>
+</div>
+<div class="rounded-xl bg-[#1a202c] p-5 border border-[#282d39]">
+<h3 class="mb-2 text-lg font-semibold text-white">Organizador</h3>
+<p class="text-sm text-gray-400">La entidad o persona responsable de la creación, gestión y entrega de premios del sorteo.</p>
+</div>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 3 -->
+<section class="scroll-mt-32" id="obligaciones">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">3</span>
+                        Obligaciones del Usuario
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>Para utilizar nuestros servicios, el usuario debe cumplir con los siguientes requisitos:</p>
+<ul class="ml-4 list-outside list-disc space-y-2 marker:text-primary">
+<li>Ser mayor de 18 años o tener la mayoría de edad legal en su jurisdicción de residencia.</li>
+<li>Proporcionar información veraz, exacta y completa durante el proceso de registro.</li>
+<li>No utilizar la plataforma para actividades ilícitas o fraudulentas.</li>
+<li>Mantener la confidencialidad de su cuenta y contraseña.</li>
+<li>No intentar manipular los resultados de los sorteos mediante software automatizado o hacking.</li>
+</ul>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 4 -->
+<section class="scroll-mt-32" id="pagos">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">4</span>
+                        Pagos y Reembolsos
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>
+                            Todas las compras de boletos son finales. Debido a la naturaleza inmediata del servicio digital y la asignación de probabilidades, <strong>no se ofrecen reembolsos</strong> una vez que el boleto ha sido generado, excepto en los casos en que el sorteo sea cancelado por la plataforma.
+                        </p>
+<div class="rounded-lg bg-red-500/10 border border-red-500/20 p-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-red-400 shrink-0">warning</span>
+<div>
+<h4 class="text-sm font-bold text-red-200">Importante sobre pagos fraudulentos</h4>
+<p class="mt-1 text-sm text-red-300/80">Cualquier intento de contracargo o disputa de pago fraudulenta resultará en la suspensión inmediata de la cuenta y la anulación de todos los boletos activos.</p>
+</div>
+</div>
+</div>
+<p>
+                            Aceptamos los principales métodos de pago, incluyendo tarjetas de crédito, débito y transferencias bancarias directas. Los precios están expresados en la moneda local e incluyen los impuestos aplicables.
+                        </p>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 5 -->
+<section class="scroll-mt-32" id="mecanica">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">5</span>
+                        Mecánica del Sorteo
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>
+                            La selección de ganadores se realiza mediante un algoritmo de generación de números aleatorios certificado o a través de la integración con loterías nacionales oficiales, según se especifique en cada sorteo individual.
+                        </p>
+<ol class="flex flex-col gap-4">
+<li class="flex items-start gap-3">
+<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-primary/20 text-xs font-bold text-primary">A</div>
+<span>Los resultados se publicarán en la plataforma dentro de las 24 horas posteriores al cierre del sorteo.</span>
+</li>
+<li class="flex items-start gap-3">
+<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-primary/20 text-xs font-bold text-primary">B</div>
+<span>Los ganadores serán notificados vía correo electrónico y/o notificación push en la aplicación.</span>
+</li>
+<li class="flex items-start gap-3">
+<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-primary/20 text-xs font-bold text-primary">C</div>
+<span>El ganador dispone de 30 días naturales para reclamar su premio. Pasado este tiempo, el premio podrá ser declarado desierto o donado a beneficencia.</span>
+</li>
+</ol>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 6 -->
+<section class="scroll-mt-32" id="responsabilidad">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">6</span>
+                        Limitación de Responsabilidad
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>
+                            Sorteos Web actúa como intermediario tecnológico. No nos hacemos responsables por fallas en la conexión a internet del usuario, errores en la pasarela de pagos ajenos a nuestra infraestructura, o interrupciones del servicio por causas de fuerza mayor.
+                        </p>
+<p>
+                            La plataforma se proporciona "tal cual" y "según disponibilidad". No garantizamos que el servicio sea ininterrumpido o libre de errores, aunque nos esforzamos por mantener los más altos estándares de calidad y seguridad.
+                        </p>
+</div>
+</section>
+<hr class="border-[#282d39]"/>
+<!-- Section 7 -->
+<section class="scroll-mt-32" id="privacidad">
+<h2 class="mb-4 flex items-center gap-3 text-2xl font-bold text-white">
+<span class="flex size-8 items-center justify-center rounded-full bg-[#282d39] text-sm text-white">7</span>
+                        Privacidad y Datos
+                    </h2>
+<div class="space-y-4 text-gray-400">
+<p>
+                            Respetamos su privacidad. Sus datos personales serán utilizados únicamente para la gestión de su cuenta, el procesamiento de sus participaciones y la comunicación de resultados. No vendemos sus datos a terceros. Para más información, consulte nuestra <a class="text-primary hover:underline" href="#">Política de Privacidad</a>.
+                        </p>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Footer Spacing -->
+<div class="h-10"></div>
+</div>
+</main>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'soporte' como página activa (ya que términos está relacionado con soporte)
+    if (window.ClientLayout) {
+        ClientLayout.init('soporte');
+    }
+});
+</script>
+
+</body></html>
+
+

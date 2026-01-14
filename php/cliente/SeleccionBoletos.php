@@ -1,0 +1,828 @@
+﻿<?php
+/**
+ * SeleccionBoletos
+ * Sistema de Sorteos Web
+ */
+
+// Iniciar sesión
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar autenticación para páginas protegidas
+$protectedPages = ['DashboardCliente', 'AjustesPefilCliente', 'MisBoletosCliente', 'MisGanancias', 'SeleccionBoletos', 'SorteoClienteDetalles', 'FinalizarPagoBoletos'];
+if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true)) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Selección de Boletos - SorteosWeb</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111318",
+                        "card-dark": "#282d39",
+                        "text-secondary": "#9da6b9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for dark mode feeling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39] bg-[#111318] h-full">
+<div class="p-6 pb-2">
+<div class="flex items-center gap-3 mb-8">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
+</div>
+<!-- User Mini Profile -->
+<div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
+<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate">Juan Pérez</h1>
+<p id="sidebar-user-type" class="text-text-secondary text-xs truncate">Usuario Premium</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1.5">
+<a id="nav-dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="DashboardCliente.php">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a id="nav-sorteos" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white group transition-colors" href="ListadoSorteosActivos.php">
+<span class="material-symbols-outlined text-[24px]">local_activity</span>
+<p class="text-sm font-medium">Sorteos</p>
+</a>
+<a id="nav-boletos" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="MisBoletosCliente.php">
+<span class="material-symbols-outlined text-[24px]">confirmation_number</span>
+<p class="text-sm font-medium">Mis Boletos</p>
+</a>
+<a id="nav-ganadores" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="MisGanancias.php">
+<span class="material-symbols-outlined text-[24px]">emoji_events</span>
+<p class="text-sm font-medium">Ganadores</p>
+</a>
+<a id="nav-perfil" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="AjustesPefilCliente.php">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-sm font-medium">Perfil</p>
+</a>
+<a id="nav-soporte" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:text-white hover:bg-card-dark transition-colors group" href="ContactoSoporteCliente.php">
+<span class="material-symbols-outlined text-[24px]">support_agent</span>
+<p class="text-sm font-medium">Soporte</p>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6">
+<button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-lg h-10 px-4 bg-card-dark hover:bg-[#3b4254] text-text-secondary hover:text-white text-sm font-bold transition-colors border border-transparent hover:border-[#4b5563]">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39] bg-[#111318] sticky top-0 z-20">
+<!-- Mobile Menu Toggle (Visible only on small screens) -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar -->
+<div class="hidden md:flex max-w-md w-full">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm" placeholder="Buscar sorteos..." type="text"/>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-4 ml-auto">
+<button class="flex items-center justify-center h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(36,99,235,0.3)]">
+<span class="hidden sm:inline">Depositar Fondos</span>
+<span class="sm:hidden">+</span>
+</button>
+<div class="h-6 w-px bg-[#282d39] mx-2"></div>
+<button class="relative flex items-center justify-center size-10 rounded-lg bg-card-dark hover:bg-[#353b4b] text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border border-card-dark"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+<div class="w-full max-w-[1280px] mx-auto">
+<!-- Raffle Header & Info -->
+<div class="flex flex-col lg:flex-row gap-8 mb-10">
+<!-- Raffle Details -->
+<div class="flex-1 space-y-6">
+<div class="flex flex-col gap-2">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary w-fit">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="text-xs font-bold uppercase tracking-wide">Sorteo Verificado</span>
+</div>
+<h1 id="sorteo-title" class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white">
+                        <span class="text-primary" id="sorteo-title-text">Gran Sorteo Anual</span>
+</h1>
+<p id="sorteo-description" class="text-text-secondary text-lg max-w-2xl">
+                        Selecciona tus números de la suerte a continuación.
+                    </p>
+</div>
+<!-- Prize Card (Mini) -->
+<div class="flex items-center gap-4 p-4 rounded-xl bg-card-dark border border-[#282d39] shadow-sm max-w-md">
+<div id="sorteo-mini-image" class="w-24 h-16 rounded-lg bg-[#111318] overflow-hidden flex-shrink-0 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Sorteo image"></div>
+</div>
+<div class="flex-1">
+<p class="text-sm text-text-secondary">Precio del boleto</p>
+<p id="precio-boleto-display" class="text-xl font-bold text-white">$50.00 MXN</p>
+</div>
+</div>
+</div>
+<!-- Countdown Timer -->
+<div class="flex flex-col justify-center items-center lg:items-end">
+<div class="bg-card-dark border border-[#282d39] rounded-xl p-6 shadow-sm">
+<p class="text-sm text-center text-text-secondary mb-4 font-medium uppercase tracking-widest">Cierra en</p>
+<div class="flex gap-3">
+<div class="flex flex-col items-center gap-1">
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-dias" class="text-2xl font-bold text-primary">03</span>
+</div>
+<span class="text-xs text-text-secondary">Días</span>
+</div>
+<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
+<div class="flex flex-col items-center gap-1">
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-horas" class="text-2xl font-bold text-primary">12</span>
+</div>
+<span class="text-xs text-text-secondary">Horas</span>
+</div>
+<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
+<div class="flex flex-col items-center gap-1">
+<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
+<span id="timer-minutos" class="text-2xl font-bold text-primary">45</span>
+</div>
+<span class="text-xs text-text-secondary">Mins</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Toolbar: Search & Legend -->
+<div class="sticky top-20 z-30 bg-[#111318] py-4 mb-6 border-b border-[#282d39] flex flex-col md:flex-row gap-4 justify-between items-center">
+<!-- Search -->
+<div class="w-full md:w-96">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-text-secondary group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número (ej. 45)..." type="text"/>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex flex-wrap justify-center gap-4 text-sm font-medium text-text-secondary">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-card-dark border border-emerald-500"></span>
+<span>Disponible</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary border border-primary"></span>
+<span>Seleccionado</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-yellow-900/40 border border-yellow-600"></span>
+<span>Pendiente</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-red-900/40 border border-red-800"></span>
+<span>Vendido</span>
+</div>
+</div>
+</div>
+<!-- Ticket Grid -->
+<div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3 pb-20 select-none">
+<!-- Render logic simulation -->
+<!-- Available -->
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
+<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">001</span>
+</button>
+<!-- Sold -->
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled="">
+<span class="font-mono font-bold text-red-700 decoration-red-500/50 line-through">002</span>
+</button>
+<!-- Available -->
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
+<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">003</span>
+</button>
+<!-- Selected -->
+<button class="h-12 rounded-lg border border-primary bg-primary shadow-[0_0_15px_rgba(36,99,235,0.4)] flex items-center justify-center relative overflow-hidden">
+<span class="font-mono font-bold text-white z-10">004</span>
+<div class="absolute inset-0 bg-white/10"></div>
+<span class="absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5">check</span>
+</button>
+<!-- Available -->
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
+<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">005</span>
+</button>
+<!-- Pending -->
+<button class="h-12 rounded-lg border border-yellow-700/30 bg-yellow-900/10 cursor-not-allowed flex items-center justify-center opacity-80" disabled="">
+<span class="material-symbols-outlined text-yellow-600 text-lg absolute opacity-20">lock</span>
+<span class="font-mono font-bold text-yellow-600 relative z-10">006</span>
+</button>
+<!-- Available Loop -->
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">007</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">008</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">009</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">010</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">011</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">012</span></button>
+<!-- Selected -->
+<button class="h-12 rounded-lg border border-primary bg-primary shadow-[0_0_15px_rgba(36,99,235,0.4)] flex items-center justify-center relative overflow-hidden">
+<span class="font-mono font-bold text-white z-10">013</span>
+<div class="absolute inset-0 bg-white/10"></div>
+</button>
+<!-- More grid items simulation -->
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">014</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">015</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">016</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">017</span></button>
+<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">018</span></button>
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">019</span></button>
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">020</span></button>
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">021</span></button>
+<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">022</span></button>
+<!-- Generate a block of available for visual density -->
+<!-- Using a pattern to fill space without too much repetition -->
+<div class="contents text-emerald-400">
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-card-dark flex items-center justify-center font-mono font-bold">023</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">024</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">025</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">026</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">027</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">028</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">029</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">030</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">031</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">032</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">033</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">034</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">035</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">036</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">037</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">038</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">039</button>
+<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">040</button>
+</div>
+<!-- Disabled -->
+<button class="h-12 rounded-lg border border-gray-700/30 bg-gray-800/30 text-gray-600 cursor-not-allowed flex items-center justify-center" disabled="">
+<span class="font-mono font-bold">041</span>
+</button>
+</div>
+</main>
+<!-- Sticky Cart Footer -->
+<div class="fixed bottom-4 left-4 right-4 z-50">
+<div class="max-w-[1280px] mx-auto bg-card-dark rounded-xl shadow-[0_4px_25px_rgba(0,0,0,0.5)] border border-[#282d39] p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-slide-up">
+<!-- Reservation Timer & Summary -->
+<div class="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto text-center md:text-left">
+<div class="flex items-center gap-3 text-red-500 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
+<span class="material-symbols-outlined text-[20px] animate-pulse">timer</span>
+<span id="reservation-timer" class="font-mono font-bold">14:59</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs text-text-secondary uppercase font-semibold tracking-wider">Tus Boletos</span>
+<div id="selected-tickets-container" class="flex gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#004</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#013</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-[#282d39] pt-4 md:pt-0">
+<div class="flex flex-col items-end">
+<span class="text-xs text-text-secondary">Total a Pagar</span>
+<span id="total-pagar" class="text-2xl font-bold text-white">$10.00</span>
+</div>
+<a href="FinalizarPagoBoletos.php" onclick="return handleProceedToPayment()" class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
+<span>Proceder al Pago</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el layout con 'sorteos' como página activa
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+    
+    // Cargar información del sorteo seleccionado
+    loadSorteoData();
+    
+    // Asegurar que los contadores se inicialicen (igual que DashboardCliente)
+    setTimeout(function() {
+        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+        if (sorteoData.tiempoRestante) {
+            initSorteoCountdown(sorteoData.tiempoRestante);
+        } else {
+            initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+        }
+        startReservationTimer();
+    }, 100);
+    
+    // Inicializar funcionalidad de selección de boletos
+    initTicketSelection();
+    initTicketSearch();
+    
+    // Cargar boletos previamente seleccionados
+    const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+    if (savedTickets.length > 0) {
+        savedTickets.forEach(num => {
+            selectedTickets.add(num);
+            const button = Array.from(document.querySelectorAll('.grid button:not([disabled])')).find(btn => {
+                const btnNum = parseInt(btn.textContent.trim());
+                return btnNum === num;
+            });
+            if (button) {
+                markTicketAsSelected(button);
+            }
+        });
+        updateSelectedTicketsDisplay();
+        updateTotalPrice();
+    }
+});
+
+// Función para cargar los datos del sorteo desde localStorage
+function loadSorteoData() {
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    
+    // Actualizar título
+    const titleElement = document.getElementById('sorteo-title-text');
+    if (titleElement) {
+        titleElement.textContent = sorteoData.titulo || 'Gran Sorteo Anual';
+    }
+    
+    // Actualizar descripción
+    const descElement = document.getElementById('sorteo-description');
+    if (descElement && sorteoData.subtitulo) {
+        descElement.textContent = sorteoData.subtitulo + '. Selecciona tus números de la suerte a continuación.';
+    }
+    
+    // Actualizar imagen mini
+    const miniImage = document.querySelector('#sorteo-mini-image div');
+    if (miniImage && sorteoData.imagen) {
+        miniImage.style.backgroundImage = `url('${sorteoData.imagen}')`;
+    }
+    
+    // Actualizar precio
+    const precioElement = document.getElementById('precio-boleto-display');
+    if (precioElement) {
+        precioElement.textContent = `$${sorteoData.precio.toFixed(2)} MXN`;
+    }
+    
+    // Inicializar contador regresivo del sorteo (igual que DashboardCliente)
+    if (sorteoData.tiempoRestante) {
+        initSorteoCountdown(sorteoData.tiempoRestante);
+    } else {
+        initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+    }
+    
+    // Iniciar timer de reserva
+    startReservationTimer();
+    
+    // Guardar el precio del boleto para calcular el total
+    window.currentTicketPrice = sorteoData.precio || 50.00;
+    updateTotalPrice();
+}
+
+// Función para obtener datos por defecto
+function getDefaultSorteoData() {
+    return {
+        id: 'default',
+        titulo: 'Gran Sorteo Anual',
+        subtitulo: 'Automóvil 0km - Modelo 2024',
+        precio: 50.00,
+        tiempoRestante: { dias: 3, horas: 12, minutos: 45 }
+    };
+}
+
+// Almacenar intervalos activos para poder limpiarlos si es necesario
+const activeCountdownIntervals = new Map();
+
+// Función para inicializar el contador regresivo del sorteo (EXACTO COMO DashboardCliente)
+function initSorteoCountdown(tiempo) {
+    // Obtener elementos del DOM
+    const diasElement = document.getElementById('timer-dias');
+    const horasElement = document.getElementById('timer-horas');
+    const minutosElement = document.getElementById('timer-minutos');
+    
+    if (!diasElement || !horasElement || !minutosElement) {
+        console.warn('Elementos del timer no encontrados, reintentando...');
+        setTimeout(function() {
+            initSorteoCountdown(tiempo);
+        }, 200);
+        return;
+    }
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('sorteo-timer')) {
+        clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+        activeCountdownIntervals.delete('sorteo-timer');
+    }
+    
+    if (!tiempo) {
+        tiempo = { dias: 3, horas: 12, minutos: 45, segundos: 0 };
+    }
+    
+    // Convertir tiempo a segundos totales (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = (tiempo.dias || 0) * 86400 + 
+                          (tiempo.horas || 0) * 3600 + 
+                          (tiempo.minutos || 0) * 60 + 
+                          (tiempo.segundos || 0);
+    
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateCountdown() {
+        if (remainingSeconds <= 0) {
+            diasElement.textContent = '00';
+            horasElement.textContent = '00';
+            minutosElement.textContent = '00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('sorteo-timer')) {
+                clearInterval(activeCountdownIntervals.get('sorteo-timer'));
+                activeCountdownIntervals.delete('sorteo-timer');
+            }
+            return;
+        }
+        
+        // Calcular días, horas, minutos con el tiempo actual
+        const dias = Math.floor(remainingSeconds / 86400);
+        const horas = Math.floor((remainingSeconds % 86400) / 3600);
+        const minutos = Math.floor((remainingSeconds % 3600) / 60);
+        
+        // Actualizar la visualización
+        diasElement.textContent = String(dias).padStart(2, '0');
+        horasElement.textContent = String(horas).padStart(2, '0');
+        minutosElement.textContent = String(minutos).padStart(2, '0');
+        
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateCountdown();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateCountdown, 1000);
+    activeCountdownIntervals.set('sorteo-timer', intervalId);
+}
+
+// Función para actualizar el timer (compatibilidad con código existente)
+function updateTimer(tiempo) {
+    if (tiempo) {
+        initSorteoCountdown(tiempo);
+    }
+}
+
+// Timer de reserva (14:59 minutos) - EXACTO COMO DashboardCliente
+function startReservationTimer() {
+    const timerElement = document.getElementById('reservation-timer');
+    if (!timerElement) return;
+    
+    // Si ya existe un intervalo para este elemento, limpiarlo primero
+    if (activeCountdownIntervals.has('reservation-timer')) {
+        clearInterval(activeCountdownIntervals.get('reservation-timer'));
+        activeCountdownIntervals.delete('reservation-timer');
+    }
+    
+    // Tiempo inicial: 14 minutos y 59 segundos (variable local en closure, EXACTO COMO DashboardCliente)
+    let remainingSeconds = 14 * 60 + 59;
+    remainingSeconds = parseInt(remainingSeconds) || 0;
+    
+    // Función de actualización (EXACTO COMO DashboardCliente)
+    function updateReservationTimer() {
+        if (remainingSeconds <= 0) {
+            timerElement.textContent = '00:00';
+            // Limpiar el intervalo cuando llegue a cero
+            if (activeCountdownIntervals.has('reservation-timer')) {
+                clearInterval(activeCountdownIntervals.get('reservation-timer'));
+                activeCountdownIntervals.delete('reservation-timer');
+            }
+            // Aquí se podría liberar los boletos o mostrar un mensaje
+            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
+            window.location.href = 'ListadoSorteosActivos.php';
+            return;
+        }
+        
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        remainingSeconds--;
+    }
+    
+    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
+    updateReservationTimer();
+    
+    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
+    const intervalId = setInterval(updateReservationTimer, 1000);
+    activeCountdownIntervals.set('reservation-timer', intervalId);
+}
+
+// Función para actualizar el precio total basado en boletos seleccionados
+function updateTotalPrice() {
+    const totalElement = document.getElementById('total-pagar');
+    if (totalElement && window.currentTicketPrice) {
+        const selectedCount = selectedTickets.size;
+        const total = window.currentTicketPrice * selectedCount;
+        totalElement.textContent = `$${total.toFixed(2)}`;
+    }
+}
+
+// Variables globales para la selección de boletos
+let selectedTickets = new Set(); // Usar Set para evitar duplicados
+const maxTickets = 100; // Límite máximo de boletos
+
+// Función para inicializar la funcionalidad de selección de boletos
+function initTicketSelection() {
+    // Obtener todos los botones de boletos disponibles
+    const ticketButtons = document.querySelectorAll('.grid button:not([disabled])');
+    
+    ticketButtons.forEach(button => {
+        // Obtener el número del boleto desde el texto del botón
+        const ticketNumber = parseInt(button.textContent.trim());
+        
+        if (isNaN(ticketNumber)) return;
+        
+        // Agregar evento de clic
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleTicketSelection(ticketNumber, button);
+        });
+        
+        // Verificar si el boleto ya está seleccionado (desde localStorage)
+        const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+        if (savedTickets.includes(ticketNumber)) {
+            selectedTickets.add(ticketNumber);
+            markTicketAsSelected(button);
+        }
+    });
+    
+    // Actualizar la visualización inicial
+    updateSelectedTicketsDisplay();
+    updateTotalPrice();
+}
+
+// Función para alternar la selección de un boleto
+function toggleTicketSelection(ticketNumber, button) {
+    if (selectedTickets.has(ticketNumber)) {
+        // Deseleccionar
+        selectedTickets.delete(ticketNumber);
+        markTicketAsAvailable(button);
+    } else {
+        // Verificar límite
+        if (selectedTickets.size >= maxTickets) {
+            customAlert(`Solo puedes seleccionar hasta ${maxTickets} boletos a la vez.`, 'Límite de Boletos', 'warning');
+            return;
+        }
+        
+        // Seleccionar
+        selectedTickets.add(ticketNumber);
+        markTicketAsSelected(button);
+    }
+    
+    // Actualizar visualización
+    updateSelectedTicketsDisplay();
+    updateTotalPrice();
+}
+
+// Función para marcar un boleto como seleccionado
+function markTicketAsSelected(button) {
+    button.classList.remove('border-emerald-500/30', 'bg-card-dark', 'bg-[#1a202c]', 'hover:bg-emerald-500/10', 'hover:border-emerald-500');
+    button.classList.add('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
+    
+    const span = button.querySelector('span');
+    if (span) {
+        span.classList.remove('text-emerald-400');
+        span.classList.add('text-white', 'z-10');
+    }
+    
+    // Agregar checkmark si no existe
+    if (!button.querySelector('.checkmark-icon')) {
+        const checkmark = document.createElement('span');
+        checkmark.className = 'checkmark-icon absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5';
+        checkmark.textContent = 'check';
+        button.appendChild(checkmark);
+    }
+    
+    // Agregar overlay si no existe
+    if (!button.querySelector('.ticket-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'ticket-overlay absolute inset-0 bg-white/10';
+        button.appendChild(overlay);
+    }
+}
+
+// Función para marcar un boleto como disponible
+function markTicketAsAvailable(button) {
+    button.classList.remove('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
+    button.classList.add('border-emerald-500/30', 'bg-card-dark', 'hover:bg-emerald-500/10', 'hover:border-emerald-500', 'group');
+    
+    const span = button.querySelector('span');
+    if (span) {
+        span.classList.remove('text-white', 'z-10');
+        span.classList.add('text-emerald-400', 'group-hover:scale-110', 'transition-transform');
+    }
+    
+    // Remover checkmark y overlay
+    const checkmark = button.querySelector('.checkmark-icon');
+    const overlay = button.querySelector('.ticket-overlay');
+    if (checkmark) checkmark.remove();
+    if (overlay) overlay.remove();
+}
+
+// Función para actualizar la visualización de boletos seleccionados
+function updateSelectedTicketsDisplay() {
+    const container = document.getElementById('selected-tickets-container');
+    if (!container) return;
+    
+    if (selectedTickets.size === 0) {
+        container.innerHTML = '<span class="text-xs text-text-secondary">No hay boletos seleccionados</span>';
+        return;
+    }
+    
+    // Ordenar los boletos y mostrar solo los primeros 5, si hay más mostrar "+X más"
+    const sortedTickets = Array.from(selectedTickets).sort((a, b) => a - b);
+    const displayTickets = sortedTickets.slice(0, 5);
+    const remaining = sortedTickets.length - 5;
+    
+    container.innerHTML = displayTickets.map(num => 
+        `<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#${String(num).padStart(3, '0')}</span>`
+    ).join('');
+    
+    if (remaining > 0) {
+        const moreBadge = document.createElement('span');
+        moreBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20';
+        moreBadge.textContent = `+${remaining} más`;
+        container.appendChild(moreBadge);
+    }
+}
+
+// Función para inicializar la búsqueda de boletos
+function initTicketSearch() {
+    const searchInput = document.querySelector('input[placeholder*="Buscar número"]');
+    if (!searchInput) return;
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        searchTimeout = setTimeout(() => {
+            searchTickets(query);
+        }, 300);
+    });
+    
+    // Buscar con Enter
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            searchTickets(e.target.value.trim());
+        }
+    });
+}
+
+// Función para buscar boletos
+function searchTickets(query) {
+    if (!query) {
+        // Mostrar todos los boletos
+        const allButtons = document.querySelectorAll('.grid button');
+        allButtons.forEach(btn => {
+            btn.style.display = '';
+        });
+        return;
+    }
+    
+    const ticketNumber = parseInt(query);
+    if (isNaN(ticketNumber)) return;
+    
+    // Ocultar todos los botones excepto el buscado
+    const allButtons = document.querySelectorAll('.grid button');
+    allButtons.forEach(btn => {
+        const btnNumber = parseInt(btn.textContent.trim());
+        if (!isNaN(btnNumber)) {
+            btn.style.display = btnNumber === ticketNumber ? '' : 'none';
+        }
+    });
+    
+    // Scroll al boleto encontrado
+    const foundButton = Array.from(allButtons).find(btn => {
+        const btnNumber = parseInt(btn.textContent.trim());
+        return btnNumber === ticketNumber;
+    });
+    
+    if (foundButton) {
+        foundButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Resaltar temporalmente
+        foundButton.style.animation = 'pulse 0.5s ease-in-out 3';
+    }
+}
+
+// Función para manejar el botón "Proceder al Pago"
+function handleProceedToPayment() {
+    if (selectedTickets.size === 0) {
+        customAlert('Por favor selecciona al menos un boleto antes de proceder al pago.', 'Boletos Requeridos', 'warning');
+        return false;
+    }
+    
+    // Guardar los boletos seleccionados
+    const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
+    localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
+    
+    // Guardar también información del sorteo si no está guardada
+    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+    localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    
+    console.log('Boletos guardados:', ticketsArray);
+    return true;
+}
+
+// Función para guardar los boletos seleccionados (compatibilidad)
+function saveSelectedTickets() {
+    return handleProceedToPayment();
+}
+
+</script>
+
+<!-- Client Layout Script -->
+<script src="js/client-layout.js"></script>
+<script src="js/custom-alerts.js"></script>
+<script>
+// Inicializar layout del cliente
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.ClientLayout) {
+        ClientLayout.init('sorteos');
+    }
+});
+</script>
+
+</body></html>
+
+<!-- Luego del sorteo -->
