@@ -77,6 +77,46 @@
 </a>
 </div>
 </div>
+<!-- Form -->
+<form class="flex flex-col gap-5 mt-2" onsubmit="event.preventDefault();">
+<!-- Email Input -->
+<label class="flex flex-col gap-2">
+<p class="text-white text-sm font-medium leading-normal">Correo Electrónico / Usuario</p>
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<input name="email" id="email" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="ejemplo@correo.com" type="email" value="" required/>
+</div>
+</label>
+<!-- Password Input -->
+<label class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<p class="text-white text-sm font-medium leading-normal">Contraseña</p>
+</div>
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<input name="password" id="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="••••••••" type="password" value="" required/>
+</div>
+<div class="flex justify-end mt-1">
+<a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="#">¿Olvidaste tu contraseña?</a>
+</div>
+</label>
+<!-- Submit Button -->
+<button type="submit" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20 mt-2">
+<span class="truncate">Iniciar Sesión</span>
+</button>
+<!-- Register Link -->
+<div class="text-center pt-2">
+<p class="text-[#9da6b9] text-sm">
+                                    ¿No tienes una cuenta? 
+                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="CrearCuenta.html">Regístrate aquí</a>
+</p>
+</div>
+</form>
+</div>
 <script>
 // Detectar rol desde URL y activar tab correspondiente
 const urlParams = new URLSearchParams(window.location.search);
@@ -95,62 +135,134 @@ if (currentRol === 'admin') {
     tabAdmin.className = 'flex flex-1 flex-col items-center justify-center border-b-[3px] border-transparent text-[#9da6b9] pb-3 pt-2 cursor-pointer transition-colors hover:text-white hover:bg-white/5';
 }
 
-// Manejar click en botón de login
-document.querySelector('form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    // Redirigir según el rol
-    if (currentRol === 'admin') {
-        window.location.href = 'administrador/DashboardAdmnistrador.html';
-    } else {
-        window.location.href = 'cliente/DashboardCliente.html';
+// Esperar a que el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (!form) {
+        console.error('Formulario no encontrado');
+        return;
     }
+    
+    // Manejar submit del formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const emailInput = form.querySelector('input[type="email"]');
+        const passwordInput = form.querySelector('input[type="password"]');
+        const email = emailInput ? emailInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
+        
+        // Validar campos
+        if (!email || !password) {
+            mostrarError('Por favor completa todos los campos');
+            return;
+        }
+        
+        // Mostrar loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (!submitBtn) {
+            console.error('Botón de submit no encontrado');
+            return;
+        }
+        
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="truncate">Iniciando sesión...</span>';
+        
+        // Ocultar error previo
+        ocultarError();
+        
+        try {
+            // Enviar datos al servidor
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('rol', currentRol);
+            
+            const response = await fetch('login.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            // Verificar si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Respuesta no JSON:', text);
+                console.error('Status:', response.status);
+                
+                // Intentar parsear como JSON de todas formas
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    mostrarError('Error en la respuesta del servidor. Verifica la consola para más detalles.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+            } else {
+                data = await response.json();
+            }
+            
+            console.log('Respuesta del servidor:', data);
+            
+            if (data.success) {
+                // Redirigir según el rol
+                const redirectUrl = data.redirect || (currentRol === 'admin' ? 'administrador/DashboardAdmnistrador.php' : 'cliente/DashboardCliente.html');
+                console.log('Redirigiendo a:', redirectUrl);
+                
+                // Usar window.location.replace para evitar que el usuario pueda volver atrás
+                window.location.replace(redirectUrl);
+            } else {
+                mostrarError(data.message || 'Credenciales incorrectas');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarError('Error al conectar con el servidor. Inténtalo de nuevo.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
 });
+
+// Función para mostrar errores
+function mostrarError(mensaje) {
+    // Remover error previo si existe
+    ocultarError();
+    
+    const form = document.querySelector('form');
+    if (!form) return;
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'error-message';
+    errorDiv.className = 'flex items-center gap-2 text-red-500 bg-red-500/10 p-3 rounded-lg text-sm border border-red-500/20';
+    errorDiv.innerHTML = `
+        <span class="material-symbols-outlined text-lg">error</span>
+        <p>${mensaje}</p>
+    `;
+    
+    // Insertar antes del botón de submit
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        form.insertBefore(errorDiv, submitBtn);
+    } else {
+        form.appendChild(errorDiv);
+    }
+}
+
+// Función para ocultar errores
+function ocultarError() {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+}
 </script>
-<!-- Form -->
-<form class="flex flex-col gap-5 mt-2" onsubmit="event.preventDefault();">
-<!-- Email Input -->
-<label class="flex flex-col gap-2">
-<p class="text-white text-sm font-medium leading-normal">Correo Electrónico / Usuario</p>
-<div class="relative">
-<div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
-<span class="material-symbols-outlined">mail</span>
-</div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="ejemplo@correo.com" type="email" value=""/>
-</div>
-</label>
-<!-- Password Input -->
-<label class="flex flex-col gap-2">
-<div class="flex justify-between items-center">
-<p class="text-white text-sm font-medium leading-normal">Contraseña</p>
-</div>
-<div class="relative">
-<div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
-<span class="material-symbols-outlined">lock</span>
-</div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="••••••••" type="password" value=""/>
-</div>
-<div class="flex justify-end mt-1">
-<a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="#">¿Olvidaste tu contraseña?</a>
-</div>
-</label>
-<!-- Error Message Example (Hidden by default, shown for demonstration context) -->
-<!-- <div class="flex items-center gap-2 text-red-500 bg-red-500/10 p-3 rounded-lg text-sm border border-red-500/20">
-                                <span class="material-symbols-outlined text-lg">error</span>
-                                <p>Credenciales incorrectas. Inténtalo de nuevo.</p>
-                            </div> -->
-<!-- Submit Button -->
-<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20 mt-2">
-<span class="truncate">Iniciar Sesión</span>
-</button>
-<!-- Register Link -->
-<div class="text-center pt-2">
-<p class="text-[#9da6b9] text-sm">
-                                    ¿No tienes una cuenta? 
-                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="CrearCuenta.html">Regístrate aquí</a>
-</p>
-</div>
-</form>
-</div>
 <!-- Footer Links -->
 <div class="mt-10 flex justify-center gap-6 text-[#9da6b9] text-xs">
 <a class="hover:text-white transition-colors" href="#">Términos y Condiciones</a>

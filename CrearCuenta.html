@@ -50,14 +50,14 @@
 <h1 class="text-white text-3xl font-black leading-tight tracking-[-0.033em]">Crear cuenta</h1>
 <p class="text-[#9da6b9] text-base font-normal leading-normal">Únete a nosotros para participar en los mejores sorteos.</p>
 </div>
-<form class="flex flex-col gap-4 mt-2" onsubmit="event.preventDefault();">
+<form id="registroForm" class="flex flex-col gap-4 mt-2" onsubmit="event.preventDefault(); registrarCliente(event);">
 <label class="flex flex-col gap-2">
 <p class="text-white text-sm font-medium leading-normal">Nombre completo</p>
 <div class="relative">
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">person</span>
 </div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="Juan Pérez" type="text"/>
+<input name="nombre_completo" id="nombre_completo" required class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="Juan Pérez" type="text"/>
 </div>
 </label>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -67,7 +67,7 @@
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">mail</span>
 </div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="juan@ejemplo.com" type="email"/>
+<input name="email" id="email" required class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="juan@ejemplo.com" type="email"/>
 </div>
 </label>
 <label class="flex flex-col gap-2">
@@ -76,7 +76,7 @@
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">smartphone</span>
 </div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="+52 123 456 7890" type="tel"/>
+<input name="telefono" id="telefono" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="+52 123 456 7890" type="tel"/>
 </div>
 </label>
 </div>
@@ -86,7 +86,7 @@
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">lock</span>
 </div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password"/>
+<input name="password" id="password" required minlength="6" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password"/>
 </div>
 </label>
 <label class="flex flex-col gap-2">
@@ -95,12 +95,12 @@
 <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
 <span class="material-symbols-outlined">lock_reset</span>
 </div>
-<input class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password"/>
+<input name="password_confirm" id="password_confirm" required minlength="6" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-11 pl-12 pr-4 text-sm font-normal leading-normal transition-all" placeholder="••••••••" type="password"/>
 </div>
 </label>
 <label class="flex items-start gap-3 cursor-pointer mt-1">
 <div class="relative flex items-center">
-<input class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-[#3b4354] bg-[#282d39] checked:border-primary checked:bg-primary focus:ring-0 focus:ring-offset-0 transition-all" type="checkbox"/>
+<input name="acepta_terminos" id="acepta_terminos" required class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-[#3b4354] bg-[#282d39] checked:border-primary checked:bg-primary focus:ring-0 focus:ring-offset-0 transition-all" type="checkbox"/>
 <span class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100">
 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 <path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
@@ -111,16 +111,136 @@
                                     He leído y acepto los <a class="text-primary hover:text-blue-400 hover:underline" href="#">Términos y Condiciones</a> y la <a class="text-primary hover:text-blue-400 hover:underline" href="#">Política de Privacidad</a>.
                                 </span>
 </label>
-<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20 mt-4">
+<button type="submit" id="submitBtn" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20 mt-4">
 <span class="truncate">Registrarse</span>
 </button>
 <div class="text-center pt-2">
 <p class="text-[#9da6b9] text-sm">
                                     ¿Ya tienes una cuenta? 
-                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="#">Iniciar sesión</a>
+                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="InicioSesion.html">Iniciar sesión</a>
 </p>
 </div>
 </form>
+<script>
+async function registrarCliente(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Validar que las contraseñas coincidan
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('password_confirm');
+    
+    if (password !== passwordConfirm) {
+        mostrarError('Las contraseñas no coinciden');
+        return;
+    }
+    
+    // Validar términos y condiciones
+    if (!formData.get('acepta_terminos')) {
+        mostrarError('Debes aceptar los términos y condiciones');
+        return;
+    }
+    
+    // Mostrar loading
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="truncate">Registrando...</span>';
+    
+    // Ocultar error previo
+    ocultarError();
+    
+    try {
+        const response = await fetch('registro_cliente.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar mensaje de éxito
+            mostrarExito(data.message || 'Cuenta creada exitosamente');
+            
+            // Redirigir al login después de 2 segundos
+            setTimeout(() => {
+                window.location.href = 'InicioSesion.html';
+            }, 2000);
+        } else {
+            mostrarError(data.message || 'Error al crear la cuenta');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarError('Error al conectar con el servidor. Inténtalo de nuevo.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+function mostrarError(mensaje) {
+    ocultarError();
+    ocultarExito();
+    
+    const form = document.getElementById('registroForm');
+    if (!form) return;
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.id = 'error-message';
+    errorDiv.className = 'flex items-center gap-2 text-red-500 bg-red-500/10 p-3 rounded-lg text-sm border border-red-500/20';
+    errorDiv.innerHTML = `
+        <span class="material-symbols-outlined text-lg">error</span>
+        <p>${mensaje}</p>
+    `;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        form.insertBefore(errorDiv, submitBtn);
+    } else {
+        form.appendChild(errorDiv);
+    }
+}
+
+function mostrarExito(mensaje) {
+    ocultarError();
+    ocultarExito();
+    
+    const form = document.getElementById('registroForm');
+    if (!form) return;
+    
+    const successDiv = document.createElement('div');
+    successDiv.id = 'success-message';
+    successDiv.className = 'flex items-center gap-2 text-green-500 bg-green-500/10 p-3 rounded-lg text-sm border border-green-500/20';
+    successDiv.innerHTML = `
+        <span class="material-symbols-outlined text-lg">check_circle</span>
+        <p>${mensaje}</p>
+    `;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        form.insertBefore(successDiv, submitBtn);
+    } else {
+        form.appendChild(successDiv);
+    }
+}
+
+function ocultarError() {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+}
+
+function ocultarExito() {
+    const successDiv = document.getElementById('success-message');
+    if (successDiv) {
+        successDiv.remove();
+    }
+}
+</script>
 </div>
 <div class="mt-10 flex justify-center gap-6 text-[#9da6b9] text-xs">
 <a class="hover:text-white transition-colors" href="#">Términos y Condiciones</a>

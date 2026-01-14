@@ -1,4 +1,43 @@
 <!DOCTYPE html>
+<?php
+// Conexión a la base de datos
+require_once 'config.php';
+$conn = getDBConnection();
+
+// Obtener userId de la URL
+$userId = isset($_GET['userId']) ? intval($_GET['userId']) : 0;
+
+// Obtener datos del usuario
+$userData = null;
+if ($userId > 0) {
+    $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno,
+                     u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url,
+                     (SELECT COUNT(*) FROM boletos WHERE id_usuario_actual = u.id_usuario AND estado = 'Vendido') as boletos_comprados,
+                     (SELECT COUNT(*) FROM ganadores WHERE id_usuario = u.id_usuario) as sorteos_ganados,
+                     (SELECT COALESCE(SUM(monto_total), 0) FROM transacciones WHERE id_usuario = u.id_usuario AND estado_pago = 'Completado') as total_gastado
+              FROM usuarios u
+              WHERE u.id_usuario = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $userData = $result->fetch_assoc();
+        $nombreCompleto = trim($userData['primer_nombre'] . ' ' . ($userData['segundo_nombre'] ?? '') . ' ' . $userData['apellido_paterno'] . ' ' . $userData['apellido_materno']);
+        $fechaRegistro = date('M Y', strtotime($userData['fecha_registro']));
+        $estado = $userData['estado'];
+        $estadoClasses = [
+            'Activo' => 'bg-green-400/10 text-green-400 ring-green-400/20',
+            'Inactivo' => 'bg-gray-400/10 text-gray-400 ring-gray-400/20',
+            'Baneado' => 'bg-red-400/10 text-red-400 ring-red-400/20'
+        ];
+        $estadoClass = $estadoClasses[$estado] ?? $estadoClasses['Inactivo'];
+    }
+    $stmt->close();
+}
+?>
+
 
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
@@ -52,7 +91,7 @@
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
-<div class="flex h-screen w-full">
+<div class="flex h-screen w-full overflow-hidden">
 <!-- Sidebar -->
 <aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
 <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
@@ -63,33 +102,33 @@
 </div>
 <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
                     Dashboard
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
                     Gestión de Sorteos
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
                     Validación de Pagos
                     <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
                     Generación de Ganadores
                 </a>
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.php">
 <span class="material-symbols-outlined">group</span>
                     Usuarios
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
                     Auditoría
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
                     Informes
                 </a>
@@ -105,9 +144,9 @@
 </div>
 </aside>
 <!-- Main Content -->
-<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<main class="flex-1 flex flex-col h-full bg-background-light dark:bg-background-dark relative overflow-hidden">
 <!-- Header -->
-<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+<header class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md z-20">
 <div class="flex items-center gap-4">
 <!-- Mobile menu trigger (hidden on desktop) -->
 <button class="lg:hidden text-gray-500">
@@ -129,41 +168,44 @@
 </div>
 </header>
 <!-- Scrollable Content -->
-<div class="flex-1 overflow-y-auto p-6 space-y-6">
-<div class="max-w-[1200px] mx-auto w-full">
+<div class="flex-1 overflow-y-auto p-6">
+<div class="max-w-[1200px] mx-auto w-full space-y-8">
 <!-- Breadcrumbs -->
-<div class="flex flex-wrap items-center gap-2 px-4 py-2">
+<div class="flex flex-wrap items-center gap-2 py-3">
 <button onclick="goBack()" class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" title="Volver">
 <span class="material-symbols-outlined !text-lg">arrow_back</span>
                             Volver
                         </button>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
-<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined !text-lg">dashboard</span>
                             Dashboard
                         </a>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
-<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="GestionUsuariosAdministrador.html">Gestión de Usuarios</a>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="GestionUsuariosAdministrador.php">Gestión de Usuarios</a>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
 <span class="text-white text-sm font-medium leading-normal">Detalles de Usuario</span>
 </div>
 <!-- Page Heading & Actions -->
-<div class="flex flex-col md:flex-row flex-wrap justify-between gap-6 px-4 py-6 border-b border-[#282d39]">
-<div class="flex items-start gap-4">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-20 border-2 border-[#282d39]" data-alt="User Profile Picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDeGT95OhKm8WYbK2jwnHflNmVKv18iC3m-IbPYh4Zh7YUd_jsOnu2E5MAcQw0uCiqnC-8GQztOX3lMctK3qAQFaeIAftDgAnzKhUXrQhcV-DOZxMhWjcNgoNzAzdVnmH_XERfjhYOoWFmfGxrlpN_E3f5ZsN5psNWXFUhMjdliCKY61ZR54l9tnyj8D9ePTAHMesgD_jot5xyW_fYQIvKfdh7DFg2DqKVrfpJy780FS6JU2cjR01wtyRyajCTIOrGTv5VAm43774o");'></div>
-<div class="flex flex-col gap-1">
-<div class="flex items-center gap-3">
-<h1 id="user-nombre-header" class="text-white text-3xl font-bold leading-tight">Juan Pérez</h1>
-<span class="inline-flex items-center gap-1 rounded-full bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
-                                        Activo
+<div class="flex flex-col md:flex-row flex-wrap justify-between gap-6 py-6 border-b border-[#282d39]">
+<div class="flex items-start gap-5">
+<?php if ($userData): ?>
+<?php 
+$avatarUrl = $userData['avatar_url'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($nombreCompleto) . '&background=2463eb&color=fff';
+?>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-24 border-2 border-[#282d39] shadow-md ring-2 ring-primary/20" data-alt="User Profile Picture" style='background-image: url("<?php echo htmlspecialchars($avatarUrl); ?>");'></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 flex-wrap">
+<h1 id="user-nombre-header" class="text-white text-3xl font-bold leading-tight"><?php echo htmlspecialchars($nombreCompleto); ?></h1>
+<span class="inline-flex items-center gap-1.5 rounded-full <?php echo $estadoClass; ?> px-3 py-1.5 text-xs font-semibold ring-1 ring-inset">
+                                        <?php echo htmlspecialchars($estado); ?>
                                     </span>
 </div>
-<p class="text-[#9da6b9] text-sm font-normal">ID: <span id="user-id-display">#849320</span> • Miembro desde Ene 2023</p>
-<div class="flex items-center gap-2 mt-1">
-<span class="material-symbols-outlined text-[#9da6b9] text-[16px]">location_on</span>
-<p class="text-[#9da6b9] text-xs">Madrid, España</p>
+<p class="text-[#9da6b9] text-sm font-normal">ID: <span id="user-id-display" class="text-white font-medium">#<?php echo $userData['id_usuario']; ?></span> • Miembro desde <span class="text-white"><?php echo $fechaRegistro; ?></span></p>
 </div>
-</div>
+<?php else: ?>
+<div class="text-red-400">Usuario no encontrado</div>
+<?php endif; ?>
 </div>
 <div class="flex gap-3 items-center">
 <button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] border border-[#3b4354]">
@@ -177,80 +219,88 @@
 </div>
 </div>
 <!-- Stats Row -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
-<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-primary/30 transition-colors">
 <div class="flex items-center justify-between">
 <p class="text-[#9da6b9] text-sm font-medium">Boletos Comprados</p>
-<div class="p-2 bg-[#282d39] rounded-lg text-primary">
-<span class="material-symbols-outlined">local_activity</span>
+<div class="p-2.5 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined text-xl">local_activity</span>
 </div>
 </div>
-<p class="text-white text-3xl font-bold">24</p>
-<p class="text-xs text-green-400 font-medium flex items-center gap-1">
-<span class="material-symbols-outlined text-[14px]">trending_up</span>
-                                +2 esta semana
-                            </p>
+<p class="text-white text-3xl font-bold"><?php echo $userData ? $userData['boletos_comprados'] : '0'; ?></p>
 </div>
-<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-yellow-500/30 transition-colors">
 <div class="flex items-center justify-between">
 <p class="text-[#9da6b9] text-sm font-medium">Sorteos Ganados</p>
-<div class="p-2 bg-[#282d39] rounded-lg text-yellow-500">
-<span class="material-symbols-outlined">trophy</span>
+<div class="p-2.5 bg-yellow-500/10 rounded-lg text-yellow-500">
+<span class="material-symbols-outlined text-xl">trophy</span>
 </div>
 </div>
-<p class="text-white text-3xl font-bold">5</p>
-<p class="text-xs text-[#9da6b9] font-medium">Último: Sorteo Navidad</p>
+<p class="text-white text-3xl font-bold"><?php echo $userData ? $userData['sorteos_ganados'] : '0'; ?></p>
 </div>
-<div class="flex flex-col gap-2 rounded-xl border border-[#282d39] bg-[#1e232e] p-5">
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-green-500/30 transition-colors">
 <div class="flex items-center justify-between">
 <p class="text-[#9da6b9] text-sm font-medium">Total Gastado</p>
-<div class="p-2 bg-[#282d39] rounded-lg text-green-500">
-<span class="material-symbols-outlined">payments</span>
+<div class="p-2.5 bg-green-500/10 rounded-lg text-green-500">
+<span class="material-symbols-outlined text-xl">payments</span>
 </div>
 </div>
-<p class="text-white text-3xl font-bold">$1,250</p>
-<p class="text-xs text-[#9da6b9] font-medium">Promedio: $52/mes</p>
+<p class="text-white text-3xl font-bold">$<?php echo $userData ? number_format($userData['total_gastado'], 2) : '0.00'; ?></p>
 </div>
 </div>
 <!-- Main Grid Content -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4">
 <!-- Left Column: Info & Actions -->
 <div class="flex flex-col gap-6 lg:col-span-1">
 <!-- Personal Info Card -->
-<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden">
-<div class="px-5 py-4 border-b border-[#282d39]">
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-[#282d39] bg-[#282d39]/30">
 <h3 class="text-white text-lg font-bold">Información Personal</h3>
 </div>
-<div class="p-5 flex flex-col gap-4">
+<div class="p-6 flex flex-col gap-5">
+<?php if ($userData): ?>
 <div class="flex flex-col gap-1">
 <p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Nombre Completo</p>
-<p id="user-nombre" class="text-white text-sm">Juan Carlos Pérez</p>
+<p id="user-nombre" class="text-white text-sm"><?php echo htmlspecialchars($nombreCompleto); ?></p>
 </div>
 <div class="flex flex-col gap-1">
 <p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Correo Electrónico</p>
 <div class="flex items-center gap-2">
-<p id="user-email" class="text-white text-sm">juan.perez@email.com</p>
+<p id="user-email" class="text-white text-sm"><?php echo htmlspecialchars($userData['email']); ?></p>
 <span class="material-symbols-outlined text-green-500 text-[16px]" title="Verificado">verified</span>
 </div>
 </div>
 <div class="flex flex-col gap-1">
 <p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Teléfono</p>
-<p id="user-telefono" class="text-white text-sm">+34 612 345 678</p>
+<p id="user-telefono" class="text-white text-sm"><?php echo htmlspecialchars($userData['telefono'] ?: 'No proporcionado'); ?></p>
 </div>
-<div class="h-px bg-[#282d39] w-full my-1"></div>
-<div class="flex flex-col gap-1">
-<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Dirección</p>
-<p id="user-direccion1" class="text-white text-sm">Calle Mayor 123</p>
-<p id="user-direccion2" class="text-white text-sm">28001, Madrid</p>
-<p id="user-direccion3" class="text-white text-sm">España</p>
+<?php endif; ?>
 </div>
+</div>
+<!-- Zona de Peligro -->
+<div class="rounded-xl border border-red-500/30 bg-red-500/5 overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-red-500/20 bg-red-500/10">
+<h3 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-red-500">warning</span>
+Zona de Peligro
+</h3>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<button type="button" id="btnBanearTemporal" class="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 transition-colors text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">schedule</span>
+Baneo Temporal
+</button>
+<button type="button" id="btnBanearPermanente" class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 transition-colors text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">block</span>
+Baneo Permanente
+</button>
 </div>
 </div>
 </div>
 <!-- Right Column: History -->
 <div class="flex flex-col gap-6 lg:col-span-2">
 <!-- Tabs & Content Wrapper -->
-<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden flex flex-col h-full">
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden flex flex-col h-full shadow-sm">
 <!-- Tabs Header -->
 <div class="flex border-b border-[#282d39] overflow-x-auto">
 <button id="tabBoletos" onclick="switchTab('boletos')" class="px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap">
@@ -517,6 +567,8 @@ Limpiar
 </div>
 </div>
 </div>
+</div>
+</div>
 </main>
 </div>
 <script>
@@ -563,12 +615,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Botón resetear password
-    const btnResetPassword = document.querySelector('button:has(span:contains("Resetear Password"))');
-    if (!btnResetPassword) {
-        const resetBtn = document.querySelector('button[class*="lock_reset"]');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', resetUserPassword);
-        }
+    const resetBtn = document.querySelector('button span[class*="lock_reset"]')?.closest('button');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetUserPassword);
+    }
+    
+    // Botones de banear
+    const btnBanearTemporal = document.getElementById('btnBanearTemporal');
+    console.log('btnBanearTemporal encontrado:', btnBanearTemporal);
+    if (btnBanearTemporal) {
+        btnBanearTemporal.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click en Baneo Temporal');
+            mostrarModalBanearTemporal();
+        });
+    }
+    
+    const btnBanearPermanente = document.getElementById('btnBanearPermanente');
+    console.log('btnBanearPermanente encontrado:', btnBanearPermanente);
+    if (btnBanearPermanente) {
+        btnBanearPermanente.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click en Baneo Permanente');
+            mostrarModalBanearPermanente();
+        });
     }
 });
 
@@ -633,35 +705,56 @@ function editUserDetails() {
  * Guarda los cambios del usuario
  * @param {Event} event - Evento del formulario
  */
-function saveUserChanges(event) {
+async function saveUserChanges(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     
-    // Actualizar datos en la página
-    const nombreEl = document.getElementById('user-nombre');
-    const emailEl = document.getElementById('user-email');
-    const telefonoEl = document.getElementById('user-telefono');
-    const direccion1El = document.getElementById('user-direccion1');
-    const direccion2El = document.getElementById('user-direccion2');
-    const direccion3El = document.getElementById('user-direccion3');
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
     
-    if (nombreEl) nombreEl.textContent = formData.get('nombre');
-    if (emailEl) emailEl.textContent = formData.get('email');
-    if (telefonoEl) telefonoEl.textContent = formData.get('telefono');
-    if (direccion1El) direccion1El.textContent = formData.get('direccion1');
-    if (direccion2El) direccion2El.textContent = formData.get('direccion2');
-    if (direccion3El) direccion3El.textContent = formData.get('direccion3');
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
+        return;
+    }
     
-    // Cerrar modal
-    event.target.closest('.fixed').remove();
+    // Preparar datos para enviar
+    const datos = {
+        action: 'editar_usuario',
+        userId: userId,
+        nombre: formData.get('nombre'),
+        email: formData.get('email'),
+        telefono: formData.get('telefono') || ''
+    };
     
-    showNotification('Usuario actualizado exitosamente', 'success');
-    
-    // En producción: llamada API
-    // fetch('/api/users/update', {
-    //     method: 'POST',
-    //     body: JSON.stringify(Object.fromEntries(formData))
-    // })
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(datos)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Cerrar modal
+            event.target.closest('.fixed').remove();
+            
+            showNotification('Usuario actualizado exitosamente', 'success');
+            
+            // Recargar la página después de 1 segundo para mostrar los cambios
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al actualizar el usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al comunicarse con el servidor', 'error');
+    }
 }
 
 // ========== RESETEAR PASSWORD ==========
@@ -731,49 +824,265 @@ async function suspendUser() {
     // })
 }
 
-// ========== BANEAR USUARIO ==========
+// ========== BLOQUEAR TEMPORAL ==========
 /**
- * Banea permanentemente al usuario
+ * Muestra modal para banear temporalmente
  */
-async function banUser() {
-    const motivo = await mostrarModalInput(
-        'Motivo del baneo (esta acción es permanente):',
-        'Banear usuario',
-        'Ingresa el motivo del baneo...',
-        ''
-    );
+function mostrarModalBanearTemporal() {
+    console.log('mostrarModalBanearTemporal llamado');
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    modalOverlay.onclick = function(e) { 
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    };
     
-    if (!motivo || motivo.trim() === '') {
+    modalOverlay.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+            <div class="relative bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark" onclick="event.stopPropagation()">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-amber-500">schedule</span>
+                        Baneo Temporal
+                    </h3>
+                    <form id="formBanearTemporal" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hasta qué fecha será baneada <span class="text-red-400">*</span></label>
+                            <input type="date" id="fechaBaneoTemporal" required class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Razón <span class="text-red-400">*</span></label>
+                            <textarea id="razonBaneoTemporal" rows="3" required placeholder="Describe el motivo del baneo temporal..." class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 resize-none"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-4">
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 dark:bg-[#282d39] text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3b4354] text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-medium">
+                                Confirmar Baneo Temporal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Establecer fecha mínima como hoy
+    const fechaInput = modalOverlay.querySelector('#fechaBaneoTemporal');
+    if (fechaInput) {
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaInput.min = hoy;
+    }
+    
+    // Agregar event listener al formulario
+    const form = modalOverlay.querySelector('#formBanearTemporal');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            procesarBanearTemporal(e, modalOverlay);
+        });
+    }
+}
+
+/**
+ * Procesa el baneo temporal
+ */
+async function procesarBanearTemporal(event, modalOverlay) {
+    event.preventDefault();
+    const fechaBaneo = document.getElementById('fechaBaneoTemporal').value;
+    const razon = document.getElementById('razonBaneoTemporal').value.trim();
+    
+    if (!fechaBaneo || !razon) {
+        showNotification('Por favor completa todos los campos', 'error');
         return;
     }
     
-    const confirmado1 = await mostrarModalConfirmacion(
-        '¿Estás seguro de banear a este usuario? Esta acción es PERMANENTE e IRREVERSIBLE.',
-        'Confirmar baneo',
+    // Calcular duración basada en la fecha
+    const fechaActual = new Date();
+    const fechaBaneoDate = new Date(fechaBaneo);
+    const diffTime = fechaBaneoDate - fechaActual;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 1) {
+        showNotification('La fecha de baneo debe ser posterior a hoy', 'error');
+        return;
+    }
+    
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
+        return;
+    }
+    
+    // Convertir fecha a formato de duración para la API
+    let duracion = '';
+    if (diffDays <= 1) {
+        duracion = '24h';
+    } else if (diffDays <= 3) {
+        duracion = '3d';
+    } else if (diffDays <= 7) {
+        duracion = '1w';
+    } else {
+        duracion = '1m';
+    }
+    
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'bloquear_temporal',
+                userId: userId,
+                duracion: duracion,
+                fecha_fin: fechaBaneo,
+                razon: razon
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (modalOverlay) modalOverlay.remove();
+            showNotification('Usuario baneado temporalmente exitosamente', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al banear usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al procesar la solicitud', 'error');
+    }
+}
+
+// ========== BANEAR PERMANENTE ==========
+/**
+ * Muestra modal para banear permanentemente
+ */
+function mostrarModalBanearPermanente() {
+    console.log('mostrarModalBanearPermanente llamado');
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    modalOverlay.onclick = function(e) { 
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    };
+    
+    modalOverlay.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+            <div class="relative bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark" onclick="event.stopPropagation()">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-500">block</span>
+                        Baneo Permanente
+                    </h3>
+                    <form id="formBanearPermanente" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Razón <span class="text-red-400">*</span></label>
+                            <textarea id="razonBaneoPermanente" rows="4" required placeholder="Describe el motivo del baneo permanente..." class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 resize-none"></textarea>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                            <p class="text-sm text-red-400 font-semibold mb-2">⚠️ Acción Irreversible</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Esta acción es PERMANENTE e IRREVERSIBLE. El usuario perderá acceso permanente a la plataforma y no podrá ser revertido.</p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-4">
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 dark:bg-[#282d39] text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3b4354] text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
+                                Acción Irreversible
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Agregar event listener al formulario
+    const form = modalOverlay.querySelector('#formBanearPermanente');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            procesarBanearPermanente(e, modalOverlay);
+        });
+    }
+}
+
+/**
+ * Procesa el baneo permanente
+ */
+async function procesarBanearPermanente(event, modalOverlay) {
+    event.preventDefault();
+    const razon = document.getElementById('razonBaneoPermanente').value.trim();
+    
+    if (!razon) {
+        showNotification('Por favor ingresa el motivo del baneo', 'error');
+        return;
+    }
+    
+    const confirmado = await mostrarModalConfirmacion(
+        '¿Estás seguro de banear permanentemente a este usuario? Esta acción es PERMANENTE e IRREVERSIBLE.',
+        'Confirmar baneo permanente',
         'danger'
     );
     
-    if (!confirmado1) {
+    if (!confirmado) {
         return;
     }
     
-    const confirmado2 = await mostrarModalConfirmacion(
-        'Última confirmación: ¿Realmente deseas banear a este usuario?',
-        'Confirmación final',
-        'danger'
-    );
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
     
-    if (!confirmado2) {
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
         return;
     }
     
-    showNotification('Usuario baneado exitosamente', 'success');
-    
-    // En producción: llamada API
-    // fetch('/api/users/ban', {
-    //     method: 'POST',
-    //     body: JSON.stringify({ motivo })
-    // })
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'banear_permanente',
+                userId: userId,
+                razon: razon
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (modalOverlay) modalOverlay.remove();
+            showNotification('Usuario baneado permanentemente exitosamente', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al banear usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al procesar la solicitud', 'error');
+    }
 }
 
 // ========== VER DETALLES DE PAGO ==========
@@ -782,7 +1091,7 @@ async function banUser() {
  * @param {string} paymentId - ID del pago
  */
 function viewPaymentDetails(paymentId) {
-    window.location.href = `ValidacionPagosAdministrador.html?payment=${paymentId}`;
+    window.location.href = `ValidacionPagosAdministrador.php?payment=${paymentId}`;
 }
 
 // ========== NOTIFICACIONES ==========
@@ -869,11 +1178,11 @@ function goBack() {
         } else {
             // Fallback: usar página de origen o página padre por defecto
             const paginaOrigen = obtenerPaginaOrigen();
-            window.location.href = paginaOrigen || 'GestionUsuariosAdministrador.html';
+            window.location.href = paginaOrigen || 'GestionUsuariosAdministrador.php';
         }
     } catch (error) {
         console.error('Error al navegar atrás:', error);
-        window.location.href = 'GestionUsuariosAdministrador.html';
+        window.location.href = 'GestionUsuariosAdministrador.php';
     }
 }
 

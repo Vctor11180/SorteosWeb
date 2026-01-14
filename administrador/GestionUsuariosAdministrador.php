@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<?php
+// Conexión a la base de datos
+require_once 'config.php';
+$conn = getDBConnection();
+?>
+
 
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
@@ -66,33 +72,33 @@
 </div>
 <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
                     Dashboard
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
                     Gestión de Sorteos
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
                     Validación de Pagos
                     <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
                     Generación de Ganadores
                 </a>
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.php">
 <span class="material-symbols-outlined">group</span>
                     Usuarios
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
                     Auditoría
                 </a>
-<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
                     Informes
                 </a>
@@ -141,7 +147,7 @@
                             Atrás
                         </button>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
-<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined !text-lg">dashboard</span>
                             Dashboard
                         </a>
@@ -215,206 +221,138 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-border-dark">
-<!-- Row 1 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8293" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8293'">
+<?php
+// Configuración de paginación
+$itemsPerPage = 5;
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($currentPage - 1) * $itemsPerPage;
+
+// Obtener usuarios clientes desde la base de datos
+// Primero intentar con nombre de rol, si no funciona, usar id_rol = 2
+$query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno, 
+                 u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url, r.nombre_rol
+          FROM usuarios u
+          INNER JOIN roles r ON u.id_rol = r.id_rol
+          WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2
+          ORDER BY u.fecha_registro DESC
+          LIMIT ? OFFSET ?";
+
+$stmt = $conn->prepare($query);
+if ($stmt) {
+    $stmt->bind_param("ii", $itemsPerPage, $offset);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    // Fallback: consulta sin paginación preparada
+    $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno, 
+                     u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url, r.nombre_rol
+              FROM usuarios u
+              INNER JOIN roles r ON u.id_rol = r.id_rol
+              WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2
+              ORDER BY u.fecha_registro DESC
+              LIMIT $itemsPerPage OFFSET $offset";
+    $result = $conn->query($query);
+    $stmt = null;
+}
+
+$usuarios = [];
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $usuarios[] = $row;
+    }
+}
+
+if ($stmt) {
+    $stmt->close();
+}
+
+// Contar total de usuarios para paginación
+$countQuery = "SELECT COUNT(*) as total FROM usuarios u INNER JOIN roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2";
+$countResult = $conn->query($countQuery);
+$totalUsuarios = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+$totalPages = ceil($totalUsuarios / $itemsPerPage);
+
+// Mostrar usuarios
+if (!empty($usuarios)) {
+    foreach ($usuarios as $row) {
+        $userId = $row['id_usuario'];
+        $nombreCompleto = trim(($row['primer_nombre'] ?? '') . ' ' . ($row['segundo_nombre'] ?? '') . ' ' . ($row['apellido_paterno'] ?? '') . ' ' . ($row['apellido_materno'] ?? ''));
+        $nombreCompleto = trim($nombreCompleto) ?: 'Sin nombre';
+        $iniciales = strtoupper(substr($row['primer_nombre'] ?? 'U', 0, 1) . substr($row['apellido_paterno'] ?? 'U', 0, 1));
+        $email = $row['email'] ?? 'Sin email';
+        $telefono = !empty($row['telefono']) ? $row['telefono'] : '--';
+        $estado = $row['estado'] ?? 'Inactivo';
+        $fechaRegistro = !empty($row['fecha_registro']) ? date('d M Y', strtotime($row['fecha_registro'])) : 'N/A';
+        $avatarUrl = !empty($row['avatar_url']) ? $row['avatar_url'] : 'https://ui-avatars.com/api/?name=' . urlencode($nombreCompleto) . '&background=2463eb&color=fff';
+        
+        // Determinar clases de estado
+        $estadoClasses = [
+            'Activo' => 'bg-green-500/10 text-green-400 border-green-500/20',
+            'Inactivo' => 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+            'Baneado' => 'bg-red-500/10 text-red-400 border-red-500/20',
+            'Pendiente' => 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+        ];
+        $estadoClass = $estadoClasses[$estado] ?? $estadoClasses['Inactivo'];
+        $estadoDot = [
+            'Activo' => 'bg-green-400',
+            'Inactivo' => 'bg-gray-400',
+            'Baneado' => 'bg-red-400',
+            'Pendiente' => 'bg-amber-400'
+        ];
+        $estadoDotClass = $estadoDot[$estado] ?? 'bg-gray-400';
+?>
+<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="<?php echo $userId; ?>" onclick="window.location.href='DetallesUsuarioAdmin.php?userId=<?php echo $userId; ?>'">
 <td class="p-4 text-center" onclick="event.stopPropagation()">
 <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
 </td>
 <td class="p-4">
 <div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Juan Pérez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPPtsNAPaU9CgF3Ndb0DnD4BY-TbXGgXAgGR7bScQNxU6u5_inTAQo_ymHIWvaFI1MUJBpIx3R7xQ0p97bEM3DOaOHhP5bceUQNEzNCPRZin5yE4xJ0oeep6bR_RX9Ot5sPTC_Z1_PaLA1rDnCCHH2kMB2K1Fzl6yH9NkiL_CtrE-8Sl_csBaehGkRA2j-XftDcDsaZSXZQmwX_R0CB9hD2LRBDbyQ4f3cbqbV0JZ2awiFtQqh9MH9wB7U1qi5jZcjWBnaNXCTlBI");'></div>
+<?php if ($row['avatar_url']): ?>
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de <?php echo htmlspecialchars($nombreCompleto); ?>" style='background-image: url("<?php echo htmlspecialchars($avatarUrl); ?>");'></div>
+<?php else: ?>
+<div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/20"><?php echo htmlspecialchars($iniciales); ?></div>
+<?php endif; ?>
 <div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Juan Pérez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8293</span>
+<span class="text-white text-sm font-semibold"><?php echo htmlspecialchars($nombreCompleto); ?></span>
+<span class="text-[#9da6b9] text-xs">ID: #<?php echo $userId; ?></span>
 </div>
 </div>
 </td>
 <td class="p-4">
 <div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">juan.perez@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 612 345 678</span>
+<span class="text-[#9da6b9] text-sm"><?php echo htmlspecialchars($email); ?></span>
+<span class="text-[#6b7280] text-xs"><?php echo htmlspecialchars($telefono); ?></span>
 </div>
 </td>
 <td class="p-4 text-sm text-[#9da6b9]">
-                                            12 Oct 2023
-                                        </td>
+<?php echo $fechaRegistro; ?>
+</td>
 <td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
+<span class="inline-flex items-center gap-1.5 rounded-full <?php echo $estadoClass; ?> px-2.5 py-1 text-xs font-medium">
+<span class="h-1.5 w-1.5 rounded-full <?php echo $estadoDotClass; ?>"></span>
+<?php echo htmlspecialchars($estado); ?>
+</span>
 </td>
 <td class="p-4 text-right">
 <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8293'">
+<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="event.stopPropagation(); window.location.href='DetallesUsuarioAdmin.php?userId=<?php echo $userId; ?>'">
 <span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8293'">
-<span class="material-symbols-outlined !text-[20px]">block</span>
 </button>
 </div>
 </td>
 </tr>
-<!-- Row 2 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8294" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8294'">
-<td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
-</td>
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/20">MG</div>
-<div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Maria Garcia</span>
-<span class="text-[#9da6b9] text-xs">ID: #8294</span>
-</div>
-</div>
-</td>
-<td class="p-4">
-<div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">maria.garcia@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 622 987 654</span>
-</div>
-</td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            10 Oct 2023
-                                        </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-gray-500/10 px-2.5 py-1 text-xs font-medium text-gray-400 border border-gray-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                                                Inactivo
-                                            </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8294'">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8294'">
-<span class="material-symbols-outlined !text-[20px]">check_circle</span>
-</button>
-</div>
+<?php
+    }
+} else {
+?>
+<tr>
+<td colspan="6" class="p-8 text-center text-[#9da6b9]">
+No hay usuarios clientes registrados.
 </td>
 </tr>
-<!-- Row 3 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8295" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8295'">
-<td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
-</td>
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Carlos Lopez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA80RfleoWbDvy1m9MS5NJtn7r8uG_3qifK6VgHJlUJnFmLZrC89xDphkdFMtyQ5jj05N8g32p8HthkKF-TgM2rpTqCSydCDhUiOZd2ow_zHADzTOjYQ5-YEFkPTDN6HtIdu4C2LH9HyHRxs7Q5s1RvL8YiXwVAxr4lyieqPpUvguHgmizNcuwsvtpxihNLJqGIk17rDR2rDG7FnZazSCK76bvdRuUlKRBidTbHestcDq9n1jnspvKWJAUN4t2G0lT1Pxx9cI1EGcI");'></div>
-<div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Carlos Lopez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8295</span>
-</div>
-</div>
-</td>
-<td class="p-4">
-<div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">carlos.lopez@example.com</span>
-<span class="text-[#6b7280] text-xs">--</span>
-</div>
-</td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            08 Oct 2023
-                                        </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8295'">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8295'">
-<span class="material-symbols-outlined !text-[20px]">block</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8296" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8296'">
-<td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
-</td>
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold border border-purple-500/20">AM</div>
-<div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Ana Martinez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8296</span>
-</div>
-</div>
-</td>
-<td class="p-4">
-<div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">ana.martinez@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 633 123 456</span>
-</div>
-</td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            05 Oct 2023
-                                        </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 border border-amber-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                                                Pendiente
-                                            </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8296'">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Aprobar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8296'">
-<span class="material-symbols-outlined !text-[20px]">check</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 5 -->
-<tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="8297" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8297'">
-<td class="p-4 text-center" onclick="event.stopPropagation()">
-<input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
-</td>
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-full bg-cover bg-center border border-border-dark" data-alt="Avatar de Luis Rodriguez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmfN1J8Yp1o3I9XGKtWr7sFwBvkGdCUiXu4M8uhs9ADRNHIz3zp2Yqb0U_OAK8eTlOoCU0pTL9Tzrc4tuzVRbxWbBgCd5FAlGMqry4E6Uonlw2N00Tua5CI2XN8j7ohoLbjxkOqnMig4KMqOI3sChtlnW-dyJwfF7ew5dFhgBRPt4KKrfBNBHbqOp1F658Ss0ThfmbC7cF80qYdkM8KTpzET8LaXSd35gVhA2ThM-Y2eSBAqGMft8S93cjznQW0uZOGR9TI2seCwY");'></div>
-<div class="flex flex-col">
-<span class="text-white text-sm font-semibold">Luis Rodriguez</span>
-<span class="text-[#9da6b9] text-xs">ID: #8297</span>
-</div>
-</div>
-</td>
-<td class="p-4">
-<div class="flex flex-col">
-<span class="text-[#9da6b9] text-sm">luis.rod@example.com</span>
-<span class="text-[#6b7280] text-xs">+34 655 444 333</span>
-</div>
-</td>
-<td class="p-4 text-sm text-[#9da6b9]">
-                                            01 Oct 2023
-                                        </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20">
-<span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                                                Activo
-                                            </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-<button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=8297'">
-<span class="material-symbols-outlined !text-[20px]">edit</span>
-</button>
-<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="window.location.href='ZonaPeligroUsuario.html?userId=8297'">
-<span class="material-symbols-outlined !text-[20px]">block</span>
-</button>
-</div>
-</td>
-</tr>
+<?php
+}
+?>
 </tbody>
 </table>
 </div>
@@ -422,22 +360,63 @@
 <!-- Pagination -->
 <div class="px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
 <p class="text-sm text-[#9da6b9]">
-                            Mostrando <span class="font-medium text-white">1</span> a <span class="font-medium text-white">5</span> de <span class="font-medium text-white">245</span> usuarios
+                            <?php
+                            $inicio = $totalUsuarios > 0 ? (($currentPage - 1) * $itemsPerPage) + 1 : 0;
+                            $fin = min($currentPage * $itemsPerPage, $totalUsuarios);
+                            ?>
+                            Mostrando <span class="font-medium text-white"><?php echo $inicio; ?></span> a <span class="font-medium text-white"><?php echo $fin; ?></span> de <span class="font-medium text-white"><?php echo $totalUsuarios; ?></span> usuarios
                         </p>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
-<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<?php if ($currentPage > 1): ?>
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $currentPage - 1; ?>">
 <span class="sr-only">Previous</span>
 <span class="material-symbols-outlined !text-sm">chevron_left</span>
 </a>
-<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="#">1</a>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">2</a>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">3</a>
+<?php else: ?>
+<span class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#6b7280] ring-1 ring-inset ring-[#3b4354] cursor-not-allowed">
+<span class="sr-only">Previous</span>
+<span class="material-symbols-outlined !text-sm">chevron_left</span>
+</span>
+<?php endif; ?>
+
+<?php
+// Mostrar páginas
+$startPage = max(1, $currentPage - 2);
+$endPage = min($totalPages, $currentPage + 2);
+
+if ($startPage > 1): ?>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=1">1</a>
+<?php if ($startPage > 2): ?>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
-<a class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 md:inline-flex transition-colors" href="#">12</a>
-<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="#">
+<?php endif; ?>
+<?php endif; ?>
+
+<?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+<?php if ($i == $currentPage): ?>
+<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+<?php else: ?>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+<?php endif; ?>
+<?php endfor; ?>
+
+<?php if ($endPage < $totalPages): ?>
+<?php if ($endPage < $totalPages - 1): ?>
+<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
+<?php endif; ?>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $totalPages; ?>"><?php echo $totalPages; ?></a>
+<?php endif; ?>
+
+<?php if ($currentPage < $totalPages): ?>
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $currentPage + 1; ?>">
 <span class="sr-only">Next</span>
 <span class="material-symbols-outlined !text-sm">chevron_right</span>
 </a>
+<?php else: ?>
+<span class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#6b7280] ring-1 ring-inset ring-[#3b4354] cursor-not-allowed">
+<span class="sr-only">Next</span>
+<span class="material-symbols-outlined !text-sm">chevron_right</span>
+</span>
+<?php endif; ?>
 </nav>
 </div>
 </div>
@@ -446,21 +425,8 @@
 <script>
 /**
  * GESTIÓN DE USUARIOS ADMINISTRADOR - Funcionalidades JavaScript
- * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
+ * Los datos se obtienen directamente de la base de datos mediante PHP
  */
-
-// Datos simulados de usuarios
-let users = [
-    { id: '8293', name: 'Juan Pérez', email: 'juan.perez@example.com', phone: '+34 612 345 678', status: 'active', date: '12 Oct 2023' },
-    { id: '8294', name: 'Maria Garcia', email: 'maria.garcia@example.com', phone: '+34 622 987 654', status: 'inactive', date: '10 Oct 2023' },
-    { id: '8295', name: 'Carlos Lopez', email: 'carlos.lopez@example.com', phone: '--', status: 'active', date: '08 Oct 2023' },
-    { id: '8296', name: 'Ana Martinez', email: 'ana.martinez@example.com', phone: '+34 633 123 456', status: 'pending', date: '05 Oct 2023' },
-    { id: '8297', name: 'Luis Rodriguez', email: 'luis.rod@example.com', phone: '+34 655 444 333', status: 'active', date: '01 Oct 2023' }
-];
-
-let currentPage = 1;
-const itemsPerPage = 5;
-let filteredUsers = [...users];
 
 // ========== INICIALIZACIÓN ==========
 document.addEventListener('DOMContentLoaded', function() {
@@ -469,50 +435,10 @@ document.addEventListener('DOMContentLoaded', function() {
         btnCrearUsuario.addEventListener('click', showCreateUserModal);
     }
     
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', filterUsers);
-    }
-    
-    // Búsqueda global del header
-    const headerSearchInput = document.getElementById('headerSearchInput');
-    if (headerSearchInput) {
-        headerSearchInput.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase().trim();
-            // Sincronizar con el input de búsqueda local si existe
-            if (searchInput) {
-                searchInput.value = query;
-            }
-            filterUsers();
-        });
-        
-        headerSearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const query = e.target.value.toLowerCase().trim();
-                if (searchInput) {
-                    searchInput.value = query;
-                }
-                filterUsers();
-            }
-        });
-    }
-    
-    const estadoFilter = document.getElementById('estadoFilter');
-    if (estadoFilter) {
-        estadoFilter.addEventListener('change', filterUsers);
-    }
-    
-    const ordenFilter = document.getElementById('ordenFilter');
-    if (ordenFilter) {
-        ordenFilter.addEventListener('change', filterUsers);
-    }
-    
     const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', toggleSelectAllUsers);
     }
-    
-    renderTable();
 });
 
 // ========== CREAR USUARIO ==========
@@ -582,33 +508,28 @@ function createUser(event) {
     
     const formData = new FormData(event.target);
     
-    const newUser = {
-        id: String(8000 + users.length + 1),
-        name: formData.get('nombre').trim(),
-        email: formData.get('email').trim().toLowerCase(),
-        phone: formData.get('telefono')?.trim() || '--',
-        status: formData.get('estado'),
-        date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-    };
-    
-    // Verificar si el email ya existe
-    if (users.some(u => u.email.toLowerCase() === newUser.email)) {
-        mostrarErrorCampo(event.target.querySelector('input[name="email"]'), 'Este email ya está registrado');
-        return;
-    }
-    
-    users.push(newUser);
-    filteredUsers = [...users];
-    renderTable();
-    
-    event.target.closest('.fixed').remove();
-    showNotification('Usuario creado exitosamente', 'success');
-    
-    // En producción: llamada API
-    // fetch('/api/users/create', {
-    //     method: 'POST',
-    //     body: JSON.stringify(newUser)
-    // })
+    // Enviar datos al servidor
+    fetch('api_crear_usuario.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            event.target.closest('.fixed').remove();
+            showNotification('Usuario creado exitosamente', 'success');
+            // Recargar la página para mostrar el nuevo usuario
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            mostrarErrorCampo(event.target.querySelector('input[name="email"]'), data.message || 'Error al crear usuario');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al crear usuario', 'error');
+    });
 }
 
 /**
@@ -709,35 +630,19 @@ function limpiarErrorCampo(campo) {
 
 // ========== FILTRAR Y BUSCAR ==========
 /**
- * Filtra y busca usuarios
+ * Filtra usuarios mediante recarga de página con parámetros GET
  */
 function filterUsers() {
-    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const searchTerm = document.getElementById('searchInput')?.value || '';
     const estadoFilter = document.getElementById('estadoFilter')?.value || '';
     const ordenFilter = document.getElementById('ordenFilter')?.value || '';
     
-    filteredUsers = users.filter(user => {
-        const matchesSearch = !searchTerm || 
-            user.name.toLowerCase().includes(searchTerm) ||
-            user.email.toLowerCase().includes(searchTerm) ||
-            user.id.includes(searchTerm);
-        
-        const matchesEstado = !estadoFilter || user.status === estadoFilter;
-        
-        return matchesSearch && matchesEstado;
-    });
+    const params = new URLSearchParams();
+    if (searchTerm) params.append('search', searchTerm);
+    if (estadoFilter) params.append('estado', estadoFilter);
+    if (ordenFilter) params.append('orden', ordenFilter);
     
-    // Ordenar
-    if (ordenFilter === 'name_asc') {
-        filteredUsers.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (ordenFilter === 'name_desc') {
-        filteredUsers.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (ordenFilter === 'oldest') {
-        filteredUsers.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
-    
-    currentPage = 1;
-    renderTable();
+    window.location.href = '?' + params.toString();
 }
 
 // ========== SELECCIÓN MÚLTIPLE ==========
@@ -753,99 +658,7 @@ function toggleSelectAllUsers() {
     });
 }
 
-// ========== RENDERIZAR TABLA ==========
-/**
- * Renderiza la tabla de usuarios
- */
-function renderTable() {
-    const tbody = document.querySelector('tbody');
-    if (!tbody) return;
-    
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageUsers = filteredUsers.slice(start, end);
-    
-    tbody.innerHTML = pageUsers.map(user => {
-        const statusBadge = {
-            active: '<span class="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 text-xs font-medium text-green-400 border border-green-500/20"><span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>Activo</span>',
-            inactive: '<span class="inline-flex items-center gap-1.5 rounded-full bg-gray-500/10 px-2.5 py-1 text-xs font-medium text-gray-400 border border-gray-500/20"><span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>Inactivo</span>',
-            pending: '<span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-400 border border-amber-500/20"><span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>Pendiente</span>'
-        };
-        
-        const actionButton = user.status === 'active' 
-            ? `<button class="p-2 text-[#9da6b9] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Desactivar cuenta" onclick="toggleUserStatus('${user.id}', '${user.name}', 'active')"><span class="material-symbols-outlined !text-[20px]">block</span></button>`
-            : `<button class="p-2 text-[#9da6b9] hover:text-green-400 hover:bg-green-400/10 rounded-lg transition-colors" title="Activar cuenta" onclick="toggleUserStatus('${user.id}', '${user.name}', '${user.status}')"><span class="material-symbols-outlined !text-[20px]">check_circle</span></button>`;
-        
-        return `
-            <tr class="hover:bg-surface-dark/50 transition-colors group cursor-pointer" data-user-id="${user.id}" onclick="window.location.href='DetallesUsuarioAdmin.html?userId=${user.id}'">
-                <td class="p-4 text-center" onclick="event.stopPropagation()">
-                    <input class="rounded bg-background-dark border-[#3b4354] text-primary focus:ring-offset-background-dark focus:ring-primary opacity-50 group-hover:opacity-100 transition-opacity" type="checkbox"/>
-                </td>
-                <td class="p-4">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border border-primary/20">${user.name.split(' ').map(n => n[0]).join('')}</div>
-                        <div class="flex flex-col">
-                            <span class="text-white text-sm font-semibold">${user.name}</span>
-                            <span class="text-[#9da6b9] text-xs">ID: #${user.id}</span>
-                        </div>
-                    </div>
-                </td>
-                <td class="p-4">
-                    <div class="flex flex-col">
-                        <span class="text-[#9da6b9] text-sm">${user.email}</span>
-                        <span class="text-[#6b7280] text-xs">${user.phone}</span>
-                    </div>
-                </td>
-                <td class="p-4 text-sm text-[#9da6b9]">${user.date}</td>
-                <td class="p-4">${statusBadge[user.status]}</td>
-                <td class="p-4 text-right">
-                    <div class="flex items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
-                        <button class="p-2 text-[#9da6b9] hover:text-white hover:bg-surface-dark rounded-lg transition-colors" title="Editar" onclick="editUser('${user.id}', '${user.name}')">
-                            <span class="material-symbols-outlined !text-[20px]">edit</span>
-                        </button>
-                        ${actionButton}
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-    
-    renderPagination();
-}
-
-// ========== PAGINACIÓN ==========
-/**
- * Renderiza la paginación
- */
-function renderPagination() {
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const paginationEl = document.querySelector('nav[aria-label="Pagination"]');
-    if (!paginationEl) return;
-    
-    // Actualizar contador
-    const counterEl = document.querySelector('p.text-sm.text-\\[\\#9da6b9\\]');
-    if (counterEl) {
-        const start = (currentPage - 1) * itemsPerPage + 1;
-        const end = Math.min(currentPage * itemsPerPage, filteredUsers.length);
-        counterEl.innerHTML = `Mostrando <span class="font-medium text-white">${start}</span> a <span class="font-medium text-white">${end}</span> de <span class="font-medium text-white">${filteredUsers.length}</span> usuarios`;
-    }
-}
-
-/**
- * Cambia de página
- * @param {string} direction - 'prev' o 'next'
- */
-function changeUsersPage(direction) {
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    
-    if (direction === 'prev' && currentPage > 1) {
-        currentPage--;
-    } else if (direction === 'next' && currentPage < totalPages) {
-        currentPage++;
-    }
-    
-    renderTable();
-}
+// La tabla se renderiza directamente desde PHP, no se necesita renderTable()
 
 // ========== EDITAR USUARIO ==========
 /**
@@ -854,7 +667,7 @@ function changeUsersPage(direction) {
  * @param {string} userName - Nombre del usuario
  */
 function editUser(userId, userName) {
-    window.location.href = `DetallesUsuarioAdmin.html?userId=${userId}`;
+    window.location.href = `DetallesUsuarioAdmin.php?userId=${userId}`;
 }
 
 // ========== CAMBIAR ESTADO ==========
@@ -865,8 +678,8 @@ function editUser(userId, userName) {
  * @param {string} currentStatus - Estado actual
  */
 async function toggleUserStatus(userId, userName, currentStatus) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    const action = newStatus === 'active' ? 'activar' : 'desactivar';
+    const newStatus = currentStatus === 'Activo' ? 'Inactivo' : 'Activo';
+    const action = newStatus === 'Activo' ? 'activar' : 'desactivar';
     
     const confirmado = await mostrarModalConfirmacion(
         `¿Deseas ${action} la cuenta de ${userName}?`,
@@ -878,16 +691,32 @@ async function toggleUserStatus(userId, userName, currentStatus) {
         return;
     }
     
-    const user = users.find(u => u.id === userId);
-    if (user) {
-        user.status = newStatus;
-        filteredUsers = [...users];
-        renderTable();
-        showNotification(`Usuario ${action}do exitosamente`, 'success');
-    }
-    
-    // En producción: llamada API
-    // fetch(`/api/users/${userId}/toggle-status`, { method: 'POST' })
+    // Llamada API para cambiar estado
+    fetch('api_usuarios.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            action: 'toggleStatus', 
+            userId: userId, 
+            newStatus: newStatus 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`Usuario ${action}do exitosamente`, 'success');
+            // Recargar la página para reflejar el cambio
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al cambiar el estado', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error al comunicarse con el servidor', 'error');
+    });
 }
 
 // ========== NOTIFICACIONES ==========
@@ -1030,49 +859,31 @@ function cerrarModal(overlay) {
 // ========== EXPORTACIÓN DE DATOS ==========
 
 /**
- * Exporta los usuarios visibles a CSV
+ * Exporta los usuarios a CSV desde la base de datos
  */
 function exportarUsuariosCSV() {
-    if (filteredUsers.length === 0) {
-        showNotification('No hay usuarios para exportar', 'error');
-        return;
-    }
+    // Obtener parámetros de filtro actuales
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search') || '';
+    const estado = params.get('estado') || '';
     
-    // Preparar datos
-    const headers = ['ID', 'Nombre', 'Email', 'Teléfono', 'Fecha Registro', 'Estado'];
-    const datos = filteredUsers.map(user => {
-        const estadoTexto = user.status === 'active' ? 'Activo' : 
-                           user.status === 'inactive' ? 'Inactivo' : 
-                           'Pendiente';
-        
-        return [
-            user.id,
-            user.name,
-            user.email,
-            user.phone || '--',
-            user.date,
-            estadoTexto
-        ];
-    });
+    // Construir URL para exportar
+    const exportUrl = 'api_exportar_usuarios.php';
+    const exportParams = new URLSearchParams();
+    if (search) exportParams.append('search', search);
+    if (estado) exportParams.append('estado', estado);
     
-    // Crear CSV
-    const csv = [headers, ...datos].map(row => 
-        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n');
+    const url = exportParams.toString() ? `${exportUrl}?${exportParams.toString()}` : exportUrl;
     
-    // Agregar BOM para Excel
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    
-    // Descargar
+    // Descargar CSV
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showNotification(`${filteredUsers.length} usuario(s) exportado(s) exitosamente`, 'success');
+    showNotification('Exportando usuarios...', 'info');
 }
 
 // ========== NAVEGACIÓN CON HISTORIAL Y CONTEXTUAL ==========
@@ -1088,11 +899,11 @@ function navegarAtras() {
             window.history.back();
         } else {
             // Fallback: redirigir a Dashboard
-            window.location.href = 'DashboardAdmnistrador.html';
+            window.location.href = 'DashboardAdmnistrador.php';
         }
     } catch (error) {
         console.error('Error al navegar atrás:', error);
-        window.location.href = 'DashboardAdmnistrador.html';
+        window.location.href = 'DashboardAdmnistrador.php';
     }
 }
 
@@ -1154,10 +965,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const href = this.getAttribute('href') || this.getAttribute('onclick');
             if (href && href.includes('DetallesUsuarioAdmin')) {
                 // Extraer URL completa
-                const match = href.match(/DetallesUsuarioAdmin\.html[^'"]*/);
+                const match = href.match(/DetallesUsuarioAdmin\.php[^'"]*/);
                 if (match) {
                     e.preventDefault();
-                    navegarConContexto(match[0], 'GestionUsuariosAdministrador.html');
+                    navegarConContexto(match[0], 'GestionUsuariosAdministrador.php');
                 }
             }
     });
@@ -1169,9 +980,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (onclickOriginal) {
             btn.removeAttribute('onclick');
             btn.addEventListener('click', function() {
-                const match = onclickOriginal.match(/DetallesUsuarioAdmin\.html[^'"]*/);
+                const match = onclickOriginal.match(/DetallesUsuarioAdmin\.php[^'"]*/);
                 if (match) {
-                    navegarConContexto(match[0], 'GestionUsuariosAdministrador.html');
+                    navegarConContexto(match[0], 'GestionUsuariosAdministrador.php');
                 } else {
                     eval(onclickOriginal);
                 }

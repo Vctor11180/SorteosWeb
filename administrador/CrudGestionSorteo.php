@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<?php
+// Conexión a la base de datos
+require_once 'config.php';
+$conn = getDBConnection();
+?>
+
 
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
@@ -63,33 +69,33 @@
 </div>
 <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.html" data-page="DashboardAdmnistrador.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.php" data-page="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
                     Dashboard
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.html" data-page="CrudGestionSorteo.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.php" data-page="CrudGestionSorteo.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
                     Gestión de Sorteos
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.html" data-page="ValidacionPagosAdministrador.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php" data-page="ValidacionPagosAdministrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
                     Validación de Pagos
                     <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.html" data-page="GeneradorGanadoresAdminstradores.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php" data-page="GeneradorGanadoresAdminstradores.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
                     Generación de Ganadores
                 </a>
 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.html" data-page="GestionUsuariosAdministrador.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.php" data-page="GestionUsuariosAdministrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
                     Usuarios
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.html" data-page="AuditoriaAccionesAdmin.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.php" data-page="AuditoriaAccionesAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
                     Auditoría
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.html" data-page="InformesEstadisticasAdmin.html">
+<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.php" data-page="InformesEstadisticasAdmin.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
                     Informes
                 </a>
@@ -138,7 +144,7 @@
                             Atrás
                         </button>
 <span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
-<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.html">
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.php">
 <span class="material-symbols-outlined !text-lg">dashboard</span>
                             Dashboard
                         </a>
@@ -174,8 +180,9 @@
 <div class="relative">
 <select id="statusFilterSelect" onchange="applyFilters()" class="block w-full pl-3 pr-10 py-3 text-base border-gray-200 dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm rounded-lg bg-white dark:bg-[#1e2433] appearance-none cursor-pointer" style="color: rgb(15 23 42) !important;">
 <option value="all" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Todos los Estados</option>
+<option value="Borrador" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Borrador</option>
 <option value="Activo" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Activo</option>
-<option value="Inactivo" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Inactivo</option>
+<option value="Pausado" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Pausado</option>
 <option value="Finalizado" style="color: rgb(15 23 42); background-color: rgb(255 255 255);">Finalizado</option>
 </select>
 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
@@ -203,221 +210,11 @@
 </tr>
 </thead>
 <tbody id="rafflesTableBody" class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-[#151a23]">
-<!-- Row 1: Active -->
-<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1024" data-name="Gran Rifa de Navidad" data-period="01 Dic - 25 Dic 2023" data-prize="Auto 0km Toyota Yaris" data-status="Activo" data-tickets-sold="750" data-tickets-total="1000" data-created-by="Admin">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1024</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm font-medium text-slate-900 dark:text-white">Gran Rifa de Navidad</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">Creado por Admin</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm text-gray-900 dark:text-gray-300">01 Dic - 25 Dic</div>
-<div class="text-xs text-gray-500 dark:text-gray-500">2023</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="flex items-center">
-<span class="material-symbols-outlined text-yellow-500 mr-2 text-lg">emoji_events</span>
-<span class="text-sm text-gray-900 dark:text-gray-300">Auto 0km Toyota Yaris</span>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                    Activo
-                                </span>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="w-full">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-900 dark:text-white font-medium">750</span>
-<span class="text-gray-500 dark:text-gray-400">de 1000</span>
-</div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button onclick="editRaffle(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-<button onclick="deleteRaffle(this)" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
-<span class="material-symbols-outlined text-[20px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2: Finished -->
-<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1023" data-name="Sorteo Pro-Fondos" data-period="15 Nov - 30 Nov 2023" data-prize="MacBook Pro M3" data-status="Finalizado" data-tickets-sold="500" data-tickets-total="500" data-created-by="Admin">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1023</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Pro-Fondos</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">Beneficencia Local</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm text-gray-900 dark:text-gray-300">15 Nov - 30 Nov</div>
-<div class="text-xs text-gray-500 dark:text-gray-500">2023</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="flex items-center">
-<span class="material-symbols-outlined text-gray-400 mr-2 text-lg">laptop_mac</span>
-<span class="text-sm text-gray-900 dark:text-gray-300">MacBook Pro M3</span>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                                    Finalizado
-                                </span>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="w-full">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-900 dark:text-white font-medium">500</span>
-<span class="text-gray-500 dark:text-gray-400">de 500</span>
-</div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-<div class="bg-gray-400 dark:bg-gray-500 h-1.5 rounded-full" style="width: 100%"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button onclick="viewResults(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados">
-<span class="material-symbols-outlined text-[20px]">visibility</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3: Inactive -->
-<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1025" data-name="Rifa de Verano" data-period="01 Ene - 31 Ene 2024" data-prize="Viaje a Cancún (2 pers)" data-status="Inactivo" data-tickets-sold="0" data-tickets-total="2000" data-created-by="Borrador">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1025</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm font-medium text-slate-900 dark:text-white">Rifa de Verano</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">Borrador</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm text-gray-900 dark:text-gray-300">01 Ene - 31 Ene</div>
-<div class="text-xs text-gray-500 dark:text-gray-500">2024</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="flex items-center">
-<span class="material-symbols-outlined text-blue-400 mr-2 text-lg">flight_takeoff</span>
-<span class="text-sm text-gray-900 dark:text-gray-300">Viaje a Cancún (2 pers)</span>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                    Inactivo
-                                </span>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="w-full">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-900 dark:text-white font-medium">0</span>
-<span class="text-gray-500 dark:text-gray-400">de 2000</span>
-</div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 0%"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-<button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
-<span class="material-symbols-outlined text-[20px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4: Active -->
-<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1026" data-name="Sorteo Flash Fin de Mes" data-period="28 Feb - 29 Feb 2024" data-prize="iPhone 15 Pro" data-status="Activo" data-tickets-sold="120" data-tickets-total="200" data-created-by="Marketing">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1026</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm font-medium text-slate-900 dark:text-white">Sorteo Flash Fin de Mes</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">Marketing</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm text-gray-900 dark:text-gray-300">28 Feb - 29 Feb</div>
-<div class="text-xs text-gray-500 dark:text-gray-500">2024</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="flex items-center">
-<span class="material-symbols-outlined text-purple-400 mr-2 text-lg">smartphone</span>
-<span class="text-sm text-gray-900 dark:text-gray-300">iPhone 15 Pro</span>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                    Activo
-                                </span>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="w-full">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-900 dark:text-white font-medium">120</span>
-<span class="text-gray-500 dark:text-gray-400">de 200</span>
-</div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-<div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-<button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
-<span class="material-symbols-outlined text-[20px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 5: Active Low Stock -->
-<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="1027" data-name="Rifa Solidaria Animalista" data-period="01 Mar - 15 Mar 2024" data-prize="Canasta de Productos" data-status="Activo" data-tickets-sold="98" data-tickets-total="100" data-created-by="ONG Vida">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#1027</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm font-medium text-slate-900 dark:text-white">Rifa Solidaria Animalista</div>
-<div class="text-xs text-gray-500 dark:text-gray-400">ONG Vida</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="text-sm text-gray-900 dark:text-gray-300">01 Mar - 15 Mar</div>
-<div class="text-xs text-gray-500 dark:text-gray-500">2024</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="flex items-center">
-<span class="material-symbols-outlined text-green-400 mr-2 text-lg">shopping_basket</span>
-<span class="text-sm text-gray-900 dark:text-gray-300">Canasta de Productos</span>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-center">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                    Activo
-                                </span>
-</td>
-<td class="px-6 py-4 whitespace-nowrap">
-<div class="w-full">
-<div class="flex justify-between text-xs mb-1">
-<span class="text-slate-900 dark:text-white font-medium">98</span>
-<span class="text-gray-500 dark:text-gray-400">de 100</span>
-</div>
-<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-<div class="bg-amber-500 h-1.5 rounded-full" style="width: 98%"></div>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-<button class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar">
-<span class="material-symbols-outlined text-[20px]">edit</span>
-</button>
-<button class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar">
-<span class="material-symbols-outlined text-[20px]">delete</span>
-</button>
-</div>
+<!-- Los sorteos se cargarán dinámicamente desde la base de datos -->
+<tr>
+<td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined animate-spin inline-block mr-2">autorenew</span>
+Cargando sorteos...
 </td>
 </tr>
 </tbody>
@@ -484,36 +281,52 @@
 <div class="grid grid-cols-2 gap-4">
 <div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="startDateInput">Fecha Inicio</label>
-<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="startDateInput" name="start-date" type="date" required/>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="startDateInput" name="start-date" type="date" min="" required/>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="endDateInput">Fecha Fin</label>
-<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="endDateInput" name="end-date" type="date" required/>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="endDateInput" name="end-date" type="date" min="" required/>
 </div>
 </div>
 <div>
-<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="prizeInput">Premio Principal</label>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="descripcionInput">Descripción del Premio</label>
 <div class="mt-1 flex rounded-md shadow-sm">
 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sm:text-sm">
 <span class="material-symbols-outlined text-sm">emoji_events</span>
 </span>
-<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="prizeInput" name="prize" placeholder="Descripción del premio" type="text" required/>
+<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="descripcionInput" name="descripcion" placeholder="Ej. Auto 0km Toyota Yaris" type="text" required/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="imagenUrlInput">URL de la Imagen</label>
+<div class="mt-1 flex rounded-md shadow-sm">
+<span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sm:text-sm">
+<span class="material-symbols-outlined text-sm">image</span>
+</span>
+<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="imagenUrlInput" name="imagen_url" placeholder="https://ejemplo.com/imagen.jpg" type="url"/>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div>
+<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="precioBoletoInput">Precio por Boleto</label>
+<div class="mt-1 flex rounded-md shadow-sm">
+<span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
+<input class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-primary focus:border-primary sm:text-sm border border-l-0 border-gray-300 dark:border-gray-600 bg-white dark:bg-[#111621] dark:text-white" id="precioBoletoInput" name="precio_boleto" placeholder="0.00" type="number" step="0.01" min="0" required/>
+</div>
+</div>
+<div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ticketsInput">Cantidad Boletos</label>
-<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="ticketsInput" name="tickets" placeholder="1000" type="number" min="1" required/>
+<input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="ticketsInput" name="total_boletos_crear" placeholder="1000" type="number" min="1" required/>
+</div>
 </div>
 <div>
 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="statusInput">Estado</label>
-<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="statusInput" name="status" required>
-<option value="Borrador">Borrador</option>
+<select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="statusInput" name="estado" required>
 <option value="Activo" selected>Activo</option>
+<option value="Borrador">Borrador</option>
+<option value="Pausado">Pausado</option>
 <option value="Finalizado">Finalizado</option>
-<option value="Inactivo">Inactivo</option>
 </select>
-</div>
 </div>
 <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3 mt-6">
 <button type="submit" id="saveRaffleButton" class="w-full inline-flex justify-center items-center gap-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
@@ -531,14 +344,8 @@
 </div>
 </div>
 <script>
-// Datos de sorteos
-const raffles = [
-    { id: '1024', name: 'Gran Rifa de Navidad', period: '01 Dic - 25 Dic 2023', prize: 'Auto 0km Toyota Yaris', status: 'Activo', ticketsSold: 750, ticketsTotal: 1000, createdBy: 'Admin' },
-    { id: '1023', name: 'Sorteo Pro-Fondos', period: '15 Nov - 30 Nov 2023', prize: 'MacBook Pro M3', status: 'Finalizado', ticketsSold: 500, ticketsTotal: 500, createdBy: 'Admin' },
-    { id: '1025', name: 'Rifa de Verano', period: '01 Ene - 31 Ene 2024', prize: 'Viaje a Cancún (2 pers)', status: 'Inactivo', ticketsSold: 0, ticketsTotal: 2000, createdBy: 'Borrador' },
-    { id: '1026', name: 'Sorteo Flash Fin de Mes', period: '28 Feb - 29 Feb 2024', prize: 'iPhone 15 Pro', status: 'Activo', ticketsSold: 120, ticketsTotal: 200, createdBy: 'Marketing' },
-    { id: '1027', name: 'Rifa Solidaria Animalista', period: '01 Mar - 15 Mar 2024', prize: 'Canasta de Productos', status: 'Activo', ticketsSold: 98, ticketsTotal: 100, createdBy: 'ONG Vida' }
-];
+// Datos de sorteos (se cargarán desde la API)
+let raffles = [];
 
 let currentPage = 1;
 let itemsPerPage = 5;
@@ -547,7 +354,67 @@ let currentStatusFilter = 'all';
 let editingRaffleId = null;
 let filteredRaffles = [];
 
+// Cargar sorteos desde la API
+async function loadRaffles() {
+    try {
+        const response = await fetch('api_sorteos.php?action=list');
+        const result = await response.json();
+        
+        if (result.success) {
+            raffles = result.data;
+            applyFilters();
+        } else {
+            showNotification('Error al cargar sorteos: ' + (result.error || 'Error desconocido'), 'error');
+            raffles = [];
+            applyFilters();
+        }
+    } catch (error) {
+        console.error('Error al cargar sorteos:', error);
+        showNotification('Error de conexión al cargar sorteos', 'error');
+        raffles = [];
+        applyFilters();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Cargar sorteos al iniciar
+    loadRaffles();
+    
+    // Establecer fecha mínima para los campos de fecha (fecha actual)
+    const today = new Date().toISOString().split('T')[0];
+    const startDateInput = document.getElementById('startDateInput');
+    const endDateInput = document.getElementById('endDateInput');
+    
+    if (startDateInput) {
+        startDateInput.setAttribute('min', today);
+        startDateInput.addEventListener('change', function() {
+            // Cuando cambia la fecha de inicio, actualizar el min de fecha fin
+            if (endDateInput && this.value) {
+                const startDate = new Date(this.value);
+                startDate.setDate(startDate.getDate() + 1); // Fecha fin debe ser al menos un día después
+                endDateInput.setAttribute('min', startDate.toISOString().split('T')[0]);
+                
+                // Si la fecha fin es anterior a la nueva fecha mínima, limpiarla
+                if (endDateInput.value && endDateInput.value <= this.value) {
+                    endDateInput.value = '';
+                }
+            }
+        });
+    }
+    
+    if (endDateInput) {
+        endDateInput.setAttribute('min', today);
+        endDateInput.addEventListener('change', function() {
+            // Validar que la fecha fin sea posterior a la fecha inicio
+            if (startDateInput && startDateInput.value) {
+                if (this.value <= startDateInput.value) {
+                    mostrarError('endDateInput', 'La fecha de fin debe ser posterior a la fecha de inicio');
+                    this.value = '';
+                }
+            }
+        });
+    }
+    
     // Asegurar que el modal esté cerrado al cargar la página
     const modal = document.getElementById('raffleModal');
     if (modal) {
@@ -637,14 +504,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    applyFilters();
+    // No aplicar filtros aquí, se aplicarán después de cargar los datos
 });
 
 function applyFilters() {
     filteredRaffles = raffles.filter(raffle => {
         if (currentSearchQuery) {
             const searchLower = currentSearchQuery.toLowerCase();
-            if (!raffle.name.toLowerCase().includes(searchLower) && !raffle.id.toLowerCase().includes(searchLower) && !raffle.prize.toLowerCase().includes(searchLower)) {
+            const name = (raffle.name || '').toLowerCase();
+            const id = (raffle.id || '').toLowerCase();
+            const prize = (raffle.prize || '').toLowerCase();
+            if (!name.includes(searchLower) && !id.includes(searchLower) && !prize.includes(searchLower)) {
                 return false;
             }
         }
@@ -661,13 +531,74 @@ function renderTable(filteredRaffles) {
     const end = start + itemsPerPage;
     const pageRaffles = filteredRaffles.slice(start, end);
     
+    if (pageRaffles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No se encontraron sorteos</td></tr>';
+        return;
+    }
+    
     tbody.innerHTML = pageRaffles.map(raffle => {
-        const statusBadge = raffle.status === 'Activo' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>' : raffle.status === 'Finalizado' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Finalizado</span>' : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Inactivo</span>';
-        const progress = (raffle.ticketsSold / raffle.ticketsTotal) * 100;
+        // Badge de estado
+        let statusBadge = '';
+        if (raffle.status === 'Activo') {
+            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Activo</span>';
+        } else if (raffle.status === 'Finalizado') {
+            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">Finalizado</span>';
+        } else if (raffle.status === 'Pausado') {
+            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800">Pausado</span>';
+        } else {
+            statusBadge = '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Borrador</span>';
+        }
+        
+        const progress = raffle.ticketsTotal > 0 ? (raffle.ticketsSold / raffle.ticketsTotal) * 100 : 0;
         const progressColor = progress >= 90 ? 'bg-amber-500' : 'bg-primary';
-        const actionsHTML = raffle.status === 'Finalizado' ? `<button onclick="viewResults(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados"><span class="material-symbols-outlined text-[20px]">visibility</span></button>` : `<button onclick="editRaffle(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button><button onclick="deleteRaffle(this)" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>`;
-        const periodParts = raffle.period.split(' ');
-        return `<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="${raffle.id}" data-name="${raffle.name}" data-period="${raffle.period}" data-prize="${raffle.prize}" data-status="${raffle.status}" data-tickets-sold="${raffle.ticketsSold}" data-tickets-total="${raffle.ticketsTotal}" data-created-by="${raffle.createdBy}"><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#${raffle.id}</td><td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-slate-900 dark:text-white">${raffle.name}</div><div class="text-xs text-gray-500 dark:text-gray-400">${raffle.createdBy}</div></td><td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-gray-300">${periodParts[0]} ${periodParts[1]} - ${periodParts[3]} ${periodParts[4]}</div><div class="text-xs text-gray-500 dark:text-gray-500">${periodParts[5]}</div></td><td class="px-6 py-4 whitespace-nowrap"><div class="flex items-center"><span class="material-symbols-outlined text-yellow-500 mr-2 text-lg">emoji_events</span><span class="text-sm text-gray-900 dark:text-gray-300">${raffle.prize}</span></div></td><td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td><td class="px-6 py-4 whitespace-nowrap"><div class="w-full"><div class="flex justify-between text-xs mb-1"><span class="text-slate-900 dark:text-white font-medium">${raffle.ticketsSold}</span><span class="text-gray-500 dark:text-gray-400">de ${raffle.ticketsTotal}</span></div><div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden"><div class="${progressColor} h-1.5 rounded-full" style="width: ${progress}%"></div></div></div></td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">${actionsHTML}</div></td></tr>`;
+        
+        // Acciones según el estado
+        let actionsHTML = '';
+        if (raffle.status === 'Finalizado') {
+            actionsHTML = `<button onclick="viewResults(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver Resultados"><span class="material-symbols-outlined text-[20px]">visibility</span></button>`;
+        } else {
+            actionsHTML = `<button onclick="editRaffle(this)" class="text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Editar"><span class="material-symbols-outlined text-[20px]">edit</span></button><button onclick="deleteRaffle(this)" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Eliminar"><span class="material-symbols-outlined text-[20px]">delete</span></button>`;
+        }
+        
+        // Parsear período
+        const periodParts = raffle.period ? raffle.period.split(' ') : [];
+        const periodDisplay = periodParts.length >= 6 
+            ? `${periodParts[0]} ${periodParts[1]} - ${periodParts[3]} ${periodParts[4]}`
+            : raffle.period || 'N/A';
+        const periodYear = periodParts.length >= 6 ? periodParts[5] : '';
+        
+        return `<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="${raffle.id}" data-name="${raffle.name}" data-period="${raffle.period || ''}" data-prize="${raffle.prize || ''}" data-status="${raffle.status}" data-tickets-sold="${raffle.ticketsSold}" data-tickets-total="${raffle.ticketsTotal}" data-created-by="${raffle.createdBy}">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#${raffle.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-slate-900 dark:text-white">${raffle.name || 'Sin título'}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">${raffle.createdBy || 'Admin'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900 dark:text-gray-300">${periodDisplay}</div>
+                ${periodYear ? `<div class="text-xs text-gray-500 dark:text-gray-500">${periodYear}</div>` : ''}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <span class="material-symbols-outlined text-yellow-500 mr-2 text-lg">emoji_events</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-300">${raffle.prize || 'Premio Principal'}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="w-full">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-900 dark:text-white font-medium">${raffle.ticketsSold || 0}</span>
+                        <span class="text-gray-500 dark:text-gray-400">de ${raffle.ticketsTotal || 0}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                        <div class="${progressColor} h-1.5 rounded-full" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">${actionsHTML}</div>
+            </td>
+        </tr>`;
     }).join('');
 }
 
@@ -744,13 +675,27 @@ window.showRaffleModal = function(mode, raffleData = null) {
         if (mode === 'edit' && raffleData) {
             title.textContent = 'Editar Sorteo';
             document.getElementById('raffleIdInput').value = raffleData.id || '';
-            document.getElementById('raffleNameInput').value = raffleData.name || '';
-            document.getElementById('prizeInput').value = raffleData.prize || '';
+            document.getElementById('raffleNameInput').value = raffleData.name || raffleData.titulo || '';
+            document.getElementById('descripcionInput').value = raffleData.prize || raffleData.descripcion || '';
+            document.getElementById('precioBoletoInput').value = raffleData.precio_boleto || '0.00';
             document.getElementById('ticketsInput').value = raffleData.ticketsTotal || '';
             document.getElementById('statusInput').value = raffleData.status || 'Activo';
+            document.getElementById('imagenUrlInput').value = raffleData.imagen_url || '';
             
-            // Parsear fechas del período si existe
-            if (raffleData.period) {
+            // Parsear fechas - usar fecha_inicio y fecha_fin si están disponibles
+            if (raffleData.fecha_inicio && raffleData.fecha_fin) {
+                // Extraer solo la fecha (sin hora) si viene con hora
+                const fechaInicio = raffleData.fecha_inicio.split(' ')[0];
+                const fechaFin = raffleData.fecha_fin.split(' ')[0];
+                document.getElementById('startDateInput').value = fechaInicio;
+                document.getElementById('endDateInput').value = fechaFin;
+                
+                // Actualizar min de fecha fin
+                const startDate = new Date(fechaInicio);
+                startDate.setDate(startDate.getDate() + 1);
+                document.getElementById('endDateInput').setAttribute('min', startDate.toISOString().split('T')[0]);
+            } else if (raffleData.period) {
+                // Fallback: parsear fechas del período si existe
                 const periodParts = raffleData.period.split(' - ');
                 if (periodParts.length === 2) {
                     // Intentar parsear diferentes formatos de fecha
@@ -768,7 +713,14 @@ window.showRaffleModal = function(mode, raffleData = null) {
             document.getElementById('raffleIdInput').value = '';
             document.getElementById('startDateInput').value = '';
             document.getElementById('endDateInput').value = '';
-            document.getElementById('statusInput').value = 'Activo';
+            document.getElementById('precioBoletoInput').value = '0.00';
+            document.getElementById('imagenUrlInput').value = '';
+            document.getElementById('statusInput').value = 'Activo'; // Por defecto Activo
+            
+            // Establecer fecha mínima al abrir modal
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDateInput').setAttribute('min', today);
+            document.getElementById('endDateInput').setAttribute('min', today);
         }
         
         // Limpiar errores previos
@@ -796,6 +748,12 @@ window.showRaffleModal = function(mode, raffleData = null) {
 
 function closeRaffleModal() {
     try {
+        // Cancelar el cierre automático si existe
+        if (window.autoCloseInterval) {
+            clearInterval(window.autoCloseInterval);
+            window.autoCloseInterval = null;
+        }
+        
         const modal = document.getElementById('raffleModal');
         if (modal) {
             // Ocultar modal completamente
@@ -812,12 +770,21 @@ function closeRaffleModal() {
             form.reset();
             limpiarErroresFormulario('raffleForm');
         }
+        
+        // Restaurar botón de guardar si estaba en estado de éxito
+        const submitBtn = document.getElementById('saveRaffleButton');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+            submitBtn.classList.add('bg-primary', 'hover:bg-blue-600');
+            submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Guardar Sorteo';
+        }
     } catch (error) {
         console.error('Error al cerrar modal:', error);
     }
 }
 
-function saveRaffle(e) {
+async function saveRaffle(e) {
     try {
         e.preventDefault();
         
@@ -835,72 +802,110 @@ function saveRaffle(e) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span> Guardando...';
             
-            setTimeout(() => {
-                try {
-                    const name = document.getElementById('raffleNameInput').value.trim();
-                    const prize = document.getElementById('prizeInput').value.trim();
-                    const tickets = parseInt(document.getElementById('ticketsInput').value);
-                    const status = document.getElementById('statusInput').value;
-                    const startDate = document.getElementById('startDateInput').value;
-                    const endDate = document.getElementById('endDateInput').value;
-                    
-                    if (!name || !prize || !tickets || !status || !startDate || !endDate) {
+            try {
+                const titulo = document.getElementById('raffleNameInput').value.trim();
+                const descripcion = document.getElementById('descripcionInput').value.trim();
+                const precio_boleto = parseFloat(document.getElementById('precioBoletoInput').value) || 0;
+                const total_boletos_crear = parseInt(document.getElementById('ticketsInput').value);
+                // Obtener estado del select - asegurarse de que siempre tenga un valor
+                const statusSelect = document.getElementById('statusInput');
+                const estado = statusSelect ? statusSelect.value : 'Activo';
+                
+                // Validar que el estado no esté vacío
+                if (!estado || estado.trim() === '') {
+                    throw new Error('El estado del sorteo es requerido');
+                }
+                const fecha_inicio = document.getElementById('startDateInput').value;
+                const fecha_fin = document.getElementById('endDateInput').value;
+                const imagen_url = document.getElementById('imagenUrlInput').value.trim() || null;
+                
+                // Validar campos requeridos
+                if (!titulo || !descripcion || !total_boletos_crear || !estado || !fecha_inicio || !fecha_fin) {
                         throw new Error('Faltan datos requeridos en el formulario');
                     }
                     
-                    if (editingRaffleId) {
-                        const index = raffles.findIndex(r => r.id === editingRaffleId);
-                        if (index === -1) {
-                            throw new Error('No se encontró el sorteo a editar');
-                        }
-                        raffles[index] = {...raffles[index], name, prize, ticketsTotal: tickets, status, period: `${startDate} - ${endDate}`};
-                        showNotification('Sorteo actualizado exitosamente', 'success');
-                    } else {
-                        const newId = String(Math.max(...raffles.map(r => parseInt(r.id))) + 1);
-                        raffles.push({id: newId, name, period: `${startDate} - ${endDate}`, prize, status, ticketsSold: 0, ticketsTotal: tickets, createdBy: 'Admin'});
-                        showNotification('Sorteo creado exitosamente', 'success');
-                    }
+                if (precio_boleto < 0) {
+                    throw new Error('El precio del boleto no puede ser negativo');
+                }
+                
+                if (total_boletos_crear < 1) {
+                    throw new Error('La cantidad de boletos debe ser mayor a 0');
+                }
+                
+                // Preparar datos para la API según estructura de la base de datos
+                const data = {
+                    titulo: titulo,
+                    descripcion: descripcion,
+                    precio_boleto: precio_boleto,
+                    total_boletos_crear: total_boletos_crear,
+                    fecha_inicio: fecha_inicio + ' 00:00:00',
+                    fecha_fin: fecha_fin + ' 23:59:59',
+                    estado: estado, // Asegurar que el estado se envíe
+                    imagen_url: imagen_url
+                };
+                
+                // Debug: verificar que el estado se está enviando
+                console.log('Estado a enviar:', estado);
+                console.log('Datos completos:', data);
+                
+                let url = 'api_sorteos.php?action=create';
+                if (editingRaffleId) {
+                    url = 'api_sorteos.php?action=update';
+                    // Agregar id_sorteo para la actualización
+                    data.id_sorteo = parseInt(editingRaffleId);
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Cambiar el botón a estado de éxito
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> ¡Guardado exitosamente!';
+                    submitBtn.classList.remove('bg-primary', 'hover:bg-blue-600');
+                    submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                    submitBtn.disabled = true;
                     
+                    // Mostrar notificación
+                    showNotification(isEditing ? 'Sorteo actualizado exitosamente' : 'Sorteo creado exitosamente', 'success');
+                    
+                    // Recargar sorteos desde la API
+                    await loadRaffles();
+                    
+                    // Cerrar modal después de 5 segundos
+                    let countdown = 5;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        if (countdown > 0) {
+                            submitBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> ¡Guardado! Cerrando en ${countdown}s...`;
+                        } else {
+                            clearInterval(countdownInterval);
+                            closeRaffleModal();
                     // Restaurar botón
                     submitBtn.disabled = false;
+                            submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            submitBtn.classList.add('bg-primary', 'hover:bg-blue-600');
                     submitBtn.innerHTML = originalHTML;
+                        }
+                    }, 1000);
                     
-                    closeRaffleModal();
-                    applyFilters();
+                    // Guardar referencia del intervalo para poder cancelarlo si el usuario cierra manualmente
+                    window.autoCloseInterval = countdownInterval;
+                } else {
+                    throw new Error(result.error || 'Error al guardar sorteo');
+                }
                 } catch (error) {
                     manejarError(error, 'Guardar sorteo', () => {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalHTML;
                     });
                 }
-            }, 800);
-        } else {
-            // Fallback sin estado de carga
-            try {
-                const name = document.getElementById('raffleNameInput').value.trim();
-                const prize = document.getElementById('prizeInput').value.trim();
-                const tickets = parseInt(document.getElementById('ticketsInput').value);
-                const status = document.getElementById('statusInput').value;
-                const startDate = document.getElementById('startDateInput').value;
-                const endDate = document.getElementById('endDateInput').value;
-                
-                if (editingRaffleId) {
-                    const index = raffles.findIndex(r => r.id === editingRaffleId);
-                    if (index !== -1) {
-                        raffles[index] = {...raffles[index], name, prize, ticketsTotal: tickets, status, period: `${startDate} - ${endDate}`};
-                        showNotification('Sorteo actualizado exitosamente', 'success');
-                    }
-                } else {
-                    const newId = String(Math.max(...raffles.map(r => parseInt(r.id))) + 1);
-                    raffles.push({id: newId, name, period: `${startDate} - ${endDate}`, prize, status, ticketsSold: 0, ticketsTotal: tickets, createdBy: 'Admin'});
-                    showNotification('Sorteo creado exitosamente', 'success');
-                }
-                
-                closeRaffleModal();
-                applyFilters();
-            } catch (error) {
-                manejarError(error, 'Guardar sorteo');
-            }
         }
     } catch (error) {
         manejarError(error, 'Procesar formulario de sorteo');
@@ -927,10 +932,21 @@ function validarFormularioSorteo() {
     // Validar fechas
     const fechaInicio = document.getElementById('startDateInput').value;
     const fechaFin = document.getElementById('endDateInput').value;
+    const fechaActual = new Date();
+    fechaActual.setHours(0, 0, 0, 0); // Resetear horas para comparar solo fechas
     
     if (!fechaInicio) {
         mostrarError('startDateInput', 'La fecha de inicio es requerida');
         esValido = false;
+    } else {
+        const inicio = new Date(fechaInicio);
+        inicio.setHours(0, 0, 0, 0);
+        
+        // Validar que la fecha de inicio no sea menor a la fecha actual
+        if (inicio < fechaActual) {
+            mostrarError('startDateInput', 'La fecha de inicio no puede ser anterior a la fecha actual');
+        esValido = false;
+        }
     }
     
     if (!fechaFin) {
@@ -941,17 +957,27 @@ function validarFormularioSorteo() {
     if (fechaInicio && fechaFin) {
         const inicio = new Date(fechaInicio);
         const fin = new Date(fechaFin);
+        inicio.setHours(0, 0, 0, 0);
+        fin.setHours(0, 0, 0, 0);
         
-        if (fin < inicio) {
+        // Validar que la fecha de fin sea posterior a la fecha de inicio
+        if (fin <= inicio) {
             mostrarError('endDateInput', 'La fecha de fin debe ser posterior a la fecha de inicio');
             esValido = false;
         }
     }
     
-    // Validar premio
-    const premio = document.getElementById('prizeInput').value.trim();
-    if (!premio || premio.length < 5) {
-        mostrarError('prizeInput', 'La descripción del premio debe tener al menos 5 caracteres');
+    // Validar descripción
+    const descripcion = document.getElementById('descripcionInput').value.trim();
+    if (!descripcion || descripcion.length < 5) {
+        mostrarError('descripcionInput', 'La descripción del premio debe tener al menos 5 caracteres');
+        esValido = false;
+    }
+    
+    // Validar precio del boleto
+    const precioBoleto = parseFloat(document.getElementById('precioBoletoInput').value);
+    if (isNaN(precioBoleto) || precioBoleto < 0) {
+        mostrarError('precioBoletoInput', 'El precio del boleto debe ser un número válido mayor o igual a 0');
         esValido = false;
     }
     
@@ -1021,7 +1047,30 @@ function limpiarErroresFormulario(formId) {
 
 function editRaffle(button) {
     const row = button.closest('tr');
-    showRaffleModal('edit', {id: row.getAttribute('data-id'), name: row.getAttribute('data-name'), period: row.getAttribute('data-period'), prize: row.getAttribute('data-prize'), status: row.getAttribute('data-status'), ticketsTotal: parseInt(row.getAttribute('data-tickets-total'))});
+    const raffleId = row.getAttribute('data-id');
+    
+    // Buscar el sorteo completo en el array
+    const raffle = raffles.find(r => r.id === raffleId);
+    
+    if (raffle) {
+        showRaffleModal('edit', {
+            id: raffle.id,
+            id_sorteo: raffle.id_sorteo,
+            name: raffle.name,
+            titulo: raffle.name,
+            period: raffle.period,
+            prize: raffle.prize,
+            descripcion: raffle.prize || raffle.descripcion,
+            precio_boleto: raffle.precio_boleto || 0,
+            status: raffle.status,
+            ticketsTotal: raffle.ticketsTotal,
+            fecha_inicio: raffle.fecha_inicio,
+            fecha_fin: raffle.fecha_fin,
+            imagen_url: raffle.imagen_url || ''
+        });
+    } else {
+        showNotification('Error: No se encontró el sorteo a editar', 'error');
+    }
 }
 
 async function deleteRaffle(button) {
@@ -1042,18 +1091,31 @@ async function deleteRaffle(button) {
     button.disabled = true;
     button.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span>';
     
-    setTimeout(() => {
-        const index = raffles.findIndex(r => r.id === raffleId);
-        if (index !== -1) {
-            raffles.splice(index, 1);
-            showNotification('Sorteo eliminado exitosamente', 'success');
-            applyFilters();
-        }
+    try {
+        const response = await fetch('api_sorteos.php?action=delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_sorteo: parseInt(raffleId)
+            })
+        });
         
-        // Restaurar botón (aunque la fila ya no existirá)
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Sorteo eliminado exitosamente', 'success');
+            // Recargar sorteos desde la API
+            await loadRaffles();
+        } else {
+            throw new Error(result.error || 'Error al eliminar sorteo');
+        }
+    } catch (error) {
+        manejarError(error, 'Eliminar sorteo');
         button.disabled = false;
         button.innerHTML = originalHTML;
-    }, 500);
+    }
 }
 
 function viewResults(button) {
@@ -1269,11 +1331,11 @@ function navegarAtras() {
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            window.location.href = 'DashboardAdmnistrador.html';
+            window.location.href = 'DashboardAdmnistrador.php';
         }
     } catch (error) {
         console.error('Error al navegar atrás:', error);
-        window.location.href = 'DashboardAdmnistrador.html';
+        window.location.href = 'DashboardAdmnistrador.php';
     }
 }
 
