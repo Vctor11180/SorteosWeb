@@ -1,0 +1,123 @@
+<?php
+/**
+ * Página Principal - Selección de Rol
+ * Sistema de Sorteos Web
+ */
+
+// Iniciar sesión
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Si ya está autenticado, redirigir al dashboard correspondiente
+if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in'] === true) {
+    $rolUsuario = $_SESSION['usuario_rol'] ?? '';
+    if ($rolUsuario === 'Administrador') {
+        header('Location: administrador/DashboardAdmnistrador.php');
+        exit;
+    } else {
+        header('Location: cliente/DashboardCliente.php');
+        exit;
+    }
+}
+?>
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SorteosWeb - Plataforma de Sorteos</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Background Decoration -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl"></div>
+<div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl"></div>
+</div>
+
+<div class="flex-1 flex items-center justify-center px-4 py-20 z-10">
+<div class="max-w-4xl w-full text-center space-y-8">
+<!-- Logo -->
+<div class="flex items-center justify-center gap-3 mb-8">
+<div class="flex items-center justify-center size-16 rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-5xl">confirmation_number</span>
+</div>
+<h1 class="text-white text-5xl font-black leading-tight tracking-tight">SorteosWeb</h1>
+</div>
+
+<!-- Main Heading -->
+<div class="space-y-4">
+<h2 class="text-white text-4xl md:text-5xl font-black leading-tight">Bienvenido a la Plataforma de Sorteos</h2>
+<p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+Participa en emocionantes sorteos y gana premios increíbles. Elige tu rol para continuar.
+</p>
+</div>
+
+<!-- Action Cards -->
+<div class="grid md:grid-cols-2 gap-6 mt-12 max-w-2xl mx-auto">
+<!-- Cliente Card -->
+<a href="cliente/InicioSesion.php?rol=cliente" class="group bg-[#161b26] border border-[#282d39] rounded-xl p-8 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/20">
+<div class="flex flex-col items-center space-y-4">
+<div class="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-4xl">person</span>
+</div>
+<h3 class="text-white text-2xl font-bold">Soy Cliente</h3>
+<p class="text-gray-400 text-sm">Participa en sorteos, compra boletos y gana premios increíbles</p>
+<div class="mt-4 flex items-center text-primary font-medium">
+<span>Continuar como Cliente</span>
+<span class="material-symbols-outlined ml-2">arrow_forward</span>
+</div>
+</div>
+</a>
+
+<!-- Administrador Card -->
+<a href="administrador/DashboardAdmnistrador.php" class="group bg-[#161b26] border border-[#282d39] rounded-xl p-8 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/20">
+<div class="flex flex-col items-center space-y-4">
+<div class="size-16 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-4xl">admin_panel_settings</span>
+</div>
+<h3 class="text-white text-2xl font-bold">Soy Administrador</h3>
+<p class="text-gray-400 text-sm">Gestiona sorteos, valida pagos y administra la plataforma</p>
+<div class="mt-4 flex items-center text-primary font-medium">
+<span>Continuar como Admin</span>
+<span class="material-symbols-outlined ml-2">arrow_forward</span>
+</div>
+</div>
+</a>
+</div>
+
+<!-- Additional Info -->
+<div class="mt-12 text-center">
+<p class="text-gray-500 text-sm">
+¿No tienes cuenta? <a href="cliente/CrearCuenta.php" class="text-primary hover:text-blue-400 font-medium">Regístrate aquí</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
