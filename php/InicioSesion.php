@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Incluir archivos necesarios
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
 
 // Variables
 $mensajeError = '';
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <!-- Header / Logo Area -->
 <header class="flex items-center justify-center py-6 px-4 sm:px-10">
 <div class="flex items-center gap-3 text-white">
-<a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+<a href="../html-prototypes/index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
 <div class="flex items-center justify-center size-10 rounded-lg bg-primary/20 text-primary">
 <span class="material-symbols-outlined text-3xl">confirmation_number</span>
 </div>
@@ -259,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 <div class="text-center pt-2">
 <p class="text-[#9da6b9] text-sm">
                                     ¿No tienes una cuenta? 
-                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="CrearCuenta.html">Regístrate aquí</a>
+                                    <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="../html-prototypes/CrearCuenta.html">Regístrate aquí</a>
 </p>
 </div>
 </form>

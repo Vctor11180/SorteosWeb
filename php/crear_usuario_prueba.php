@@ -6,7 +6,7 @@
  * Acceder desde el navegador: http://localhost/SorteosWeb/crear_usuario_prueba.php
  */
 
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
 
 header('Content-Type: text/html; charset=utf-8');
 
