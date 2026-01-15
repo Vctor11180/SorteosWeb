@@ -17,20 +17,12 @@ function obtenerKPIs($conn) {
         'tendencia_boletos' => 0
     ];
     
-    // Validar conexión
-    if (!$conn || $conn->connect_error) {
-        error_log("Error: Conexión a base de datos no válida en obtenerKPIs()");
-        return $kpis;
-    }
-    
     try {
         // Ingresos totales (pagos completados)
         $sql = "SELECT COALESCE(SUM(monto_total), 0) as total FROM transacciones WHERE estado_pago = 'Completado'";
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['ingresos_totales'] = number_format($row['total'], 2);
-        } else {
-            error_log("Error en consulta de ingresos totales: " . $conn->error);
         }
         
         // Boletos vendidos
@@ -38,8 +30,6 @@ function obtenerKPIs($conn) {
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['boletos_vendidos'] = $row['total'];
-        } else {
-            error_log("Error en consulta de boletos vendidos: " . $conn->error);
         }
         
         // Sorteos activos
@@ -47,8 +37,6 @@ function obtenerKPIs($conn) {
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['sorteos_activos'] = $row['total'];
-        } else {
-            error_log("Error en consulta de sorteos activos: " . $conn->error);
         }
         
         // Pagos pendientes
@@ -56,11 +44,9 @@ function obtenerKPIs($conn) {
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['pagos_pendientes'] = $row['total'];
-        } else {
-            error_log("Error en consulta de pagos pendientes: " . $conn->error);
         }
         
-        // Calcular tendencia de ingresos (comparar con mes anterior)
+        // Calcular tendencias (comparar con mes anterior)
         $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_actual 
                 FROM transacciones 
                 WHERE estado_pago = 'Completado' 
@@ -83,43 +69,7 @@ function obtenerKPIs($conn) {
             $total_mes_anterior = $row['total_mes_anterior'] > 0 ? $row['total_mes_anterior'] : 1;
         }
         
-        if ($total_mes_anterior > 0) {
-            $kpis['tendencia_ingresos'] = round((($total_mes_actual - $total_mes_anterior) / $total_mes_anterior) * 100, 1);
-        }
-        
-        // Calcular tendencia de boletos (comparar con mes anterior)
-        // Usar fecha_creacion de transacciones ya que boletos no tiene fecha_venta
-        $sql = "SELECT COUNT(DISTINCT b.id_boleto) as total_mes_actual 
-                FROM boletos b
-                INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
-                INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE b.estado = 'Vendido'
-                AND t.estado_pago = 'Completado'
-                AND MONTH(t.fecha_creacion) = MONTH(CURRENT_DATE())
-                AND YEAR(t.fecha_creacion) = YEAR(CURRENT_DATE())";
-        $result = $conn->query($sql);
-        $boletos_mes_actual = 0;
-        if ($result && $row = $result->fetch_assoc()) {
-            $boletos_mes_actual = $row['total_mes_actual'];
-        }
-        
-        $sql = "SELECT COUNT(DISTINCT b.id_boleto) as total_mes_anterior 
-                FROM boletos b
-                INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
-                INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE b.estado = 'Vendido'
-                AND t.estado_pago = 'Completado'
-                AND MONTH(t.fecha_creacion) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
-                AND YEAR(t.fecha_creacion) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))";
-        $result = $conn->query($sql);
-        $boletos_mes_anterior = 1; // Evitar división por cero
-        if ($result && $row = $result->fetch_assoc()) {
-            $boletos_mes_anterior = $row['total_mes_anterior'] > 0 ? $row['total_mes_anterior'] : 1;
-        }
-        
-        if ($boletos_mes_anterior > 0) {
-            $kpis['tendencia_boletos'] = round((($boletos_mes_actual - $boletos_mes_anterior) / $boletos_mes_anterior) * 100, 1);
-        }
+        $kpis['tendencia_ingresos'] = round((($total_mes_actual - $total_mes_anterior) / $total_mes_anterior) * 100, 1);
         
     } catch (Exception $e) {
         error_log("Error obteniendo KPIs: " . $e->getMessage());
@@ -134,12 +84,6 @@ function obtenerKPIs($conn) {
 function obtenerSorteosPorFinalizar($conn, $limit = 3) {
     $sorteos = [];
     
-    // Validar conexión
-    if (!$conn || $conn->connect_error) {
-        error_log("Error: Conexión a base de datos no válida en obtenerSorteosPorFinalizar()");
-        return $sorteos;
-    }
-    
     try {
         $sql = "SELECT id_sorteo, titulo, imagen_url, fecha_fin 
                 FROM sorteos 
@@ -148,26 +92,9 @@ function obtenerSorteosPorFinalizar($conn, $limit = 3) {
                 LIMIT ?";
         
         $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            error_log("Error preparando consulta de sorteos por finalizar: " . $conn->error);
-            return $sorteos;
-        }
-        
         $stmt->bind_param("i", $limit);
-        
-        if (!$stmt->execute()) {
-            error_log("Error ejecutando consulta de sorteos por finalizar: " . $stmt->error);
-            $stmt->close();
-            return $sorteos;
-        }
-        
+        $stmt->execute();
         $result = $stmt->get_result();
-        
-        if (!$result) {
-            error_log("Error obteniendo resultados de sorteos por finalizar: " . $conn->error);
-            $stmt->close();
-            return $sorteos;
-        }
         
         while ($row = $result->fetch_assoc()) {
             // Calcular tiempo restante
@@ -207,15 +134,8 @@ function obtenerSorteosPorFinalizar($conn, $limit = 3) {
 function obtenerPagosPendientes($conn, $limit = 4) {
     $pagos = [];
     
-    // Validar conexión
-    if (!$conn || $conn->connect_error) {
-        error_log("Error: Conexión a base de datos no válida en obtenerPagosPendientes()");
-        return $pagos;
-    }
-    
     try {
-        // Usar GROUP BY en lugar de DISTINCT para obtener el primer sorteo de cada transacción
-        $sql = "SELECT 
+        $sql = "SELECT DISTINCT
                     t.id_transaccion,
                     t.referencia_pago,
                     t.monto_total,
@@ -224,52 +144,27 @@ function obtenerPagosPendientes($conn, $limit = 4) {
                     u.primer_nombre,
                     u.apellido_paterno,
                     u.email,
-                    GROUP_CONCAT(DISTINCT s.titulo SEPARATOR ', ') as sorteos_titulos
+                    s.titulo as sorteo_titulo
                 FROM transacciones t
                 JOIN usuarios u ON t.id_usuario = u.id_usuario
                 LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
                 LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
                 LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                GROUP BY t.id_transaccion, t.referencia_pago, t.monto_total, t.estado_pago, t.fecha_creacion, 
-                         u.primer_nombre, u.apellido_paterno, u.email
                 ORDER BY t.fecha_creacion DESC
                 LIMIT ?";
         
         $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            error_log("Error preparando consulta de pagos pendientes: " . $conn->error);
-            return $pagos;
-        }
-        
         $stmt->bind_param("i", $limit);
-        
-        if (!$stmt->execute()) {
-            error_log("Error ejecutando consulta de pagos pendientes: " . $stmt->error);
-            $stmt->close();
-            return $pagos;
-        }
-        
+        $stmt->execute();
         $result = $stmt->get_result();
         
-        if (!$result) {
-            error_log("Error obteniendo resultados de pagos pendientes: " . $conn->error);
-            $stmt->close();
-            return $pagos;
-        }
-        
         while ($row = $result->fetch_assoc()) {
-            $sorteo_titulo = $row['sorteos_titulos'] ?: 'Sin sorteo asignado';
-            // Si hay múltiples sorteos, tomar solo el primero
-            if (strpos($sorteo_titulo, ',') !== false) {
-                $sorteo_titulo = explode(',', $sorteo_titulo)[0] . ' (+' . (substr_count($sorteo_titulo, ',') + 1) . ')';
-            }
-            
             $pagos[] = [
                 'id' => $row['id_transaccion'],
                 'referencia' => $row['referencia_pago'] ?: 'REF-' . str_pad($row['id_transaccion'], 6, '0', STR_PAD_LEFT),
                 'usuario_nombre' => $row['primer_nombre'] . ' ' . $row['apellido_paterno'],
                 'usuario_email' => $row['email'],
-                'sorteo' => $sorteo_titulo,
+                'sorteo' => $row['sorteo_titulo'] ?: 'Sin sorteo asignado',
                 'monto' => number_format($row['monto_total'], 2),
                 'estado' => $row['estado_pago'],
                 'iniciales' => strtoupper(substr($row['primer_nombre'], 0, 1) . substr($row['apellido_paterno'], 0, 1))
@@ -284,197 +179,10 @@ function obtenerPagosPendientes($conn, $limit = 4) {
     return $pagos;
 }
 
-/**
- * Obtiene datos de ventas diarias para el gráfico
- */
-function obtenerDatosGraficoVentas($conn, $dias = 30) {
-    $datos = [];
-    
-    // Validar conexión
-    if (!$conn || $conn->connect_error) {
-        error_log("Error: Conexión a base de datos no válida en obtenerDatosGraficoVentas()");
-        return $datos;
-    }
-    
-    try {
-        // Obtener ventas diarias de los últimos N días
-        // Contar boletos vendidos por día basado en fecha_creacion de transacciones
-        $sql = "SELECT 
-                    DATE(t.fecha_creacion) as fecha,
-                    COUNT(DISTINCT b.id_boleto) as cantidad
-                FROM boletos b
-                INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
-                INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE b.estado = 'Vendido'
-                AND t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) >= DATE_SUB(CURRENT_DATE(), INTERVAL ? DAY)
-                GROUP BY DATE(t.fecha_creacion)
-                ORDER BY fecha ASC";
-        
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) {
-            error_log("Error preparando consulta de gráfico: " . $conn->error);
-            return $datos;
-        }
-        
-        $stmt->bind_param("i", $dias);
-        
-        if (!$stmt->execute()) {
-            error_log("Error ejecutando consulta de gráfico: " . $stmt->error);
-            $stmt->close();
-            return $datos;
-        }
-        
-        $result = $stmt->get_result();
-        
-        if (!$result) {
-            error_log("Error obteniendo resultados de gráfico: " . $conn->error);
-            $stmt->close();
-            return $datos;
-        }
-        
-        // Crear array asociativo fecha => cantidad
-        while ($row = $result->fetch_assoc()) {
-            $datos[$row['fecha']] = (int)$row['cantidad'];
-        }
-        
-        $stmt->close();
-    } catch (Exception $e) {
-        error_log("Error obteniendo datos del gráfico: " . $e->getMessage());
-    }
-    
-    return $datos;
-}
-
-/**
- * Genera el SVG del gráfico de ventas basado en datos reales
- */
-function generarGraficoSVG($datos_grafico, $dias = 30) {
-    // Generar array de fechas para los últimos N días
-    $fechas = [];
-    $valores = [];
-    $fecha_actual = new DateTime();
-    
-    for ($i = $dias - 1; $i >= 0; $i--) {
-        $fecha = clone $fecha_actual;
-        $fecha->modify("-$i days");
-        $fecha_str = $fecha->format('Y-m-d');
-        $fechas[] = $fecha_str;
-        $valores[] = isset($datos_grafico[$fecha_str]) ? (int)$datos_grafico[$fecha_str] : 0;
-    }
-    
-    // Si no hay datos, mostrar gráfico vacío
-    if (empty($valores) || max($valores) == 0) {
-        return generarGraficoVacio();
-    }
-    
-    // Calcular dimensiones del gráfico
-    $ancho = 800;
-    $alto = 300;
-    $margen_x = 40;
-    $margen_y = 30;
-    $ancho_util = $ancho - ($margen_x * 2);
-    $alto_util = $alto - ($margen_y * 2);
-    
-    // Encontrar valor máximo para escalar
-    $max_valor = max($valores);
-    $max_valor = $max_valor > 0 ? $max_valor : 1; // Evitar división por cero
-    
-    // Calcular puntos del gráfico
-    $puntos = [];
-    $puntos_area = [];
-    $num_puntos = count($valores);
-    
-    for ($i = 0; $i < $num_puntos; $i++) {
-        $divisor = ($num_puntos > 1) ? ($num_puntos - 1) : 1;
-        $x = $margen_x + ($i / $divisor) * $ancho_util;
-        $y_normalizado = $valores[$i] / $max_valor;
-        $y = $alto - $margen_y - ($y_normalizado * $alto_util);
-        
-        $puntos[] = ['x' => $x, 'y' => $y];
-        $puntos_area[] = ['x' => $x, 'y' => $y];
-    }
-    
-    // Generar path para el área (con curva suave)
-    $path_area = "M{$puntos_area[0]['x']}," . ($alto - $margen_y);
-    for ($i = 0; $i < count($puntos_area); $i++) {
-        if ($i == 0) {
-            $path_area .= " L{$puntos_area[$i]['x']},{$puntos_area[$i]['y']}";
-        } else {
-            $x_medio = ($puntos_area[$i-1]['x'] + $puntos_area[$i]['x']) / 2;
-            $path_area .= " C{$x_medio},{$puntos_area[$i-1]['y']} {$x_medio},{$puntos_area[$i]['y']} {$puntos_area[$i]['x']},{$puntos_area[$i]['y']}";
-        }
-    }
-    $path_area .= " L{$puntos_area[count($puntos_area)-1]['x']}," . ($alto - $margen_y) . " Z";
-    
-    // Generar path para la línea (con curva suave)
-    $path_linea = "M{$puntos[0]['x']},{$puntos[0]['y']}";
-    for ($i = 1; $i < count($puntos); $i++) {
-        $x_medio = ($puntos[$i-1]['x'] + $puntos[$i]['x']) / 2;
-        $path_linea .= " C{$x_medio},{$puntos[$i-1]['y']} {$x_medio},{$puntos[$i]['y']} {$puntos[$i]['x']},{$puntos[$i]['y']}";
-    }
-    
-    // Generar líneas de la grilla
-    $lineas_grilla = '';
-    $num_lineas = 4;
-    for ($i = 0; $i <= $num_lineas; $i++) {
-        $y = $margen_y + ($i / $num_lineas) * $alto_util;
-        $es_base = ($i == $num_lineas);
-        $stroke_dash = $es_base ? '' : 'stroke-dasharray="4"';
-        $lineas_grilla .= "<line stroke=\"#2a3241\" stroke-width=\"1\" x1=\"{$margen_x}\" x2=\"" . ($ancho - $margen_x) . "\" y1=\"{$y}\" y2=\"{$y}\" {$stroke_dash}></line>\n                ";
-    }
-    
-    return <<<SVG
-            <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 {$ancho} {$alto}">
-                <defs>
-                    <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
-                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-                    </linearGradient>
-                </defs>
-                <!-- Grid Lines -->
-                {$lineas_grilla}
-                <!-- Area Path -->
-                <path d="{$path_area}" fill="url(#gradient)"></path>
-                <!-- Line Path -->
-                <path d="{$path_linea}" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
-            </svg>
-SVG;
-}
-
-/**
- * Genera un gráfico vacío cuando no hay datos
- */
-function generarGraficoVacio() {
-    return <<<SVG
-            <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 300">
-                <defs>
-                    <linearGradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
-                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-                    </linearGradient>
-                </defs>
-                <!-- Grid Lines -->
-                <line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
-                <!-- Mensaje de sin datos -->
-                <text x="400" y="150" text-anchor="middle" fill="#9da6b9" font-size="14" font-family="Inter, sans-serif">No hay datos de ventas disponibles</text>
-            </svg>
-SVG;
-}
-
-// Validar conexión antes de obtener datos
-if (!$conn || $conn->connect_error) {
-    die("Error de conexión a la base de datos. Por favor, contacta al administrador.");
-}
-
 // Obtener datos para el dashboard
 $kpis = obtenerKPIs($conn);
 $sorteos_finalizando = obtenerSorteosPorFinalizar($conn);
 $pagos_pendientes = obtenerPagosPendientes($conn);
-$datos_grafico = obtenerDatosGraficoVentas($conn, 30);
 ?>
 
 
@@ -575,17 +283,13 @@ $datos_grafico = obtenerDatosGraficoVentas($conn, 30);
                 </a>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
 <div class="flex flex-col">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
 </div>
-<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium">
-<span class="material-symbols-outlined text-[20px]">logout</span>
-Cerrar Sesión
-</button>
 </div>
 </aside>
 <!-- Main Content -->
@@ -663,8 +367,8 @@ Cerrar Sesión
             <div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
                 <span class="material-symbols-outlined">confirmation_number</span>
             </div>
-            <span class="flex items-center text-xs font-medium <?php echo $kpis['tendencia_boletos'] >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'; ?> px-2 py-1 rounded-full">
-                <span class="material-symbols-outlined text-[14px] mr-1"><?php echo $kpis['tendencia_boletos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span> <?php echo ($kpis['tendencia_boletos'] >= 0 ? '+' : '') . $kpis['tendencia_boletos']; ?>%
+            <span class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
             </span>
         </div>
         <div>
@@ -724,20 +428,31 @@ Cerrar Sesión
             </select>
         </div>
         <div class="h-64 w-full">
-            <?php echo generarGraficoSVG($datos_grafico, 30); ?>
+            <!-- SVG Chart Simulation -->
+            <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
+                <defs>
+                    <lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
+                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
+                    </lineargradient>
+                </defs>
+                <!-- Grid Lines -->
+                <line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
+                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
+                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
+                <!-- Area Path -->
+                <path d="M0,250 L0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40 L800,250 Z" fill="url(#gradient)"></path>
+                <!-- Line Path -->
+                <path d="M0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
+            </svg>
         </div>
         <div class="flex justify-between text-xs text-gray-500 mt-2 px-2">
-            <?php
-            // Generar etiquetas de fechas dinámicas
-            $fecha_actual = new DateTime();
-            $num_etiquetas = 5;
-            for ($i = 0; $i < $num_etiquetas; $i++) {
-                $dias_atras = round(($i / ($num_etiquetas - 1)) * 29);
-                $fecha = clone $fecha_actual;
-                $fecha->modify("-$dias_atras days");
-                echo "<span>" . $fecha->format('d M') . "</span>\n            ";
-            }
-            ?>
+            <span>01 Nov</span>
+            <span>08 Nov</span>
+            <span>15 Nov</span>
+            <span>22 Nov</span>
+            <span>29 Nov</span>
         </div>
     </div>
     <!-- Closing Soon List -->
@@ -1466,34 +1181,7 @@ function cerrarModal(overlay) {
         }, 200);
     }
 }
-
-// Función para manejar el logout del administrador
-function handleLogoutAdmin() {
-    // Usar customConfirm para mantener consistencia con el resto de la aplicación
-    if (typeof customConfirm === 'function') {
-        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
-            if (confirmed) {
-                // Redirigir al logout.php que destruye la sesión del servidor
-                window.location.href = 'logout.php';
-            }
-        });
-    } else {
-        // Si customConfirm no está disponible, esperar a que se cargue
-        setTimeout(() => {
-            if (typeof customConfirm === 'function') {
-                handleLogoutAdmin();
-            } else {
-                // Fallback si customConfirm no se carga
-                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                    window.location.href = 'logout.php';
-                }
-            }
-        }, 200);
-    }
-}
 </script>
-<!-- Cargar custom-alerts.js ANTES de que se ejecute handleLogoutAdmin -->
-<script src="custom-alerts.js"></script>
 </body></html>
 
 //pagina para ver el dashboard como administrador despues de iniciar sesion

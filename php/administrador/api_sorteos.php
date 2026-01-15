@@ -258,26 +258,6 @@ function createSorteo($conn, $id_admin) {
         // Crear boletos para el sorteo
         crearBoletos($conn, $id_sorteo, $total_boletos);
         
-        // Registrar en auditoría (incluso si falla, no debe detener el proceso)
-        error_log("Intentando registrar auditoría: id_admin=$id_admin, id_sorteo=$id_sorteo, titulo=$titulo");
-        
-        $auditoria_result = registrarAuditoria(
-            $conn,
-            $id_admin,
-            'creacion_sorteo',
-            'Creación de Sorteo',
-            "Sorteo #$id_sorteo - $titulo",
-            'success',
-            false
-        );
-        
-        if (!$auditoria_result) {
-            // Log del error pero no fallar la creación del sorteo
-            error_log("ERROR: No se pudo registrar en auditoría la creación del sorteo #$id_sorteo. id_admin=$id_admin");
-        } else {
-            error_log("SUCCESS: Auditoría registrada correctamente para sorteo #$id_sorteo");
-        }
-        
         echo json_encode([
             'success' => true,
             'message' => 'Sorteo creado exitosamente',

@@ -175,29 +175,6 @@ try {
             
             if ($stmt->execute()) {
                 $stmt->close();
-                
-                // Obtener ID del administrador que edita
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                $id_admin = $_SESSION['id_usuario'] ?? null;
-                
-                // Obtener email del usuario editado
-                $userEmailQuery = "SELECT email FROM usuarios WHERE id_usuario = $userId";
-                $userEmailResult = $conn->query($userEmailQuery);
-                $userEmail = $userEmailResult->fetch_assoc()['email'] ?? 'Desconocido';
-                
-                // Registrar en auditoría
-                registrarAuditoria(
-                    $conn,
-                    $id_admin,
-                    'edicion_usuario',
-                    'Edición de Usuario',
-                    "user: $userEmail",
-                    'success',
-                    false
-                );
-                
                 echo json_encode([
                     'success' => true,
                     'message' => 'Usuario actualizado exitosamente'
