@@ -67,6 +67,16 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
         ::-webkit-scrollbar-thumb:hover {
             background: #3b4254; 
         }
+        
+        /* Animación de spin para el botón de asignar */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex">
@@ -158,111 +168,146 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 </div>
 </header>
 <!-- Scrollable Content Area -->
-<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
-<div class="w-full max-w-[1280px] mx-auto">
-<!-- Raffle Header & Info -->
-<div class="flex flex-col lg:flex-row gap-8 mb-10">
-<!-- Raffle Details -->
-<div class="flex-1 space-y-6">
-<div class="flex flex-col gap-2">
-<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary w-fit">
-<span class="material-symbols-outlined text-[18px]">verified</span>
+<div class="flex-1 overflow-y-auto overflow-x-hidden">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Hero Section - Información del Sorteo -->
+<div class="mb-8">
+<div class="bg-gradient-to-br from-card-dark via-[#1f2530] to-card-dark rounded-2xl border border-[#282d39] p-6 md:p-8 shadow-xl">
+<div class="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start lg:items-center">
+<!-- Imagen del Sorteo -->
+<div id="sorteo-mini-image" class="w-full lg:w-48 h-48 lg:h-40 rounded-xl bg-[#111318] overflow-hidden flex-shrink-0 relative border-2 border-primary/20">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Sorteo image"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+</div>
+<!-- Información Principal -->
+<div class="flex-1 space-y-4">
+<div class="flex flex-wrap items-center gap-3">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
 <span class="text-xs font-bold uppercase tracking-wide">Sorteo Verificado</span>
 </div>
-<h1 id="sorteo-title" class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-white">
-                        <span class="text-primary" id="sorteo-title-text">Gran Sorteo Anual</span>
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+<span class="material-symbols-outlined text-[16px]">local_activity</span>
+<span class="text-xs font-semibold">Activo</span>
+</div>
+</div>
+<h1 id="sorteo-title" class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight text-white">
+<span class="text-primary" id="sorteo-title-text">Gran Sorteo Anual</span>
 </h1>
-<p id="sorteo-description" class="text-text-secondary text-lg max-w-2xl">
-                        Selecciona tus números de la suerte a continuación.
-                    </p>
+<p id="sorteo-description" class="text-text-secondary text-base md:text-lg max-w-3xl leading-relaxed">
+Selecciona la cantidad de boletos que deseas comprar. Los números se asignarán automáticamente de forma aleatoria.
+</p>
+<div class="flex flex-wrap items-center gap-6 pt-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl">confirmation_number</span>
+<div>
+<p class="text-xs text-text-secondary uppercase tracking-wide">Precio por boleto</p>
+<p id="precio-boleto-display" class="text-2xl font-bold text-white">$50.00 MXN</p>
 </div>
-<!-- Prize Card (Mini) -->
-<div class="flex items-center gap-4 p-4 rounded-xl bg-card-dark border border-[#282d39] shadow-sm max-w-md">
-<div id="sorteo-mini-image" class="w-24 h-16 rounded-lg bg-[#111318] overflow-hidden flex-shrink-0 relative">
-<div class="absolute inset-0 bg-cover bg-center" data-alt="Sorteo image"></div>
-</div>
-<div class="flex-1">
-<p class="text-sm text-text-secondary">Precio del boleto</p>
-<p id="precio-boleto-display" class="text-xl font-bold text-white">$50.00 MXN</p>
 </div>
 </div>
 </div>
 <!-- Countdown Timer -->
-<div class="flex flex-col justify-center items-center lg:items-end">
-<div class="bg-card-dark border border-[#282d39] rounded-xl p-6 shadow-sm">
-<p class="text-sm text-center text-text-secondary mb-4 font-medium uppercase tracking-widest">Cierra en</p>
-<div class="flex gap-3">
-<div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
-<span id="timer-dias" class="text-2xl font-bold text-primary">03</span>
+<div class="lg:ml-auto">
+<div class="bg-[#111318] border border-[#282d39] rounded-xl p-5 shadow-lg">
+<p class="text-xs text-center text-text-secondary mb-3 font-semibold uppercase tracking-widest">Cierra en</p>
+<div class="flex gap-2 justify-center">
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-14 h-14 flex items-center justify-center rounded-lg bg-card-dark border border-[#282d39]">
+<span id="timer-dias" class="text-xl font-bold text-primary">03</span>
 </div>
-<span class="text-xs text-text-secondary">Días</span>
+<span class="text-[10px] text-text-secondary font-medium">Días</span>
 </div>
-<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
-<div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
-<span id="timer-horas" class="text-2xl font-bold text-primary">12</span>
+<span class="text-xl font-bold text-gray-400 pt-3">:</span>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-14 h-14 flex items-center justify-center rounded-lg bg-card-dark border border-[#282d39]">
+<span id="timer-horas" class="text-xl font-bold text-primary">12</span>
 </div>
-<span class="text-xs text-text-secondary">Horas</span>
+<span class="text-[10px] text-text-secondary font-medium">Horas</span>
 </div>
-<span class="text-2xl font-bold text-gray-300 pt-4">:</span>
-<div class="flex flex-col items-center gap-1">
-<div class="w-16 h-16 flex items-center justify-center rounded-lg bg-[#111318] border border-[#282d39]">
-<span id="timer-minutos" class="text-2xl font-bold text-primary">45</span>
+<span class="text-xl font-bold text-gray-400 pt-3">:</span>
+<div class="flex flex-col items-center gap-1.5">
+<div class="w-14 h-14 flex items-center justify-center rounded-lg bg-card-dark border border-[#282d39]">
+<span id="timer-minutos" class="text-xl font-bold text-primary">45</span>
 </div>
-<span class="text-xs text-text-secondary">Mins</span>
-</div>
-</div>
+<span class="text-[10px] text-text-secondary font-medium">Mins</span>
 </div>
 </div>
 </div>
-<!-- Toolbar: Search & Filters -->
-<div class="sticky top-16 z-30 bg-[#111318] py-4 mb-6 border-b border-[#282d39] shadow-lg">
-<div class="flex flex-col gap-4">
-<!-- Search Bar -->
-<div class="w-full">
-<div class="relative group max-w-md mx-auto md:mx-0">
-<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-text-secondary group-focus-within:text-primary transition-colors">search</span>
-</div>
-<input id="ticket-search-input" class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número de boleto (ej. 45)..." type="text"/>
 </div>
 </div>
-<!-- Filter Buttons -->
-<div class="flex flex-wrap justify-center md:justify-start gap-3">
-<button id="filter-all" class="filter-btn active flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-primary bg-primary/20 text-white hover:bg-primary/30" data-filter="all">
-<span class="w-3 h-3 rounded-full bg-white border border-white"></span>
-<span>Todos</span>
+</div>
+</div>
+
+<!-- Estadísticas del Sorteo -->
+<div id="sorteo-stats" class="mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-card-dark rounded-xl p-5 border border-[#282d39] shadow-lg hover:shadow-xl transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm text-text-secondary font-medium">Total de Boletos</p>
+<span class="material-symbols-outlined text-text-secondary text-lg">inventory</span>
+</div>
+<p id="stat-total-boletos" class="text-3xl font-bold text-white">-</p>
+</div>
+<div class="bg-card-dark rounded-xl p-5 border border-emerald-500/20 shadow-lg hover:shadow-xl transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm text-text-secondary font-medium">Disponibles</p>
+<span class="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+</div>
+<p id="stat-disponibles" class="text-3xl font-bold text-emerald-400">-</p>
+</div>
+<div class="bg-card-dark rounded-xl p-5 border border-red-500/20 shadow-lg hover:shadow-xl transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm text-text-secondary font-medium">Vendidos</p>
+<span class="material-symbols-outlined text-red-400 text-lg">sell</span>
+</div>
+<p id="stat-vendidos" class="text-3xl font-bold text-red-400">-</p>
+</div>
+</div>
+</div>
+
+<!-- Selector de Cantidad de Boletos -->
+<div class="sticky top-20 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6 bg-[#111318] border-y border-[#282d39] shadow-lg mb-8">
+<div class="max-w-4xl mx-auto">
+<div class="bg-gradient-to-br from-card-dark to-[#1f2530] rounded-2xl p-6 md:p-8 border border-[#282d39] shadow-xl">
+<div class="text-center mb-6">
+<h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Selecciona tu cantidad</h2>
+<p class="text-text-secondary">Los boletos se asignarán automáticamente de forma aleatoria</p>
+</div>
+<div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
+<!-- Selector de Cantidad -->
+<div class="flex flex-col items-center gap-4 w-full md:w-auto">
+<label for="cantidad-boletos" class="text-sm font-semibold text-text-secondary uppercase tracking-wide">Cantidad</label>
+<div class="flex items-center gap-4">
+<button id="btn-decrement" class="w-12 h-12 flex items-center justify-center rounded-xl bg-[#111318] border-2 border-[#282d39] text-white hover:bg-primary hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#111318] disabled:hover:border-[#282d39]" type="button">
+<span class="material-symbols-outlined text-[24px]">remove</span>
 </button>
-<button id="filter-disponible" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-emerald-500/30 bg-card-dark text-text-secondary hover:bg-emerald-500/10 hover:text-white hover:border-emerald-500" data-filter="disponible">
-<span class="w-3 h-3 rounded-full bg-card-dark border border-emerald-500"></span>
-<span>Disponible</span>
-</button>
-<button id="filter-seleccionado" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-primary/30 bg-card-dark text-text-secondary hover:bg-primary/10 hover:text-white hover:border-primary" data-filter="seleccionado">
-<span class="w-3 h-3 rounded-full bg-primary border border-primary"></span>
-<span>Seleccionado</span>
-</button>
-<button id="filter-reservado" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-yellow-600/30 bg-card-dark text-text-secondary hover:bg-yellow-900/20 hover:text-yellow-400 hover:border-yellow-600" data-filter="reservado">
-<span class="w-3 h-3 rounded-full bg-yellow-900/40 border border-yellow-600"></span>
-<span>Reservado</span>
-</button>
-<button id="filter-vendido" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-red-800/30 bg-card-dark text-text-secondary hover:bg-red-900/20 hover:text-red-400 hover:border-red-800" data-filter="vendido">
-<span class="w-3 h-3 rounded-full bg-red-900/40 border border-red-800"></span>
-<span>Vendido</span>
+<div class="relative">
+<input id="cantidad-boletos" type="number" min="1" max="10" value="1" class="w-24 h-12 text-center text-2xl font-black text-white bg-[#111318] border-2 border-[#282d39] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all" />
+<div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-[10px] text-text-secondary whitespace-nowrap">Máximo: 10</div>
+</div>
+<button id="btn-increment" class="w-12 h-12 flex items-center justify-center rounded-xl bg-[#111318] border-2 border-[#282d39] text-white hover:bg-primary hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#111318] disabled:hover:border-[#282d39]" type="button">
+<span class="material-symbols-outlined text-[24px]">add</span>
 </button>
 </div>
 </div>
+<!-- Separador Visual -->
+<div class="hidden md:block w-px h-16 bg-[#282d39]"></div>
+<!-- Botón Asignar -->
+<div class="flex flex-col items-center gap-3 w-full md:w-auto">
+<button id="btn-asignar-boletos" class="w-full md:w-auto bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-bold py-4 px-10 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-primary disabled:hover:to-blue-600" type="button">
+<span class="material-symbols-outlined text-[24px]">shuffle</span>
+<span class="text-lg">Asignar Boletos</span>
+</button>
+<p class="text-xs text-text-secondary text-center max-w-xs">Asignación automática y aleatoria para mayor transparencia</p>
 </div>
-<!-- Ticket Grid (se renderizará dinámicamente desde la API) -->
-<div id="tickets-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3 pb-20 select-none">
-<!-- Los boletos se cargarán aquí dinámicamente desde la API -->
-<div id="tickets-loading" class="col-span-full text-center py-12">
-    <p class="text-text-secondary text-lg">Cargando boletos...</p>
+</div>
+</div>
 </div>
 </div>
 </main>
-<!-- Sticky Cart Footer -->
-<div class="fixed bottom-4 left-4 right-4 z-50">
+<!-- Sticky Cart Footer (solo se muestra si hay boletos asignados) -->
+<div id="sticky-footer" class="fixed bottom-4 left-4 right-4 z-50" style="display: none;">
 <div class="max-w-[1280px] mx-auto bg-card-dark rounded-xl shadow-[0_4px_25px_rgba(0,0,0,0.5)] border border-[#282d39] p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-slide-up">
 <!-- Reservation Timer & Summary -->
 <div class="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto text-center md:text-left">
@@ -271,10 +316,9 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 <span id="reservation-timer" class="font-mono font-bold">14:59</span>
 </div>
 <div class="flex flex-col">
-<span class="text-xs text-text-secondary uppercase font-semibold tracking-wider">Tus Boletos</span>
-<div id="selected-tickets-container" class="flex gap-2 mt-1">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#004</span>
-<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#013</span>
+<span class="text-xs text-text-secondary uppercase font-semibold tracking-wider">Tus Boletos Asignados</span>
+<div id="selected-tickets-container" class="flex flex-wrap gap-2 mt-1 justify-center md:justify-start">
+<!-- Los boletos asignados se mostrarán aquí -->
 </div>
 </div>
 </div>
@@ -282,7 +326,7 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-[#282d39] pt-4 md:pt-0">
 <div class="flex flex-col items-end">
 <span class="text-xs text-text-secondary">Total a Pagar</span>
-<span id="total-pagar" class="text-2xl font-bold text-white">$10.00</span>
+<span id="total-pagar" class="text-2xl font-bold text-white">$0.00</span>
 </div>
 <a href="FinalizarPagoBoletos.php" onclick="return handleProceedToPayment()" class="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform active:scale-95 flex items-center gap-2">
 <span>Proceder al Pago</span>
@@ -314,30 +358,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Cargar información del sorteo seleccionado
     loadSorteoData().then(() => {
-        // Los contadores se inicializan dentro de loadSorteoData después de cargar los datos
-        // Inicializar funcionalidad de selección de boletos (se hace en renderTickets)
-        initTicketSelection();
-        initTicketSearch();
+        // Esperar un poco para asegurar que el DOM esté completamente renderizado
+        setTimeout(() => {
+            // Inicializar funcionalidad de asignación automática
+            initTicketAssignment();
+            // Verificar si hay boletos ya asignados
+            checkMyAssignedTickets();
+        }, 300);
     }).catch(error => {
         console.error('Error al inicializar:', error);
+        // Intentar inicializar de todas formas
+        setTimeout(() => {
+            initTicketAssignment();
+        }, 500);
     });
-    
-    // Cargar boletos previamente seleccionados
-    const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-    if (savedTickets.length > 0) {
-        savedTickets.forEach(num => {
-            selectedTickets.add(num);
-            const button = Array.from(document.querySelectorAll('.grid button:not([disabled])')).find(btn => {
-                const btnNum = parseInt(btn.textContent.trim());
-                return btnNum === num;
-            });
-            if (button) {
-                markTicketAsSelected(button);
-            }
-        });
-        updateSelectedTicketsDisplay();
-        updateTotalPrice();
-    }
 });
 
 // Variable global para almacenar el ID del sorteo
@@ -387,7 +421,7 @@ async function loadSorteoData() {
         const descElement = document.getElementById('sorteo-description');
         if (descElement) {
             const descripcion = currentSorteoData.descripcion || '';
-            descElement.textContent = descripcion + '. Selecciona tus números de la suerte a continuación.';
+            descElement.textContent = descripcion || 'Selecciona la cantidad de boletos que deseas comprar. Los números se asignarán automáticamente de forma aleatoria.';
         }
         
         // Actualizar imagen mini
@@ -412,13 +446,9 @@ async function loadSorteoData() {
         
         // Guardar el precio del boleto para calcular el total
         window.currentTicketPrice = parseFloat(currentSorteoData.precio_boleto) || 50.00;
-        updateTotalPrice();
         
-        // Iniciar timer de reserva
-        startReservationTimer();
-        
-        // Cargar boletos disponibles desde la API
-        await loadAvailableTickets();
+        // Cargar estadísticas de boletos (sin números específicos)
+        await loadTicketStats();
         
     } catch (error) {
         console.error('Error al cargar datos del sorteo:', error);
@@ -426,17 +456,12 @@ async function loadSorteoData() {
     }
 }
 
-// Función para cargar boletos disponibles desde la API
-async function loadAvailableTickets() {
+// Función para cargar estadísticas de boletos (sin números específicos)
+async function loadTicketStats() {
     if (!currentSorteoId) {
         console.error('No hay ID de sorteo disponible');
         return;
     }
-    
-    const loadingEl = document.getElementById('tickets-loading');
-    const gridEl = document.getElementById('tickets-grid');
-    
-    if (loadingEl) loadingEl.style.display = 'block';
     
     try {
         const response = await fetch(`api_boletos.php?action=get_available&id_sorteo=${currentSorteoId}`);
@@ -446,44 +471,346 @@ async function loadAvailableTickets() {
         }
         
         const text = await response.text();
-        console.log('Respuesta API boletos (primeros 500 chars):', text.substring(0, 500));
-        
         const data = JSON.parse(text);
-        console.log('Datos parseados de boletos:', data);
         
         if (!data.success || !data.data) {
-            throw new Error(data.error || 'Error al cargar los boletos');
+            throw new Error(data.error || 'Error al cargar las estadísticas');
         }
         
-        console.log('Boletos disponibles:', data.data.disponibles?.length || 0);
-        console.log('Boletos reservados:', data.data.reservados?.length || 0);
-        console.log('Boletos vendidos:', data.data.vendidos?.length || 0);
-        console.log('Total boletos:', data.data.total_boletos);
+        // Actualizar estadísticas en la UI
+        const statTotal = document.getElementById('stat-total-boletos');
+        const statDisponibles = document.getElementById('stat-disponibles');
+        const statVendidos = document.getElementById('stat-vendidos');
         
-        // Renderizar boletos dinámicamente
-        renderTickets(data.data);
-        
-        // Verificar si hay reservas activas del usuario
-        await checkUserReservations();
+        if (statTotal) statTotal.textContent = data.data.total_boletos || 0;
+        if (statDisponibles) statDisponibles.textContent = data.data.total_disponibles || 0;
+        if (statVendidos) statVendidos.textContent = data.data.total_vendidos || 0;
         
     } catch (error) {
-        console.error('Error al cargar boletos:', error);
-        showError('Error al cargar los boletos: ' + error.message);
-        if (gridEl) {
-            gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">Error al cargar los boletos. Por favor, recarga la página.</p></div>';
-        }
-        if (loadingEl) {
-            loadingEl.style.display = 'none';
-        }
-    } finally {
-        // Asegurar que el mensaje de carga se oculte
-        if (loadingEl) {
-            loadingEl.style.display = 'none';
-        }
+        console.error('Error al cargar estadísticas:', error);
     }
 }
 
-// Función para renderizar los boletos dinámicamente
+// ============================================
+// NUEVAS FUNCIONES PARA ASIGNACIÓN AUTOMÁTICA
+// ============================================
+
+// Variable global para almacenar boletos asignados
+let assignedTickets = [];
+
+// Inicializar funcionalidad de asignación automática
+function initTicketAssignment() {
+    console.log('Inicializando asignación de boletos...');
+    
+    const btnAsignar = document.getElementById('btn-asignar-boletos');
+    const btnIncrement = document.getElementById('btn-increment');
+    const btnDecrement = document.getElementById('btn-decrement');
+    const cantidadInput = document.getElementById('cantidad-boletos');
+    
+    console.log('Elementos encontrados:', {
+        btnAsignar: !!btnAsignar,
+        btnIncrement: !!btnIncrement,
+        btnDecrement: !!btnDecrement,
+        cantidadInput: !!cantidadInput
+    });
+    
+    if (!btnAsignar || !btnIncrement || !btnDecrement || !cantidadInput) {
+        console.error('Error: No se encontraron todos los elementos necesarios');
+        setTimeout(initTicketAssignment, 500); // Reintentar después de 500ms
+        return;
+    }
+    
+    // Botón Asignar
+    btnAsignar.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Click en botón asignar');
+        handleAssignTickets();
+    });
+    
+    // Botón Incrementar
+    btnIncrement.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const current = parseInt(cantidadInput.value) || 1;
+        console.log('Incrementar desde:', current);
+        if (current < 10) {
+            cantidadInput.value = current + 1;
+            updateButtonsState();
+        }
+    });
+    
+    // Botón Decrementar
+    btnDecrement.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const current = parseInt(cantidadInput.value) || 1;
+        console.log('Decrementar desde:', current);
+        if (current > 1) {
+            cantidadInput.value = current - 1;
+            updateButtonsState();
+        }
+    });
+    
+    // Input de cantidad
+    cantidadInput.addEventListener('input', function() {
+        let value = parseInt(this.value) || 1;
+        if (value < 1) value = 1;
+        if (value > 10) value = 10;
+        this.value = value;
+        updateButtonsState();
+    });
+    
+    cantidadInput.addEventListener('change', function() {
+        let value = parseInt(this.value) || 1;
+        if (value < 1) value = 1;
+        if (value > 10) value = 10;
+        this.value = value;
+        updateButtonsState();
+    });
+    
+    updateButtonsState();
+    console.log('Inicialización de asignación completada');
+}
+
+// Actualizar estado de botones según disponibilidad
+function updateButtonsState() {
+    const cantidadInput = document.getElementById('cantidad-boletos');
+    const btnAsignar = document.getElementById('btn-asignar-boletos');
+    const btnIncrement = document.getElementById('btn-increment');
+    const btnDecrement = document.getElementById('btn-decrement');
+    
+    if (!cantidadInput) return;
+    
+    const cantidad = parseInt(cantidadInput.value) || 1;
+    
+    if (btnIncrement) {
+        btnIncrement.disabled = cantidad >= 10;
+    }
+    
+    if (btnDecrement) {
+        btnDecrement.disabled = cantidad <= 1;
+    }
+    
+    if (btnAsignar) {
+        btnAsignar.disabled = cantidad < 1 || cantidad > 10;
+    }
+}
+
+// Asignar boletos aleatoriamente
+async function handleAssignTickets() {
+    console.log('handleAssignTickets llamado');
+    
+    const cantidadInput = document.getElementById('cantidad-boletos');
+    const btnAsignar = document.getElementById('btn-asignar-boletos');
+    
+    console.log('Estado actual:', {
+        cantidadInput: !!cantidadInput,
+        currentSorteoId: currentSorteoId,
+        cantidad: cantidadInput ? cantidadInput.value : 'N/A'
+    });
+    
+    if (!cantidadInput) {
+        console.error('Error: No se encontró el input de cantidad');
+        if (typeof customAlert === 'function') {
+            customAlert('Error: No se encontró el campo de cantidad. Por favor, recarga la página.', 'Error', 'error');
+        } else {
+            alert('Error: No se encontró el campo de cantidad. Por favor, recarga la página.');
+        }
+        return;
+    }
+    
+    if (!currentSorteoId) {
+        console.error('Error: No hay ID de sorteo disponible');
+        if (typeof customAlert === 'function') {
+            customAlert('Error: No se encontró información del sorteo. Por favor, selecciona un sorteo primero.', 'Error', 'error');
+        } else {
+            alert('Error: No se encontró información del sorteo. Por favor, selecciona un sorteo primero.');
+        }
+        return;
+    }
+    
+    const cantidad = parseInt(cantidadInput.value) || 1;
+    console.log('Cantidad a asignar:', cantidad);
+    
+    if (cantidad < 1 || cantidad > 10) {
+        if (typeof customAlert === 'function') {
+            customAlert('La cantidad debe estar entre 1 y 10 boletos.', 'Cantidad Inválida', 'warning');
+        } else {
+            alert('La cantidad debe estar entre 1 y 10 boletos.');
+        }
+        return;
+    }
+    
+    // Deshabilitar botón mientras se procesa
+    if (btnAsignar) {
+        btnAsignar.disabled = true;
+        const originalHTML = btnAsignar.innerHTML;
+        btnAsignar.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span><span>Asignando...</span>';
+        
+        try {
+            console.log('Enviando petición a API...');
+            console.log('Datos a enviar:', {
+                id_sorteo: currentSorteoId,
+                cantidad: cantidad
+            });
+            
+            const requestBody = {
+                id_sorteo: currentSorteoId,
+                cantidad: cantidad
+            };
+            
+            console.log('Body JSON:', JSON.stringify(requestBody));
+            
+            const response = await fetch('api_boletos.php?action=assign_random', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            console.log('Respuesta recibida, status:', response.status);
+            
+            const text = await response.text();
+            console.log('Respuesta texto completa:', text);
+            
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (parseError) {
+                console.error('Error al parsear JSON:', parseError);
+                console.error('Texto completo:', text);
+                throw new Error('Error al procesar la respuesta del servidor: ' + text.substring(0, 100));
+            }
+            
+            console.log('Datos parseados:', data);
+            
+            if (!response.ok || !data.success) {
+                const errorMessage = data.error || data.message || `Error HTTP: ${response.status} ${response.statusText}`;
+                console.error('Error del servidor:', errorMessage);
+                throw new Error(errorMessage);
+            }
+            
+            // Guardar boletos asignados
+            assignedTickets = data.data.boletos_asignados || [];
+            console.log('Boletos asignados:', assignedTickets);
+            
+            // Mostrar boletos asignados
+            displayAssignedTickets(data.data);
+            
+            // Actualizar estadísticas
+            await loadTicketStats();
+            
+            // Iniciar timer de reserva
+            if (data.data.tiempo_expiracion) {
+                startReservationTimerWithSeconds(data.data.tiempo_expiracion);
+            }
+            
+            if (typeof customAlert === 'function') {
+                customAlert(`¡${cantidad} boleto(s) asignado(s) exitosamente!`, 'Boletos Asignados', 'success');
+            } else {
+                alert(`¡${cantidad} boleto(s) asignado(s) exitosamente!`);
+            }
+            
+        } catch (error) {
+            console.error('Error completo al asignar boletos:', error);
+            console.error('Stack:', error.stack);
+            
+            if (typeof customAlert === 'function') {
+                customAlert('Error al asignar boletos: ' + error.message, 'Error', 'error');
+            } else {
+                alert('Error al asignar boletos: ' + error.message);
+            }
+        } finally {
+            // Restaurar botón
+            btnAsignar.disabled = false;
+            btnAsignar.innerHTML = originalHTML;
+        }
+    } else {
+        console.error('Error: No se encontró el botón de asignar');
+    }
+}
+
+// Mostrar boletos asignados en la UI (solo en el footer sticky)
+function displayAssignedTickets(data) {
+    const stickyFooter = document.getElementById('sticky-footer');
+    const selectedContainer = document.querySelector('#selected-tickets-container');
+    const totalPagar = document.getElementById('total-pagar');
+    
+    const boletos = data.boletos_asignados || [];
+    const numeros = data.numeros_boletos || [];
+    
+    if (boletos.length === 0) {
+        if (stickyFooter) stickyFooter.style.display = 'none';
+        return;
+    }
+    
+    // Mostrar footer sticky
+    if (stickyFooter) {
+        stickyFooter.style.display = 'flex';
+    }
+    
+    // Actualizar precio total en el footer
+    if (totalPagar) {
+        totalPagar.textContent = `$${data.precio_total.toFixed(2)}`;
+    }
+    
+    // Actualizar contenedor de boletos en el footer
+    if (selectedContainer) {
+        selectedContainer.innerHTML = numeros.map(num => 
+            `<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#${num}</span>`
+        ).join('');
+    }
+    
+    // Guardar en localStorage para FinalizarPagoBoletos.php
+    localStorage.setItem('selectedTickets', JSON.stringify(boletos));
+    localStorage.setItem('assignedTicketsData', JSON.stringify(data));
+}
+
+// Verificar boletos ya asignados del usuario
+async function checkMyAssignedTickets() {
+    if (!currentSorteoId) return;
+    
+    try {
+        const response = await fetch(`api_boletos.php?action=get_my_assigned&id_sorteo=${currentSorteoId}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (data.success && data.data && data.data.boletos && data.data.boletos.length > 0) {
+            // Hay boletos ya asignados, mostrarlos
+            const boletos = data.data.boletos;
+            const numeros = boletos.map(b => b.numero_boleto);
+            const numerosInt = boletos.map(b => b.numero_boleto_int);
+            
+            // Calcular precio total
+            const precioBoleto = window.currentTicketPrice || 0;
+            const precioTotal = precioBoleto * boletos.length;
+            
+            // Mostrar boletos asignados
+            displayAssignedTickets({
+                boletos_asignados: numerosInt,
+                numeros_boletos: numeros,
+                precio_total: precioTotal
+            });
+            
+            // Iniciar timer si hay reservas activas
+            const reservaActiva = boletos.find(b => b.estado === 'Reservado' && b.tiempo_restante);
+            if (reservaActiva && reservaActiva.tiempo_restante > 0) {
+                startReservationTimerWithSeconds(reservaActiva.tiempo_restante);
+            }
+        }
+    } catch (error) {
+        console.error('Error al verificar boletos asignados:', error);
+    }
+}
+
+// ============================================
+// FUNCIONES OBSOLETAS (MANTENIDAS POR COMPATIBILIDAD)
+// ============================================
+
+// Función para renderizar los boletos dinámicamente (OBSOLETA - ya no se usa)
 function renderTickets(boletosData) {
     const gridEl = document.getElementById('tickets-grid');
     const loadingEl = document.getElementById('tickets-loading');
@@ -1174,18 +1501,24 @@ function shouldShowByFilter(button, filter, estado) {
     }
 }
 
-// Función para manejar el botón "Proceder al Pago"
+// Función para manejar el botón "Proceder al Pago" (MODIFICADA)
 function handleProceedToPayment() {
-    if (selectedTickets.size === 0) {
-        customAlert('Por favor selecciona al menos un boleto antes de proceder al pago.', 'Boletos Requeridos', 'warning');
+    // Verificar si hay boletos asignados
+    if (assignedTickets.length === 0) {
+        // Intentar obtener de localStorage
+        const savedData = localStorage.getItem('assignedTicketsData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            assignedTickets = data.boletos_asignados || [];
+        }
+    }
+    
+    if (assignedTickets.length === 0) {
+        customAlert('Por favor asigna boletos antes de proceder al pago.', 'Boletos Requeridos', 'warning');
         return false;
     }
     
-    // Guardar los boletos seleccionados
-    const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
-    localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
-    
-    // Guardar también información del sorteo actual
+    // Guardar también información del sorteo actual antes de redirigir
     if (currentSorteoData) {
         const sorteoData = {
             id: currentSorteoData.id_sorteo.toString(),
@@ -1200,13 +1533,12 @@ function handleProceedToPayment() {
             tiempoRestante: currentSorteoData.tiempo_restante || {}
         };
         localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
-    } else {
-        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-        localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
     }
     
-    console.log('Boletos guardados:', ticketsArray);
-    return true;
+    // Guardar los boletos asignados (ya están en localStorage desde displayAssignedTickets)
+    // Redirigir a FinalizarPagoBoletos.php
+    window.location.href = 'FinalizarPagoBoletos.php';
+    return false;
 }
 
 // Función para guardar los boletos seleccionados (compatibilidad)
@@ -1217,5 +1549,7 @@ function saveSelectedTickets() {
 </script>
 
 </body></html>
+
+<!-- Luego del sorteo -->
 
 <!-- Luego del sorteo -->

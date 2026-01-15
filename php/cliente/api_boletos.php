@@ -4,11 +4,13 @@
  * Sistema de Sorteos Web
  * 
  * Endpoints:
- * - GET ?action=get_available&id_sorteo={id} - Obtener boletos disponibles
- * - POST ?action=reserve - Reservar boletos temporalmente (15 min)
+ * - GET ?action=get_available&id_sorteo={id} - Obtener estadísticas de boletos (sin números específicos)
+ * - POST ?action=assign_random - Asignar boletos aleatorios automáticamente
+ * - POST ?action=reserve - Reservar boletos temporalmente (15 min) [DEPRECATED - solo admin]
  * - POST ?action=release - Liberar boletos reservados
  * - GET ?action=check_reservation&id_sorteo={id} - Verificar reservas activas del usuario
  * - GET ?action=get_my_tickets - Obtener boletos comprados del usuario
+ * - GET ?action=get_my_assigned&id_sorteo={id} - Obtener boletos asignados del usuario en un sorteo
  */
 
 // Desactivar display_errors para evitar output antes del JSON
@@ -116,6 +118,27 @@ try {
         case 'get_my_tickets':
             ob_clean();
             getMyTickets($db, $usuarioId);
+            break;
+            
+        case 'assign_random':
+            if ($method === 'POST') {
+                ob_clean();
+                assignRandomTickets($db, $usuarioId);
+            } else {
+                ob_clean();
+                sendError('Método no permitido. Solo se permite POST.', 405);
+            }
+            break;
+            
+        case 'get_my_assigned':
+            $idSorteo = $_GET['id_sorteo'] ?? null;
+            if ($idSorteo) {
+                ob_clean();
+                getMyAssignedTickets($db, $usuarioId, intval($idSorteo));
+            } else {
+                ob_clean();
+                sendError('ID de sorteo requerido', 400);
+            }
             break;
             
         default:
@@ -269,18 +292,18 @@ function getAvailableTickets($db, $idSorteo) {
             }
         }
         
+        // Modificado: Solo devolver estadísticas, no los números específicos
+        // Esto previene que el usuario vea qué números están disponibles
         echo json_encode([
             'success' => true,
             'data' => [
                 'id_sorteo' => $idSorteo,
                 'precio_boleto' => floatval($sorteo['precio_boleto']),
                 'total_boletos' => intval($sorteo['total_boletos_crear']),
-                'disponibles' => $disponibles,
-                'reservados' => $reservados,
-                'vendidos' => $vendidos,
                 'total_disponibles' => count($disponibles),
                 'total_reservados' => count($reservados),
-                'total_vendidos' => count($vendidos)
+                'total_vendidos' => count($vendidos),
+                'porcentaje_disponible' => $totalBoletos > 0 ? round((count($disponibles) / $totalBoletos) * 100, 2) : 0
             ]
         ], JSON_UNESCAPED_UNICODE);
         
@@ -610,6 +633,282 @@ function getMyTickets($db, $usuarioId) {
     } catch (Exception $e) {
         error_log("Error general en getMyTickets: " . $e->getMessage());
         sendError('Error al obtener tus boletos: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Asigna boletos aleatorios automáticamente al usuario
+ */
+function assignRandomTickets($db, $usuarioId) {
+    try {
+        // Obtener datos del POST
+        $rawInput = file_get_contents('php://input');
+        error_log("Raw input recibido: " . $rawInput);
+        
+        $input = json_decode($rawInput, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Error al decodificar JSON: " . json_last_error_msg());
+            $input = $_POST;
+        }
+        
+        if (!$input || empty($input)) {
+            error_log("Input vacío, intentando con _POST");
+            $input = $_POST;
+        }
+        
+        error_log("Input decodificado: " . print_r($input, true));
+        
+        $idSorteo = isset($input['id_sorteo']) ? intval($input['id_sorteo']) : null;
+        $cantidad = isset($input['cantidad']) ? intval($input['cantidad']) : 0;
+        
+        error_log("ID Sorteo: $idSorteo, Cantidad: $cantidad");
+        
+        // Validaciones
+        if (!$idSorteo || $idSorteo <= 0) {
+            error_log("Error: ID de sorteo inválido o faltante");
+            sendError('ID de sorteo requerido y debe ser un número válido', 400);
+            return;
+        }
+        
+        if ($cantidad <= 0 || $cantidad > 10) {
+            error_log("Error: Cantidad inválida: $cantidad");
+            sendError('La cantidad debe estar entre 1 y 10 boletos. Recibido: ' . $cantidad, 400);
+            return;
+        }
+        
+        // Iniciar transacción para evitar condiciones de carrera
+        $db->beginTransaction();
+        
+        try {
+            // Verificar que el sorteo existe y está activo
+            $stmt = $db->prepare("
+                SELECT id_sorteo, estado, precio_boleto, total_boletos_crear
+                FROM sorteos
+                WHERE id_sorteo = :id_sorteo
+                FOR UPDATE
+            ");
+            $stmt->execute([':id_sorteo' => $idSorteo]);
+            $sorteo = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$sorteo) {
+                $db->rollBack();
+                sendError('Sorteo no encontrado', 404);
+                return;
+            }
+            
+            if ($sorteo['estado'] !== 'Activo') {
+                $db->rollBack();
+                sendError('Este sorteo no está disponible', 400);
+                return;
+            }
+            
+            // Verificar límite de boletos por usuario en este sorteo
+            $stmt = $db->prepare("
+                SELECT COUNT(*) as total_reservados
+                FROM boletos
+                WHERE id_sorteo = :id_sorteo
+                AND id_usuario_actual = :usuario_id
+                AND estado IN ('Reservado', 'Vendido')
+            ");
+            $stmt->execute([
+                ':id_sorteo' => $idSorteo,
+                ':usuario_id' => $usuarioId
+            ]);
+            $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+            $boletosYaReservados = intval($resultado['total_reservados']);
+            
+            // Límite máximo de 10 boletos por usuario por sorteo
+            if ($boletosYaReservados + $cantidad > 10) {
+                $db->rollBack();
+                $disponibles = 10 - $boletosYaReservados;
+                sendError("Solo puedes tener máximo 10 boletos en este sorteo. Ya tienes $boletosYaReservados, puedes asignar hasta $disponibles más.", 400);
+                return;
+            }
+            
+            // Buscar boletos disponibles aleatoriamente
+            // Excluir boletos ya reservados o vendidos por este usuario
+            $stmt = $db->prepare("
+                SELECT id_boleto, numero_boleto
+                FROM boletos
+                WHERE id_sorteo = :id_sorteo
+                AND estado = 'Disponible'
+                AND (id_usuario_actual IS NULL OR id_usuario_actual != :usuario_id)
+                ORDER BY RAND()
+                LIMIT :cantidad
+                FOR UPDATE
+            ");
+            $stmt->bindValue(':id_sorteo', $idSorteo, PDO::PARAM_INT);
+            $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+            $stmt->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+            $stmt->execute();
+            $boletosDisponibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Si no hay suficientes boletos disponibles, verificar reservas expiradas
+            if (count($boletosDisponibles) < $cantidad) {
+                // Liberar reservas expiradas (más de 15 minutos)
+                $stmt = $db->prepare("
+                    UPDATE boletos
+                    SET estado = 'Disponible',
+                        id_usuario_actual = NULL,
+                        fecha_reserva = NULL
+                    WHERE id_sorteo = :id_sorteo
+                    AND estado = 'Reservado'
+                    AND fecha_reserva IS NOT NULL
+                    AND TIMESTAMPDIFF(SECOND, fecha_reserva, NOW()) > 900
+                ");
+                $stmt->execute([':id_sorteo' => $idSorteo]);
+                
+                // Volver a buscar boletos disponibles
+                $stmt = $db->prepare("
+                    SELECT id_boleto, numero_boleto
+                    FROM boletos
+                    WHERE id_sorteo = :id_sorteo
+                    AND estado = 'Disponible'
+                    AND (id_usuario_actual IS NULL OR id_usuario_actual != :usuario_id)
+                    ORDER BY RAND()
+                    LIMIT :cantidad
+                    FOR UPDATE
+                ");
+                $stmt->bindValue(':id_sorteo', $idSorteo, PDO::PARAM_INT);
+                $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+                $stmt->bindValue(':cantidad', $cantidad, PDO::PARAM_INT);
+                $stmt->execute();
+                $boletosDisponibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+            
+            // Verificar que tenemos suficientes boletos
+            if (count($boletosDisponibles) < $cantidad) {
+                $db->rollBack();
+                sendError("No hay suficientes boletos disponibles. Solo hay " . count($boletosDisponibles) . " disponible(s).", 400);
+                return;
+            }
+            
+            // Reservar los boletos asignados
+            $idBoletos = array_column($boletosDisponibles, 'id_boleto');
+            $numerosBoletos = array_column($boletosDisponibles, 'numero_boleto');
+            $placeholders = str_repeat('?,', count($idBoletos) - 1) . '?';
+            
+            $stmt = $db->prepare("
+                UPDATE boletos
+                SET estado = 'Reservado',
+                    id_usuario_actual = ?,
+                    fecha_reserva = NOW()
+                WHERE id_boleto IN ($placeholders)
+                AND estado = 'Disponible'
+            ");
+            $params = array_merge([$usuarioId], $idBoletos);
+            $stmt->execute($params);
+            
+            // Verificar que se actualizaron todos los boletos
+            if ($stmt->rowCount() !== count($idBoletos)) {
+                $db->rollBack();
+                sendError('Error al asignar boletos. Algunos boletos ya no están disponibles.', 500);
+                return;
+            }
+            
+            // Commit de la transacción
+            $db->commit();
+            
+            // Convertir números de boletos a enteros para la respuesta
+            $numerosBoletosInt = array_map(function($num) {
+                return intval($num);
+            }, $numerosBoletos);
+            
+            $precioTotal = floatval($sorteo['precio_boleto']) * $cantidad;
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Boletos asignados exitosamente',
+                'data' => [
+                    'id_sorteo' => $idSorteo,
+                    'boletos_asignados' => $numerosBoletosInt,
+                    'numeros_boletos' => $numerosBoletos, // Formato con ceros (0001, 0002, etc.)
+                    'total' => $cantidad,
+                    'precio_boleto' => floatval($sorteo['precio_boleto']),
+                    'precio_total' => $precioTotal,
+                    'tiempo_expiracion' => 900 // 15 minutos en segundos
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+            
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+        
+    } catch (PDOException $e) {
+        error_log("Error en assignRandomTickets: " . $e->getMessage());
+        sendError('Error al asignar boletos: ' . $e->getMessage(), 500);
+    } catch (Exception $e) {
+        error_log("Error general en assignRandomTickets: " . $e->getMessage());
+        sendError('Error al asignar boletos: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Obtiene los boletos asignados/reservados del usuario en un sorteo específico
+ */
+function getMyAssignedTickets($db, $usuarioId, $idSorteo) {
+    try {
+        $stmt = $db->prepare("
+            SELECT 
+                id_boleto,
+                numero_boleto,
+                estado,
+                fecha_reserva,
+                TIMESTAMPDIFF(SECOND, fecha_reserva, NOW()) as segundos_transcurridos
+            FROM boletos
+            WHERE id_sorteo = :id_sorteo
+            AND id_usuario_actual = :usuario_id
+            AND estado IN ('Reservado', 'Vendido')
+            ORDER BY numero_boleto ASC
+        ");
+        $stmt->execute([
+            ':id_sorteo' => $idSorteo,
+            ':usuario_id' => $usuarioId
+        ]);
+        $boletos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar boletos y calcular tiempo restante para reservas
+        $boletosProcesados = [];
+        foreach ($boletos as $boleto) {
+            $segundosTranscurridos = intval($boleto['segundos_transcurridos']);
+            $tiempoRestante = null;
+            
+            if ($boleto['estado'] === 'Reservado' && $boleto['fecha_reserva']) {
+                if ($segundosTranscurridos < 900) {
+                    $tiempoRestante = 900 - $segundosTranscurridos;
+                } else {
+                    // Reserva expirada, pero aún está en BD
+                    $tiempoRestante = 0;
+                }
+            }
+            
+            $boletosProcesados[] = [
+                'id_boleto' => $boleto['id_boleto'],
+                'numero_boleto' => $boleto['numero_boleto'],
+                'numero_boleto_int' => intval($boleto['numero_boleto']),
+                'estado' => $boleto['estado'],
+                'tiempo_restante' => $tiempoRestante,
+                'fecha_reserva' => $boleto['fecha_reserva']
+            ];
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'id_sorteo' => $idSorteo,
+                'boletos' => $boletosProcesados,
+                'total' => count($boletosProcesados)
+            ]
+        ], JSON_UNESCAPED_UNICODE);
+        
+    } catch (PDOException $e) {
+        error_log("Error en getMyAssignedTickets: " . $e->getMessage());
+        sendError('Error al obtener boletos asignados: ' . $e->getMessage(), 500);
+    } catch (Exception $e) {
+        error_log("Error general en getMyAssignedTickets: " . $e->getMessage());
+        sendError('Error al obtener boletos asignados: ' . $e->getMessage(), 500);
     }
 }
 
