@@ -3,6 +3,11 @@
 // Conexión a la base de datos
 require_once 'config.php';
 $conn = getDBConnection();
+
+// Obtener parámetros de filtrado (debe estar antes de usarse en el HTML)
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$estadoFilter = isset($_GET['estado']) ? trim($_GET['estado']) : '';
+$ordenFilter = isset($_GET['orden']) ? trim($_GET['orden']) : '';
 ?>
 
 
@@ -104,17 +109,13 @@ $conn = getDBConnection();
                 </a>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
 <div class="flex flex-col">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
 </div>
-<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium">
-<span class="material-symbols-outlined text-[20px]">logout</span>
-Cerrar Sesión
-</button>
 </div>
 </aside>
 <!-- Main Content -->
@@ -181,15 +182,15 @@ Cerrar Sesión
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-[#9da6b9]">search</span>
 </div>
-<input id="searchInput" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por nombre, email o ID..."/>
+<input id="searchInput" value="<?php echo htmlspecialchars($searchTerm); ?>" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-[#9da6b9] text-sm transition-all" placeholder="Buscar por nombre, email o ID..."/>
 </div>
 <div class="flex gap-4 w-full md:w-auto">
 <div class="relative min-w-[160px] flex-1 md:flex-none">
 <select id="estadoFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Estado: Todos</option>
-<option value="active">Activo</option>
-<option value="inactive">Inactivo</option>
-<option value="pending">Pendiente</option>
+<option value="" <?php echo empty($estadoFilter) ? 'selected' : ''; ?>>Estado: Todos</option>
+<option value="active" <?php echo $estadoFilter === 'active' ? 'selected' : ''; ?>>Activo</option>
+<option value="inactive" <?php echo $estadoFilter === 'inactive' ? 'selected' : ''; ?>>Inactivo</option>
+<option value="pending" <?php echo $estadoFilter === 'pending' ? 'selected' : ''; ?>>Pendiente</option>
 </select>
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
 <span class="material-symbols-outlined !text-xl">expand_more</span>
@@ -197,10 +198,10 @@ Cerrar Sesión
 </div>
 <div class="relative min-w-[160px] flex-1 md:flex-none">
 <select id="ordenFilter" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none cursor-pointer">
-<option value="">Ordenar por: Recientes</option>
-<option value="oldest">Antiguos</option>
-<option value="name_asc">Nombre (A-Z)</option>
-<option value="name_desc">Nombre (Z-A)</option>
+<option value="" <?php echo empty($ordenFilter) ? 'selected' : ''; ?>>Ordenar por: Recientes</option>
+<option value="oldest" <?php echo $ordenFilter === 'oldest' ? 'selected' : ''; ?>>Antiguos</option>
+<option value="name_asc" <?php echo $ordenFilter === 'name_asc' ? 'selected' : ''; ?>>Nombre (A-Z)</option>
+<option value="name_desc" <?php echo $ordenFilter === 'name_desc' ? 'selected' : ''; ?>>Nombre (Z-A)</option>
 </select>
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#9da6b9]">
 <span class="material-symbols-outlined !text-xl">sort</span>
@@ -231,31 +232,80 @@ $itemsPerPage = 5;
 $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 
-// Obtener usuarios clientes desde la base de datos
-// Primero intentar con nombre de rol, si no funciona, usar id_rol = 2
+// Las variables de filtrado ya están definidas arriba
+
+// Construir la consulta base
 $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno, 
                  u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url, r.nombre_rol
           FROM usuarios u
           INNER JOIN roles r ON u.id_rol = r.id_rol
-          WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2
-          ORDER BY u.fecha_registro DESC
-          LIMIT ? OFFSET ?";
+          WHERE (r.nombre_rol = 'Cliente' OR u.id_rol = 2)";
+
+$params = [];
+$types = '';
+
+// Aplicar filtro de búsqueda
+if (!empty($searchTerm)) {
+    $query .= " AND (CONCAT(u.primer_nombre, ' ', COALESCE(u.segundo_nombre, ''), ' ', u.apellido_paterno, ' ', COALESCE(u.apellido_materno, '')) LIKE ? 
+                    OR u.email LIKE ? 
+                    OR CAST(u.id_usuario AS CHAR) LIKE ?)";
+    $searchParam = '%' . $searchTerm . '%';
+    $params[] = $searchParam;
+    $params[] = $searchParam;
+    $params[] = $searchParam;
+    $types .= 'sss';
+}
+
+// Aplicar filtro de estado
+if (!empty($estadoFilter)) {
+    // Mapear valores del filtro a estados de la BD
+    $estadoMap = [
+        'active' => 'Activo',
+        'inactive' => 'Inactivo',
+        'pending' => 'Pendiente'
+    ];
+    if (isset($estadoMap[$estadoFilter])) {
+        $query .= " AND u.estado = ?";
+        $params[] = $estadoMap[$estadoFilter];
+        $types .= 's';
+    }
+}
+
+// Aplicar ordenamiento
+switch ($ordenFilter) {
+    case 'oldest':
+        $query .= " ORDER BY u.fecha_registro ASC";
+        break;
+    case 'name_asc':
+        $query .= " ORDER BY u.primer_nombre ASC, u.apellido_paterno ASC";
+        break;
+    case 'name_desc':
+        $query .= " ORDER BY u.primer_nombre DESC, u.apellido_paterno DESC";
+        break;
+    default:
+        $query .= " ORDER BY u.fecha_registro DESC";
+        break;
+}
+
+// Agregar límite y offset
+$query .= " LIMIT ? OFFSET ?";
+$params[] = $itemsPerPage;
+$params[] = $offset;
+$types .= 'ii';
 
 $stmt = $conn->prepare($query);
-if ($stmt) {
-    $stmt->bind_param("ii", $itemsPerPage, $offset);
+if ($stmt && !empty($params)) {
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else if ($stmt && empty($params)) {
+    // Si no hay parámetros, ejecutar directamente
     $stmt->execute();
     $result = $stmt->get_result();
 } else {
-    // Fallback: consulta sin paginación preparada
-    $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno, 
-                     u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url, r.nombre_rol
-              FROM usuarios u
-              INNER JOIN roles r ON u.id_rol = r.id_rol
-              WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2
-              ORDER BY u.fecha_registro DESC
-              LIMIT $itemsPerPage OFFSET $offset";
-    $result = $conn->query($query);
+    // Fallback: consulta sin paginación preparada (solo si hay error)
+    error_log("Error preparando consulta: " . $conn->error);
+    $result = false;
     $stmt = null;
 }
 
@@ -270,10 +320,63 @@ if ($stmt) {
     $stmt->close();
 }
 
-// Contar total de usuarios para paginación
-$countQuery = "SELECT COUNT(*) as total FROM usuarios u INNER JOIN roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = 'Cliente' OR u.id_rol = 2";
-$countResult = $conn->query($countQuery);
-$totalUsuarios = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+// Función helper para construir URLs de paginación preservando filtros
+function buildPaginationUrl($page) {
+    global $searchTerm, $estadoFilter, $ordenFilter;
+    $params = [];
+    if ($searchTerm) $params['search'] = $searchTerm;
+    if ($estadoFilter) $params['estado'] = $estadoFilter;
+    if ($ordenFilter) $params['orden'] = $ordenFilter;
+    if ($page > 1) $params['page'] = $page;
+    return '?' . http_build_query($params);
+}
+
+// Contar total de usuarios para paginación (con los mismos filtros)
+$countQuery = "SELECT COUNT(*) as total FROM usuarios u INNER JOIN roles r ON u.id_rol = r.id_rol WHERE (r.nombre_rol = 'Cliente' OR u.id_rol = 2)";
+$countParams = [];
+$countTypes = '';
+
+if (!empty($searchTerm)) {
+    $countQuery .= " AND (CONCAT(u.primer_nombre, ' ', COALESCE(u.segundo_nombre, ''), ' ', u.apellido_paterno, ' ', COALESCE(u.apellido_materno, '')) LIKE ? 
+                        OR u.email LIKE ? 
+                        OR CAST(u.id_usuario AS CHAR) LIKE ?)";
+    $searchParam = '%' . $searchTerm . '%';
+    $countParams[] = $searchParam;
+    $countParams[] = $searchParam;
+    $countParams[] = $searchParam;
+    $countTypes .= 'sss';
+}
+
+if (!empty($estadoFilter)) {
+    $estadoMap = [
+        'active' => 'Activo',
+        'inactive' => 'Inactivo',
+        'pending' => 'Pendiente'
+    ];
+    if (isset($estadoMap[$estadoFilter])) {
+        $countQuery .= " AND u.estado = ?";
+        $countParams[] = $estadoMap[$estadoFilter];
+        $countTypes .= 's';
+    }
+}
+
+$countStmt = $conn->prepare($countQuery);
+if ($countStmt && !empty($countParams)) {
+    $countStmt->bind_param($countTypes, ...$countParams);
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $totalUsuarios = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+    $countStmt->close();
+} else if ($countStmt) {
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $totalUsuarios = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+    $countStmt->close();
+} else {
+    $countResult = $conn->query($countQuery);
+    $totalUsuarios = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+}
+
 $totalPages = ceil($totalUsuarios / $itemsPerPage);
 
 // Mostrar usuarios
@@ -372,7 +475,7 @@ No hay usuarios clientes registrados.
                         </p>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
 <?php if ($currentPage > 1): ?>
-<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $currentPage - 1; ?>">
+<a class="relative inline-flex items-center rounded-l-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="<?php echo htmlspecialchars(buildPaginationUrl($currentPage - 1)); ?>">
 <span class="sr-only">Previous</span>
 <span class="material-symbols-outlined !text-sm">chevron_left</span>
 </a>
@@ -389,7 +492,7 @@ $startPage = max(1, $currentPage - 2);
 $endPage = min($totalPages, $currentPage + 2);
 
 if ($startPage > 1): ?>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=1">1</a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="<?php echo htmlspecialchars(buildPaginationUrl(1)); ?>">1</a>
 <?php if ($startPage > 2): ?>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
 <?php endif; ?>
@@ -397,9 +500,9 @@ if ($startPage > 1): ?>
 
 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
 <?php if ($i == $currentPage): ?>
-<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="<?php echo htmlspecialchars(buildPaginationUrl($i)); ?>"><?php echo $i; ?></a>
 <?php else: ?>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="<?php echo htmlspecialchars(buildPaginationUrl($i)); ?>"><?php echo $i; ?></a>
 <?php endif; ?>
 <?php endfor; ?>
 
@@ -407,11 +510,11 @@ if ($startPage > 1): ?>
 <?php if ($endPage < $totalPages - 1): ?>
 <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] focus:outline-offset-0">...</span>
 <?php endif; ?>
-<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $totalPages; ?>"><?php echo $totalPages; ?></a>
+<a class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="<?php echo htmlspecialchars(buildPaginationUrl($totalPages)); ?>"><?php echo $totalPages; ?></a>
 <?php endif; ?>
 
 <?php if ($currentPage < $totalPages): ?>
-<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="?page=<?php echo $currentPage + 1; ?>">
+<a class="relative inline-flex items-center rounded-r-md px-2 py-2 text-[#9da6b9] ring-1 ring-inset ring-[#3b4354] hover:bg-surface-dark focus:z-20 focus:outline-offset-0 transition-colors" href="<?php echo htmlspecialchars(buildPaginationUrl($currentPage + 1)); ?>">
 <span class="sr-only">Next</span>
 <span class="material-symbols-outlined !text-sm">chevron_right</span>
 </a>
@@ -442,6 +545,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', toggleSelectAllUsers);
+    }
+    
+    // Conectar event listeners para filtros
+    const searchInput = document.getElementById('searchInput');
+    const estadoFilter = document.getElementById('estadoFilter');
+    const ordenFilter = document.getElementById('ordenFilter');
+    
+    // Búsqueda con debounce
+    let searchTimeout;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                filterUsers();
+            }, 500); // Esperar 500ms después de que el usuario deje de escribir
+        });
+    }
+    
+    // Filtro de estado
+    if (estadoFilter) {
+        estadoFilter.addEventListener('change', filterUsers);
+    }
+    
+    // Filtro de ordenamiento
+    if (ordenFilter) {
+        ordenFilter.addEventListener('change', filterUsers);
     }
 });
 
@@ -645,6 +774,8 @@ function filterUsers() {
     if (searchTerm) params.append('search', searchTerm);
     if (estadoFilter) params.append('estado', estadoFilter);
     if (ordenFilter) params.append('orden', ordenFilter);
+    // Resetear a página 1 cuando se aplican filtros
+    // params.append('page', '1');
     
     window.location.href = '?' + params.toString();
 }
@@ -994,32 +1125,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// Función para manejar el logout del administrador
-function handleLogoutAdmin() {
-    // Usar customConfirm para mantener consistencia con el resto de la aplicación
-    if (typeof customConfirm === 'function') {
-        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
-            if (confirmed) {
-                // Redirigir al logout.php que destruye la sesión del servidor
-                window.location.href = 'logout.php';
-            }
-        });
-    } else {
-        // Si customConfirm no está disponible, esperar a que se cargue
-        setTimeout(() => {
-            if (typeof customConfirm === 'function') {
-                handleLogoutAdmin();
-            } else {
-                // Fallback si customConfirm no se carga
-                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                    window.location.href = 'logout.php';
-                }
-            }
-        }, 200);
-    }
-}
 </script>
-<!-- Cargar custom-alerts.js ANTES de que se ejecute handleLogoutAdmin -->
-<script src="custom-alerts.js"></script>
 </body></html>

@@ -166,29 +166,6 @@ function approveTransaccion($conn, $data, $id_admin) {
         
         $conn->commit();
         
-        // Obtener información de la transacción para auditoría
-        $infoQuery = "SELECT t.monto_total, u.email, s.titulo 
-                     FROM transacciones t 
-                     JOIN usuarios u ON t.id_usuario = u.id_usuario 
-                     LEFT JOIN detalle_transaccion_boletos dt ON t.id_transaccion = dt.id_transaccion
-                     LEFT JOIN boletos b ON dt.id_boleto = b.id_boleto
-                     LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                     WHERE t.id_transaccion = $id_transaccion
-                     LIMIT 1";
-        $infoResult = $conn->query($infoQuery);
-        $info = $infoResult->fetch_assoc();
-        
-        // Registrar en auditoría
-        registrarAuditoria(
-            $conn,
-            $id_admin,
-            'validacion_pago',
-            'Validación de Pago',
-            "Transacción #$id_transaccion - {$info['titulo']} - Monto: $" . number_format($info['monto_total'], 2),
-            'success',
-            false
-        );
-        
         echo json_encode(['success' => true, 'message' => 'Pago aprobado exitosamente']);
         
     } catch (Exception $e) {
@@ -234,30 +211,6 @@ function rejectTransaccion($conn, $data, $id_admin) {
         }
         
         $conn->commit();
-        
-        // Obtener información de la transacción para auditoría
-        $infoQuery = "SELECT t.monto_total, u.email, s.titulo 
-                     FROM transacciones t 
-                     JOIN usuarios u ON t.id_usuario = u.id_usuario 
-                     LEFT JOIN detalle_transaccion_boletos dt ON t.id_transaccion = dt.id_transaccion
-                     LEFT JOIN boletos b ON dt.id_boleto = b.id_boleto
-                     LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                     WHERE t.id_transaccion = $id_transaccion
-                     LIMIT 1";
-        $infoResult = $conn->query($infoQuery);
-        $info = $infoResult->fetch_assoc();
-        
-        // Registrar en auditoría
-        registrarAuditoria(
-            $conn,
-            $id_admin,
-            'validacion_pago',
-            'Validación de Pago - Rechazado',
-            "Transacción #$id_transaccion - {$info['titulo']} - Monto: $" . number_format($info['monto_total'], 2),
-            'error',
-            false
-        );
-        
         echo json_encode(['success' => true, 'message' => 'Pago rechazado exitosamente']);
         
     } catch (Exception $e) {

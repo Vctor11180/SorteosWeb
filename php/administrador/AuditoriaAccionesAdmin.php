@@ -4,171 +4,265 @@
 require_once 'config.php';
 $conn = getDBConnection();
 
-// Si es una petición AJAX para obtener datos de auditoría
-if (isset($_GET['action']) && $_GET['action'] === 'get_audit_data') {
-    // Limpiar cualquier output previo para asegurar JSON puro
-    ob_clean();
-    header('Content-Type: application/json; charset=utf-8');
-    
-    // Obtener parámetros de filtro
-    $fechaDesde = $_GET['fechaDesde'] ?? '';
-    $fechaHasta = $_GET['fechaHasta'] ?? '';
-    $tipo = $_GET['tipo'] ?? 'all';
-    $estado = $_GET['estado'] ?? 'all';
-    $alertsOnly = isset($_GET['alertsOnly']) && $_GET['alertsOnly'] === 'true';
-    $search = $_GET['search'] ?? '';
-    
-    error_log("Auditoría: Iniciando consulta con filtros - tipo: $tipo, estado: $estado, alertsOnly: " . ($alertsOnly ? 'true' : 'false'));
-    
-    // Construir consulta - Orden: id_log, id_usuario, tipo_accion, accion, recurso, estado, es_alerta, ip_address, fecha_hora
+// Obtener parámetros de filtrado y paginación
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$tipoFilter = isset($_GET['tipo']) ? trim($_GET['tipo']) : 'all';
+$estadoFilter = isset($_GET['estado']) ? trim($_GET['estado']) : 'all';
+$alertsOnly = isset($_GET['alerts']) && $_GET['alerts'] === '1';
+$fechaInicio = isset($_GET['fecha_inicio']) ? trim($_GET['fecha_inicio']) : '';
+$fechaFin = isset($_GET['fecha_fin']) ? trim($_GET['fecha_fin']) : '';
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$recordsPerPage = 10;
+$offset = ($currentPage - 1) * $recordsPerPage;
+
+// Intentar detectar la estructura de la tabla de auditoría
+// Primero verificar auditoria_acciones (tabla principal)
+$query = "SHOW TABLES LIKE 'auditoria_acciones'";
+$tableCheck = $conn->query($query);
+$tableName = 'auditoria_admin'; // Fallback por defecto
+$hasExtendedFields = false;
+
+if ($tableCheck && $tableCheck->num_rows > 0) {
+    $tableName = 'auditoria_acciones';
+    $hasExtendedFields = true;
+} else {
+    // Verificar logs_auditoria como segunda opción
+    $query = "SHOW TABLES LIKE 'logs_auditoria'";
+    $tableCheck = $conn->query($query);
+    if ($tableCheck && $tableCheck->num_rows > 0) {
+        $tableName = 'logs_auditoria';
+        $hasExtendedFields = true;
+    } else {
+        // Verificar si auditoria_admin tiene campos extendidos
+        $checkFields = "SHOW COLUMNS FROM auditoria_admin LIKE 'tipo_accion'";
+        $fieldCheck = $conn->query($checkFields);
+        if ($fieldCheck && $fieldCheck->num_rows > 0) {
+            $hasExtendedFields = true;
+        }
+    }
+}
+
+// Construir consulta según la estructura detectada
+if ($hasExtendedFields) {
+    // Estructura extendida con tipo_accion, recurso, estado, es_alerta
     $query = "SELECT 
                 a.id_log,
                 a.id_usuario,
                 a.tipo_accion,
+                a.accion,
                 a.recurso,
                 a.estado,
                 a.es_alerta,
                 a.ip_address,
-                DATE_FORMAT(a.fecha_hora, '%Y-%m-%d') as fecha,
-                DATE_FORMAT(a.fecha_hora, '%H:%i:%s') as hora,
                 a.fecha_hora,
-                CASE 
-                    WHEN a.id_usuario IS NULL THEN 'Sistema'
-                    WHEN u.primer_nombre IS NULL THEN 'Usuario Desconocido'
-                    ELSE CONCAT(u.primer_nombre, ' ', COALESCE(u.apellido_paterno, ''))
-                END as actor_nombre,
-                COALESCE(r.nombre_rol, 'Sistema') as rol
-              FROM auditoria_acciones a
+                u.primer_nombre,
+                u.apellido_paterno,
+                u.email,
+                r.nombre_rol
+              FROM {$tableName} a
               LEFT JOIN usuarios u ON a.id_usuario = u.id_usuario
               LEFT JOIN roles r ON u.id_rol = r.id_rol
               WHERE 1=1";
-    
-    $params = [];
-    $types = '';
-    
-    if ($fechaDesde) {
-        $query .= " AND DATE(a.fecha_hora) >= ?";
-        $params[] = $fechaDesde;
-        $types .= 's';
-    }
-    
-    if ($fechaHasta) {
-        $query .= " AND DATE(a.fecha_hora) <= ?";
-        $params[] = $fechaHasta;
-        $types .= 's';
-    }
-    
-    if ($tipo !== 'all') {
-        $query .= " AND a.tipo_accion = ?";
-        $params[] = $tipo;
-        $types .= 's';
-    }
-    
-    if ($estado !== 'all') {
-        $query .= " AND a.estado = ?";
-        $params[] = $estado;
-        $types .= 's';
-    }
-    
-    if ($alertsOnly) {
-        $query .= " AND a.es_alerta = 1";
-    }
-    
-    if ($search) {
-        $query .= " AND (a.tipo_accion LIKE ? OR a.recurso LIKE ? OR u.email LIKE ? OR CONCAT(u.primer_nombre, ' ', u.apellido_paterno) LIKE ?)";
-        $searchParam = "%$search%";
+} else {
+    // Estructura básica de auditoria_admin
+    $query = "SELECT 
+                a.id_log,
+                a.id_admin as id_usuario,
+                a.accion,
+                a.modulo as recurso,
+                a.ip_address,
+                a.fecha_hora,
+                u.primer_nombre,
+                u.apellido_paterno,
+                u.email,
+                r.nombre_rol
+              FROM auditoria_admin a
+              LEFT JOIN usuarios u ON a.id_admin = u.id_usuario
+              LEFT JOIN roles r ON u.id_rol = r.id_rol
+              WHERE 1=1";
+}
+
+$params = [];
+$types = '';
+
+// Aplicar filtros de búsqueda - buscar en todos los campos relevantes
+if (!empty($searchTerm)) {
+    if ($hasExtendedFields) {
+        // Buscar en: accion, recurso, email, nombre completo, id_log, tipo_accion
+        $query .= " AND (
+            a.accion LIKE ? OR 
+            a.recurso LIKE ? OR 
+            a.tipo_accion LIKE ? OR
+            u.email LIKE ? OR 
+            CONCAT(u.primer_nombre, ' ', COALESCE(u.apellido_paterno, '')) LIKE ? OR
+            CAST(a.id_log AS CHAR) LIKE ?
+        )";
+        $searchParam = '%' . $searchTerm . '%';
         $params[] = $searchParam;
         $params[] = $searchParam;
         $params[] = $searchParam;
         $params[] = $searchParam;
-        $types .= 'ssss';
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $types .= 'ssssss';
+    } else {
+        // Estructura básica - buscar en accion, modulo, email, nombre, id_log
+        $query .= " AND (
+            a.accion LIKE ? OR 
+            a.modulo LIKE ? OR 
+            u.email LIKE ? OR
+            CONCAT(u.primer_nombre, ' ', COALESCE(u.apellido_paterno, '')) LIKE ? OR
+            CAST(a.id_log AS CHAR) LIKE ?
+        )";
+        $searchParam = '%' . $searchTerm . '%';
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $types .= 'sssss';
     }
+}
+
+// Mapeo de tipos de acción para el filtro
+$tipoAccionMap = [
+    'creacion_usuario' => 'creacion_usuario',
+    'edicion_usuario' => 'edicion_usuario',
+    'login_exitoso' => 'login_exitoso',
+    'login_fallido' => 'login_fallido',
+    'validacion_pago' => 'validacion_pago',
+    'creacion_sorteo' => 'creacion_sorteo',
+    'generador_ganador' => 'generador_ganador'
+];
+
+if ($tipoFilter !== 'all' && $hasExtendedFields && isset($tipoAccionMap[$tipoFilter])) {
+    $query .= " AND a.tipo_accion = ?";
+    $params[] = $tipoAccionMap[$tipoFilter];
+    $types .= 's';
+} elseif ($tipoFilter !== 'all' && $hasExtendedFields) {
+    // Si no está en el mapa, buscar por el texto de la acción
+    $query .= " AND a.accion LIKE ?";
+    $params[] = '%' . $tipoFilter . '%';
+    $types .= 's';
+}
+
+// Filtro de estado - mapear valores del frontend a valores de BD
+if ($estadoFilter !== 'all' && $hasExtendedFields && !$alertsOnly) {
+    // Mapear valores del filtro a estados de la BD
+    $estadoMap = [
+        'success' => 'success',
+        'Exitoso' => 'success',
+        'error' => 'error',
+        'Fallido' => 'error'
+    ];
     
-    $query .= " ORDER BY a.fecha_hora DESC LIMIT 1000";
-    
-    $stmt = $conn->prepare($query);
-    if (!$stmt) {
-        error_log("Error preparando consulta de auditoría: " . $conn->error);
-        echo json_encode(['success' => false, 'error' => 'Error al preparar consulta', 'data' => []]);
-        exit;
-    }
-    
-    if ($params) {
-        $stmt->bind_param($types, ...$params);
-    }
-    
-    if (!$stmt->execute()) {
-        error_log("Error ejecutando consulta de auditoría: " . $stmt->error);
-        $stmt->close();
-        echo json_encode(['success' => false, 'error' => 'Error al consultar auditoría: ' . $stmt->error, 'data' => []]);
-        exit;
-    }
-    
+    $estadoBD = isset($estadoMap[$estadoFilter]) ? $estadoMap[$estadoFilter] : $estadoFilter;
+    $query .= " AND a.estado = ?";
+    $params[] = $estadoBD;
+    $types .= 's';
+}
+
+// Filtro de alertas (tiene prioridad sobre estado si está activo)
+if ($alertsOnly && $hasExtendedFields) {
+    $query .= " AND a.es_alerta = 1";
+}
+
+// Filtro de rango de fechas
+if (!empty($fechaInicio)) {
+    $query .= " AND DATE(a.fecha_hora) >= ?";
+    $params[] = $fechaInicio;
+    $types .= 's';
+}
+
+if (!empty($fechaFin)) {
+    $query .= " AND DATE(a.fecha_hora) <= ?";
+    $params[] = $fechaFin;
+    $types .= 's';
+}
+
+// Ordenar y limitar
+$query .= " ORDER BY a.fecha_hora DESC LIMIT ? OFFSET ?";
+$params[] = $recordsPerPage;
+$params[] = $offset;
+$types .= 'ii';
+
+// Ejecutar consulta
+$stmt = $conn->prepare($query);
+if ($stmt && !empty($params)) {
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
     $result = $stmt->get_result();
-    
-    if (!$result) {
-        error_log("Error obteniendo resultados de auditoría: " . $conn->error);
-        $stmt->close();
-        echo json_encode(['success' => false, 'error' => 'Error al obtener resultados', 'data' => []]);
-        exit;
-    }
-    
-    $records = [];
-    $rowCount = 0;
+} else if ($stmt) {
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query($query);
+}
+
+$auditRecords = [];
+if ($result) {
     while ($row = $result->fetch_assoc()) {
-        $rowCount++;
-        
-        // Manejar es_alerta - puede ser 0, 1, o string "0 :: 1" (problema de phpMyAdmin)
-        $es_alerta = $row['es_alerta'];
-        if (is_string($es_alerta) && strpos($es_alerta, '::') !== false) {
-            // Si viene como "0 :: 1", tomar el primer valor
-            $es_alerta = (int)trim(explode('::', $es_alerta)[0]);
-        }
-        $es_alerta = (bool)(int)$es_alerta;
-        
-        // Manejar ip_address - puede venir como "0 :: 1" (problema de phpMyAdmin)
-        $ip_address = $row['ip_address'];
-        if (is_string($ip_address) && strpos($ip_address, '::') !== false) {
-            // Si viene como "0 :: 1", usar valor por defecto
-            $ip_address = '127.0.0.1';
-        }
-        if (empty($ip_address) || $ip_address === null) {
-            $ip_address = '127.0.0.1';
-        }
-        
-        // Validar que los campos requeridos existan
-        if (!isset($row['id_log']) || !isset($row['tipo_accion']) || !isset($row['recurso'])) {
-            error_log("Advertencia: Fila $rowCount tiene campos faltantes. id_log: " . ($row['id_log'] ?? 'NULL') . ", tipo_accion: " . ($row['tipo_accion'] ?? 'NULL'));
-            continue; // Saltar esta fila si faltan campos críticos
-        }
-        
-        $records[] = [
-            'id_log' => (int)$row['id_log'],
-            'id_usuario' => $row['id_usuario'] !== null ? (int)$row['id_usuario'] : null,
-            'tipo_accion' => $row['tipo_accion'],
-            'recurso' => $row['recurso'],
-            'estado' => $row['estado'] ?? 'success',
-            'es_alerta' => $es_alerta,
-            'ip_address' => $ip_address,
-            'fecha_hora' => $row['fecha_hora'],
-            'fecha' => $row['fecha'] ?? null,
-            'hora' => $row['hora'] ?? null,
-            'actor' => $row['actor_nombre'] ?? 'Sistema',
-            'rol' => $row['rol'] ?? 'Sistema'
-        ];
+        $auditRecords[] = $row;
     }
-    
-    $stmt->close();
-    
-    // Log para debugging
-    error_log("Auditoría: Se encontraron " . count($records) . " registros válidos de $rowCount filas procesadas");
-    if (count($records) > 0) {
-        error_log("Auditoría: Primer registro - id_log: " . $records[0]['id_log'] . ", tipo_accion: " . $records[0]['tipo_accion']);
-    }
-    
-    $response = ['success' => true, 'data' => $records, 'total' => count($records)];
-    echo json_encode($response, JSON_UNESCAPED_UNICODE);
-    exit;
+}
+
+// Contar total de registros (sin LIMIT y OFFSET)
+$countQuery = "SELECT COUNT(*) as total FROM (" . preg_replace('/LIMIT \? OFFSET \?$/', '', $query) . ") as count_table";
+$countParams = array_slice($params, 0, -2);
+$countTypes = substr($types, 0, -2);
+
+$countStmt = $conn->prepare($countQuery);
+if ($countStmt && !empty($countParams)) {
+    $countStmt->bind_param($countTypes, ...$countParams);
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $totalRecords = $countResult->fetch_assoc()['total'];
+    $countStmt->close();
+} else if ($countStmt) {
+    $countStmt->execute();
+    $countResult = $countStmt->get_result();
+    $totalRecords = $countResult->fetch_assoc()['total'];
+    $countStmt->close();
+} else {
+    // Fallback: consulta simple
+    $simpleCountQuery = str_replace("SELECT", "SELECT COUNT(*) as total", $query);
+    $simpleCountQuery = preg_replace('/LIMIT.*$/', '', $simpleCountQuery);
+    $countResult = $conn->query($simpleCountQuery);
+    $totalRecords = $countResult ? $countResult->fetch_assoc()['total'] : 0;
+}
+
+$totalPages = ceil($totalRecords / $recordsPerPage);
+
+// Función helper para construir URLs de paginación preservando filtros
+function buildPaginationUrl($page) {
+    global $searchTerm, $tipoFilter, $estadoFilter, $alertsOnly, $fechaInicio, $fechaFin;
+    $params = [];
+    if ($searchTerm) $params['search'] = $searchTerm;
+    if ($tipoFilter !== 'all') $params['tipo'] = $tipoFilter;
+    if ($estadoFilter !== 'all') $params['estado'] = $estadoFilter;
+    if ($alertsOnly) $params['alerts'] = '1';
+    if ($fechaInicio) $params['fecha_inicio'] = $fechaInicio;
+    if ($fechaFin) $params['fecha_fin'] = $fechaFin;
+    if ($page > 1) $params['page'] = $page;
+    return '?' . http_build_query($params);
+}
+
+// Función helper para formatear fecha
+function formatFechaHora($fechaHora) {
+    if (empty($fechaHora)) return ['date' => 'N/A', 'time' => ''];
+    $timestamp = strtotime($fechaHora);
+    return [
+        'date' => date('d M Y', $timestamp),
+        'time' => date('H:i:s', $timestamp)
+    ];
+}
+
+// Función helper para obtener iniciales
+function getIniciales($nombre, $apellido) {
+    $iniciales = '';
+    if (!empty($nombre)) $iniciales .= strtoupper(substr($nombre, 0, 1));
+    if (!empty($apellido)) $iniciales .= strtoupper(substr($apellido, 0, 1));
+    return $iniciales ?: '?';
 }
 ?>
 
@@ -273,17 +367,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_audit_data') {
                 </a>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
 <div class="flex flex-col">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
 </div>
-<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium">
-<span class="material-symbols-outlined text-[20px]">logout</span>
-Cerrar Sesión
-</button>
 </div>
 </aside>
 <!-- Main Content -->
@@ -351,66 +441,83 @@ Cerrar Sesión
 <div class="flex-1 min-w-[300px]">
 <label class="flex w-full items-center gap-2 rounded-lg border border-[#e5e7eb] dark:border-[#3e4556] bg-white dark:bg-[#111621] px-3 h-10 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-[#9da6b9]">search</span>
-<input id="filterSearchInput" class="w-full bg-transparent text-sm text-[#111318] dark:text-white placeholder:text-[#9da6b9] focus:outline-none" placeholder="Buscar por ID de sorteo, email o recurso..."/>
+<input id="filterSearchInput" class="w-full bg-transparent text-sm text-[#111318] dark:text-white placeholder:text-[#9da6b9] focus:outline-none" placeholder="Buscar por acción, recurso, email, nombre, ID..."/>
 </label>
 </div>
 <!-- Filter Chips -->
 <div class="flex flex-wrap gap-2 items-center">
 <span class="text-xs font-semibold text-[#637588] dark:text-[#9da6b9] uppercase tracking-wider mr-1">Filtros:</span>
-<!-- Filtro de Fecha -->
+<!-- Filtro de Rango de Fechas -->
 <div class="relative group">
-<button id="dateFilterButton" onclick="toggleDateFilter()" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Rango de Fechas</span>
+<button id="fechaFilterButton" onclick="toggleFechaFilter()" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
+<span id="fechaFilterText" class="text-[#111318] dark:text-white text-xs font-medium"><?php echo !empty($fechaInicio) && !empty($fechaFin) ? date('d/m/Y', strtotime($fechaInicio)) . ' - ' . date('d/m/Y', strtotime($fechaFin)) : 'Rango de Fechas'; ?></span>
 <span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">calendar_today</span>
 </button>
-<div id="dateFilterDropdown" class="hidden absolute z-50 mt-2 w-80 bg-white dark:bg-[#1e293b] rounded-lg shadow-xl border border-[#e5e7eb] dark:border-[#282d39] p-4">
+<!-- Dropdown de Fechas -->
+<div id="fechaFilterDropdown" class="hidden absolute top-full left-0 mt-2 w-80 bg-white dark:bg-[#1e293b] rounded-lg shadow-lg border border-[#e5e7eb] dark:border-[#282d39] z-50 p-4">
 <div class="space-y-3">
 <div>
-<label class="block text-xs font-semibold text-[#637588] dark:text-[#9da6b9] mb-1">Fecha Desde</label>
-<input type="date" id="fechaDesde" class="w-full bg-white dark:bg-[#111621] border border-[#e5e7eb] dark:border-[#3e4556] rounded-md px-3 py-2 text-sm text-[#111318] dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent" onchange="applyDateFilter()"/>
+<label class="block text-xs font-medium text-[#637588] dark:text-[#9da6b9] mb-1">Fecha Inicio</label>
+<input type="date" id="fechaInicio" value="<?php echo htmlspecialchars($fechaInicio); ?>" class="w-full bg-[#f0f2f4] dark:bg-[#111621] border border-[#e5e7eb] dark:border-[#3e4556] rounded-md px-3 py-2 text-sm text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"/>
 </div>
 <div>
-<label class="block text-xs font-semibold text-[#637588] dark:text-[#9da6b9] mb-1">Fecha Hasta</label>
-<input type="date" id="fechaHasta" class="w-full bg-white dark:bg-[#111621] border border-[#e5e7eb] dark:border-[#3e4556] rounded-md px-3 py-2 text-sm text-[#111318] dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent" onchange="applyDateFilter()"/>
+<label class="block text-xs font-medium text-[#637588] dark:text-[#9da6b9] mb-1">Fecha Fin</label>
+<input type="date" id="fechaFin" value="<?php echo htmlspecialchars($fechaFin); ?>" class="w-full bg-[#f0f2f4] dark:bg-[#111621] border border-[#e5e7eb] dark:border-[#3e4556] rounded-md px-3 py-2 text-sm text-[#111318] dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"/>
 </div>
 <div class="flex gap-2 pt-2">
-<button onclick="clearDateFilter()" class="flex-1 px-3 py-1.5 text-xs font-medium text-[#637588] dark:text-[#9da6b9] hover:text-[#111318] dark:hover:text-white bg-[#f0f2f4] dark:bg-[#282d39] rounded-md hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors">Limpiar</button>
-<button onclick="document.getElementById('dateFilterDropdown').classList.add('hidden')" class="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-md hover:bg-blue-600 transition-colors">Aplicar</button>
+<button onclick="aplicarFiltroFechas()" class="flex-1 px-3 py-2 bg-primary text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors">Aplicar</button>
+<button onclick="limpiarFiltroFechas()" class="flex-1 px-3 py-2 bg-[#f0f2f4] dark:bg-[#282d39] text-[#111318] dark:text-white text-xs font-medium rounded-md hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors">Limpiar</button>
 </div>
 </div>
 </div>
 </div>
 <!-- Filtro de Tipo de Acción -->
-<div class="relative group">
-<button id="typeFilterButton" onclick="toggleTypeFilter()" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Tipo: Todos</span>
+<div class="relative">
+<select id="tipoAccionFilter" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556] text-[#111318] dark:text-white text-xs font-medium cursor-pointer appearance-none pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
+<option value="all" <?php echo $tipoFilter === 'all' ? 'selected' : ''; ?>>Tipo: Todos</option>
+<option value="creacion_usuario" <?php echo $tipoFilter === 'creacion_usuario' ? 'selected' : ''; ?>>Creación de Usuario</option>
+<option value="edicion_usuario" <?php echo $tipoFilter === 'edicion_usuario' ? 'selected' : ''; ?>>Edición de Usuario</option>
+<option value="login_exitoso" <?php echo $tipoFilter === 'login_exitoso' ? 'selected' : ''; ?>>Login Exitoso</option>
+<option value="login_fallido" <?php echo $tipoFilter === 'login_fallido' ? 'selected' : ''; ?>>Login Fallido</option>
+<option value="validacion_pago" <?php echo $tipoFilter === 'validacion_pago' ? 'selected' : ''; ?>>Validación de Pago</option>
+<option value="creacion_sorteo" <?php echo $tipoFilter === 'creacion_sorteo' ? 'selected' : ''; ?>>Creación de Sorteo</option>
+<option value="generador_ganador" <?php echo $tipoFilter === 'generador_ganador' ? 'selected' : ''; ?>>Generador de Ganador</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">expand_more</span>
-</button>
-<div id="typeFilterDropdown" class="hidden absolute z-50 mt-2 w-56 bg-white dark:bg-[#1e293b] rounded-lg shadow-xl border border-[#e5e7eb] dark:border-[#282d39] py-2">
-<a onclick="selectTypeFilter('all')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Todos</a>
-<a onclick="selectTypeFilter('creacion_usuario')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Creación de Usuario</a>
-<a onclick="selectTypeFilter('login_exitoso')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Login Exitoso</a>
-<a onclick="selectTypeFilter('login_fallido')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Login Fallido</a>
-<a onclick="selectTypeFilter('edicion_usuario')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Edición de Usuario</a>
-<a onclick="selectTypeFilter('creacion_sorteo')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Creación de Sorteo</a>
-<a onclick="selectTypeFilter('generacion_ganador')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Generación de Ganador</a>
-<a onclick="selectTypeFilter('validacion_pago')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Validación de Pago</a>
 </div>
 </div>
 <!-- Filtro de Estado -->
 <div class="relative group">
-<button id="statusFilterButton" onclick="toggleStatusFilter()" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
-<span class="text-[#111318] dark:text-white text-xs font-medium">Estado: Todos</span>
+<button id="estadoFilterButton" onclick="toggleEstadoFilter()" class="flex h-8 items-center gap-x-2 rounded-md bg-[#f0f2f4] dark:bg-[#282d39] px-3 hover:bg-[#e5e7eb] dark:hover:bg-[#333a4a] transition-colors border border-transparent dark:border-[#3e4556]">
+<span id="estadoFilterText" class="text-[#111318] dark:text-white text-xs font-medium">
+<?php 
+$estadoText = 'Estado: Todos';
+if ($estadoFilter === 'success' || $estadoFilter === 'Exitoso') {
+    $estadoText = 'Estado: Exitoso';
+} elseif ($estadoFilter === 'error' || $estadoFilter === 'Fallido') {
+    $estadoText = 'Estado: Fallido';
+}
+echo $estadoText;
+?>
+</span>
 <span class="material-symbols-outlined text-[#111318] dark:text-white text-[16px]">filter_list</span>
 </button>
-<div id="statusFilterDropdown" class="hidden absolute z-50 mt-2 w-40 bg-white dark:bg-[#1e293b] rounded-lg shadow-xl border border-[#e5e7eb] dark:border-[#282d39] py-2">
-<a onclick="selectStatusFilter('all')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Todos</a>
-<a onclick="selectStatusFilter('success')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Exitoso</a>
-<a onclick="selectStatusFilter('error')" class="block px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] cursor-pointer">Fallido</a>
+<!-- Dropdown de Estado -->
+<div id="estadoFilterDropdown" class="hidden absolute top-full left-0 mt-2 w-48 bg-white dark:bg-[#1e293b] rounded-lg shadow-lg border border-[#e5e7eb] dark:border-[#282d39] z-50 py-2">
+<button onclick="aplicarFiltroEstado('all')" class="w-full text-left px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] transition-colors <?php echo $estadoFilter === 'all' && !$alertsOnly ? 'bg-primary/10 text-primary' : ''; ?>">
+Todos
+</button>
+<button onclick="aplicarFiltroEstado('success')" class="w-full text-left px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] transition-colors <?php echo ($estadoFilter === 'success' || $estadoFilter === 'Exitoso') && !$alertsOnly ? 'bg-primary/10 text-primary' : ''; ?>">
+Exitoso
+</button>
+<button onclick="aplicarFiltroEstado('error')" class="w-full text-left px-4 py-2 text-sm text-[#111318] dark:text-white hover:bg-[#f0f2f4] dark:hover:bg-[#282d39] transition-colors <?php echo ($estadoFilter === 'error' || $estadoFilter === 'Fallido') && !$alertsOnly ? 'bg-primary/10 text-primary' : ''; ?>">
+Fallido
+</button>
 </div>
 </div>
 <div class="h-6 w-px bg-[#e5e7eb] dark:bg-[#3e4556] mx-1"></div>
-<button id="alertsOnlyButton" onclick="toggleAlertsOnly()" class="flex h-8 items-center gap-x-1 rounded-md bg-red-500/10 dark:bg-red-500/20 px-3 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors border border-red-500/20 dark:border-red-500/30">
+<button id="alertsOnlyButton" onclick="toggleAlertsOnly()" class="flex h-8 items-center gap-x-1 rounded-md <?php echo $alertsOnly ? 'bg-red-500/20 dark:bg-red-500/30' : 'bg-red-500/10 dark:bg-red-500/20'; ?> px-3 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors border border-red-500/20 dark:border-red-500/30">
 <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-[16px]">warning</span>
 <span class="text-red-600 dark:text-red-400 text-xs font-bold">Solo Alertas</span>
 </button>
@@ -426,14 +533,116 @@ Cerrar Sesión
 <tr>
 <th class="px-6 py-4 whitespace-nowrap w-48" scope="col">Fecha y Hora</th>
 <th class="px-6 py-4 whitespace-nowrap w-56" scope="col">Actor</th>
-<th class="px-6 py-4 whitespace-nowrap w-48" scope="col">Tipo de Acción</th>
+<th class="px-6 py-4 whitespace-nowrap w-48" scope="col">Acción</th>
 <th class="px-6 py-4 whitespace-nowrap" scope="col">Recurso Afectado</th>
 <th class="px-6 py-4 whitespace-nowrap w-32 text-center" scope="col">Estado</th>
 <th class="px-6 py-4 whitespace-nowrap w-24 text-right" scope="col"></th>
 </tr>
 </thead>
 <tbody id="auditTableBody" class="divide-y divide-[#e5e7eb] dark:divide-[#282d39]">
-<!-- Los datos se cargan dinámicamente desde la base de datos -->
+<?php
+if (empty($auditRecords)) {
+    echo '<tr><td colspan="6" class="px-6 py-8 text-center text-[#637588] dark:text-[#9da6b9]">No hay registros de auditoría disponibles.</td></tr>';
+} else {
+    foreach ($auditRecords as $record) {
+        $fechaFormateada = formatFechaHora($record['fecha_hora']);
+        
+        // Manejar id_usuario NULL - mostrar como Sistema
+        $idUsuario = $record['id_usuario'] ?? null;
+        if (empty($idUsuario) || is_null($idUsuario)) {
+            $actor = 'Sistema';
+            $rol = 'Automático';
+            $iniciales = '';
+        } else {
+            $nombreCompleto = trim(($record['primer_nombre'] ?? '') . ' ' . ($record['apellido_paterno'] ?? ''));
+            $actor = !empty($nombreCompleto) ? $nombreCompleto : (!empty($record['email']) ? $record['email'] : 'Usuario Desconocido');
+            $rol = $record['nombre_rol'] ?? 'Usuario';
+            $iniciales = getIniciales($record['primer_nombre'] ?? '', $record['apellido_paterno'] ?? '');
+        }
+        
+        $accion = $record['accion'] ?? 'Acción desconocida';
+        $recurso = $record['recurso'] ?? 'N/A';
+        $estado = $hasExtendedFields ? ($record['estado'] ?? 'success') : 'success';
+        $esAlerta = $hasExtendedFields ? ($record['es_alerta'] ?? 0) : 0;
+        $ip = $record['ip_address'] ?? 'N/A';
+        
+        // Determinar clases según el estado
+        $estadoClass = ($estado === 'success' || $estado === 'Exitoso') 
+            ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+        $estadoIcon = ($estado === 'success' || $estado === 'Exitoso')
+            ? '<span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>'
+            : '<span class="material-symbols-outlined text-[14px]">close</span>';
+        $estadoTexto = ($estado === 'success' || $estado === 'Exitoso') ? 'Exitoso' : 'Fallido';
+        
+        // Clase de fila según alerta
+        $rowClass = $esAlerta 
+            ? 'audit-row group bg-red-50/50 dark:bg-red-900/5 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-l-2 border-l-red-500'
+            : 'audit-row group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors';
+        
+        // Badge de acción según tipo
+        $accionLower = strtolower($accion);
+        if (strpos($accionLower, 'validación') !== false || strpos($accionLower, 'pago') !== false) {
+            $accionBadge = 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/20';
+        } elseif (strpos($accionLower, 'login') !== false || strpos($accionLower, 'fallido') !== false) {
+            $accionBadge = 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 ring-red-600/10 dark:ring-red-400/20';
+        } elseif (strpos($accionLower, 'edición') !== false || strpos($accionLower, 'editar') !== false) {
+            $accionBadge = 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 ring-yellow-600/20 dark:ring-yellow-400/20';
+        } elseif (strpos($accionLower, 'creación') !== false || strpos($accionLower, 'crear') !== false) {
+            $accionBadge = 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 ring-indigo-700/10 dark:ring-indigo-400/20';
+        } else {
+            $accionBadge = 'bg-gray-50 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 ring-gray-600/10 dark:ring-gray-400/20';
+        }
+        
+        // Avatar - mostrar icono de sistema si id_usuario es NULL o actor es Sistema
+        $avatarHtml = (empty($idUsuario) || is_null($idUsuario) || $actor === 'Sistema')
+            ? '<div class="size-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold"><span class="material-symbols-outlined text-[16px]">smart_toy</span></div>'
+            : '<div class="size-8 rounded-full bg-[#e0e7ff] dark:bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">' . htmlspecialchars($iniciales) . '</div>';
+?>
+<tr class="<?php echo $rowClass; ?>" 
+    data-actor="<?php echo htmlspecialchars($actor); ?>" 
+    data-action="<?php echo htmlspecialchars($accion); ?>" 
+    data-resource="<?php echo htmlspecialchars($recurso); ?>" 
+    data-status="<?php echo $estado; ?>" 
+    data-date="<?php echo $fechaFormateada['date']; ?>" 
+    data-time="<?php echo $fechaFormateada['time']; ?>" 
+    data-ip="<?php echo htmlspecialchars($ip); ?>">
+<td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
+    <?php echo $fechaFormateada['date']; ?> <span class="text-[#9da6b9] ml-1 font-normal text-xs"><?php echo $fechaFormateada['time']; ?></span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center gap-3">
+        <?php echo $avatarHtml; ?>
+        <div class="flex flex-col">
+            <span class="text-[#111318] dark:text-white font-medium"><?php echo htmlspecialchars($actor); ?></span>
+            <span class="text-xs"><?php echo htmlspecialchars($rol); ?></span>
+        </div>
+    </div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+    <span class="inline-flex items-center rounded-md <?php echo $accionBadge; ?> px-2 py-1 text-xs font-medium ring-1 ring-inset">
+        <?php echo htmlspecialchars($accion); ?>
+    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-[#111318] dark:text-[#cbd5e1]">
+    <?php echo htmlspecialchars($recurso); ?>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-center">
+    <span class="inline-flex items-center gap-1 rounded-full <?php echo $estadoClass; ?> px-2 py-1 text-xs font-medium">
+        <?php echo $estadoIcon; ?>
+        <?php echo $estadoTexto; ?>
+    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+    <button onclick="showDetailsModal(this)" class="<?php echo $esAlerta ? 'text-red-500 hover:text-red-600 dark:hover:text-red-400' : 'text-[#9da6b9] hover:text-primary'; ?> transition-colors">
+        <span class="material-symbols-outlined text-[20px]"><?php echo $esAlerta ? 'warning' : 'visibility'; ?></span>
+    </button>
+</td>
+</tr>
+<?php
+    }
+}
+?>
 </tbody>
 </table>
 </div>
@@ -442,17 +651,17 @@ Cerrar Sesión
 <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
 <div>
 <p class="text-sm text-[#637588] dark:text-[#9da6b9]">
-                                        Mostrando <span id="paginationInfo" class="font-medium text-[#111318] dark:text-white">1</span> a <span id="paginationEnd" class="font-medium text-[#111318] dark:text-white">5</span> de <span id="paginationTotal" class="font-medium text-[#111318] dark:text-white">128</span> resultados
+                                        Mostrando <span id="paginationInfo" class="font-medium text-[#111318] dark:text-white"><?php echo $totalRecords > 0 ? (($currentPage - 1) * $recordsPerPage) + 1 : 0; ?></span> a <span id="paginationEnd" class="font-medium text-[#111318] dark:text-white"><?php echo min($currentPage * $recordsPerPage, $totalRecords); ?></span> de <span id="paginationTotal" class="font-medium text-[#111318] dark:text-white"><?php echo $totalRecords; ?></span> resultados
                                     </p>
 </div>
 <div>
 <nav aria-label="Pagination" class="isolate inline-flex -space-x-px rounded-md shadow-sm">
-<a id="prevPage" onclick="changePage('prev')" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">
+<a id="prevPage" href="<?php echo $currentPage > 1 ? buildPaginationUrl($currentPage - 1) : '#'; ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 <?php echo $currentPage > 1 ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'; ?>">
 <span class="sr-only">Previous</span>
 <span class="material-symbols-outlined text-[20px]">chevron_left</span>
 </a>
 <div id="paginationNumbers"></div>
-<a id="nextPage" onclick="changePage('next')" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">
+<a id="nextPage" href="<?php echo $currentPage < $totalPages ? buildPaginationUrl($currentPage + 1) : '#'; ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 <?php echo $currentPage < $totalPages ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'; ?>">
 <span class="sr-only">Next</span>
 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
 </a>
@@ -465,471 +674,325 @@ Cerrar Sesión
 </main>
 </div>
 <script>
-// Datos de auditoría (se cargan desde la base de datos)
-let auditRecords = [];
+// Estado global - los datos vienen del servidor
+const currentPage = <?php echo $currentPage; ?>;
+const recordsPerPage = <?php echo $recordsPerPage; ?>;
+const totalRecords = <?php echo $totalRecords; ?>;
+const totalPages = <?php echo $totalPages; ?>;
 
-// Estado global
-let currentPage = 1;
-let recordsPerPage = 5;
 let currentFilters = {
-    search: '',
-    fechaDesde: '',
-    fechaHasta: '',
-    type: 'all',
-    status: 'all',
-    alertsOnly: false
+    search: '<?php echo htmlspecialchars($searchTerm, ENT_QUOTES); ?>',
+    tipo: '<?php echo htmlspecialchars($tipoFilter, ENT_QUOTES); ?>',
+    status: '<?php echo htmlspecialchars($estadoFilter, ENT_QUOTES); ?>',
+    alertsOnly: <?php echo $alertsOnly ? 'true' : 'false'; ?>,
+    fechaInicio: '<?php echo htmlspecialchars($fechaInicio, ENT_QUOTES); ?>',
+    fechaFin: '<?php echo htmlspecialchars($fechaFin, ENT_QUOTES); ?>'
 };
-
-// Cargar datos de auditoría desde el servidor
-async function loadAuditData() {
-    try {
-        const params = new URLSearchParams({
-            action: 'get_audit_data',
-            fechaDesde: currentFilters.fechaDesde || '',
-            fechaHasta: currentFilters.fechaHasta || '',
-            tipo: currentFilters.type || 'all',
-            estado: currentFilters.status || 'all',
-            alertsOnly: currentFilters.alertsOnly ? 'true' : 'false',
-            search: currentFilters.search || ''
-        });
-        
-        console.log('Cargando datos de auditoría con parámetros:', params.toString());
-        
-        const response = await fetch(`?${params.toString()}`);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`HTTP error! status: ${response.status}`, errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error('Respuesta no es JSON. Content-Type:', contentType);
-            console.error('Contenido recibido:', text.substring(0, 500));
-            throw new Error('La respuesta del servidor no es JSON válido');
-        }
-        
-        const text = await response.text();
-        console.log('Respuesta del servidor (texto, primeros 500 chars):', text.substring(0, 500));
-        
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (e) {
-            console.error('Error parseando JSON:', e);
-            console.error('Texto completo recibido:', text);
-            throw new Error('Error al parsear respuesta del servidor como JSON');
-        }
-        
-        console.log('Datos de auditoría recibidos (parseados):', result);
-        
-        if (!result || typeof result !== 'object') {
-            console.error('Resultado no es un objeto válido:', result);
-            throw new Error('La respuesta del servidor no es un objeto válido');
-        }
-        
-        if (result.success === true) {
-            // Validar que data sea un array
-            if (!Array.isArray(result.data)) {
-                console.error('result.data no es un array:', result.data);
-                auditRecords = [];
-            } else {
-                auditRecords = result.data;
-            }
-            
-            console.log(`Se cargaron ${auditRecords.length} registros de auditoría`);
-            if (auditRecords.length > 0) {
-                console.log('Primer registro completo:', auditRecords[0]);
-                console.log('Campos del primer registro:', Object.keys(auditRecords[0]));
-            } else {
-                console.warn('No se recibieron registros aunque result.success es true');
-            }
-            renderFilteredData();
-        } else {
-            console.error('Error al cargar datos de auditoría. result.success es false:', result);
-            auditRecords = [];
-            renderFilteredData();
-        }
-    } catch (error) {
-        console.error('Error al cargar datos de auditoría:', error);
-        console.error('Stack trace:', error.stack);
-        auditRecords = [];
-        renderFilteredData();
-    }
-}
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
-    loadAuditData();
+    renderPagination();
 });
 
 function setupEventListeners() {
     const filterSearchInput = document.getElementById('filterSearchInput');
     const mainSearchInput = document.getElementById('mainSearchInput');
+    const tipoAccionFilter = document.getElementById('tipoAccionFilter');
     
+    // Búsqueda con debounce
+    let searchTimeout;
     if (filterSearchInput) {
-        let searchTimeout;
+        filterSearchInput.value = currentFilters.search;
         filterSearchInput.addEventListener('input', function(e) {
-            currentFilters.search = e.target.value.trim();
             clearTimeout(searchTimeout);
-            // Debounce: esperar 500ms después de que el usuario deje de escribir
-            searchTimeout = setTimeout(() => {
-                loadAuditData();
+            searchTimeout = setTimeout(function() {
+                currentFilters.search = e.target.value.trim();
+                applyFilters();
             }, 500);
         });
     }
     
     if (mainSearchInput) {
-        let searchTimeout;
         mainSearchInput.addEventListener('input', function(e) {
-            currentFilters.search = e.target.value.trim();
             clearTimeout(searchTimeout);
-            // Debounce: esperar 500ms después de que el usuario deje de escribir
-            searchTimeout = setTimeout(() => {
-                loadAuditData();
+            searchTimeout = setTimeout(function() {
+                currentFilters.search = e.target.value.trim();
+                applyFilters();
             }, 500);
+        });
+    }
+    
+    // Filtro de tipo de acción
+    if (tipoAccionFilter) {
+        tipoAccionFilter.addEventListener('change', function(e) {
+            currentFilters.tipo = e.target.value;
+            applyFilters();
         });
     }
     
     // Cerrar dropdowns al hacer click fuera
     document.addEventListener('click', function(e) {
+        const fechaDropdown = document.getElementById('fechaFilterDropdown');
+        const fechaButton = document.getElementById('fechaFilterButton');
+        const estadoDropdown = document.getElementById('estadoFilterDropdown');
+        const estadoButton = document.getElementById('estadoFilterButton');
+        
+        // Cerrar dropdown de fechas si se hace click fuera
+        if (fechaDropdown && fechaButton && !fechaDropdown.contains(e.target) && !fechaButton.contains(e.target)) {
+            fechaDropdown.classList.add('hidden');
+        }
+        
+        // Cerrar dropdown de estado si se hace click fuera
+        if (estadoDropdown && estadoButton && !estadoDropdown.contains(e.target) && !estadoButton.contains(e.target)) {
+            estadoDropdown.classList.add('hidden');
+        }
+        
+        // Cerrar otros dropdowns
         if (!e.target.closest('.relative.group')) {
             document.querySelectorAll('[id$="Dropdown"]').forEach(dropdown => {
-                dropdown.classList.add('hidden');
+                if (dropdown !== fechaDropdown && dropdown !== estadoDropdown) {
+                    dropdown.classList.add('hidden');
+                }
             });
         }
     });
 }
 
-function toggleDateFilter() {
-    const dropdown = document.getElementById('dateFilterDropdown');
-    document.querySelectorAll('[id$="Dropdown"]').forEach(d => {
-        if (d !== dropdown) d.classList.add('hidden');
-    });
-    dropdown.classList.toggle('hidden');
+function toggleFechaFilter() {
+    const dropdown = document.getElementById('fechaFilterDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
+    }
 }
 
-function toggleTypeFilter() {
-    const dropdown = document.getElementById('typeFilterDropdown');
-    document.querySelectorAll('[id$="Dropdown"]').forEach(d => {
-        if (d !== dropdown) d.classList.add('hidden');
-    });
-    dropdown.classList.toggle('hidden');
-}
-
-function toggleStatusFilter() {
-    const dropdown = document.getElementById('statusFilterDropdown');
-    document.querySelectorAll('[id$="Dropdown"]').forEach(d => {
-        if (d !== dropdown) d.classList.add('hidden');
-    });
-    dropdown.classList.toggle('hidden');
-}
-
-function applyDateFilter() {
-    const fechaDesde = document.getElementById('fechaDesde').value;
-    const fechaHasta = document.getElementById('fechaHasta').value;
+function aplicarFiltroFechas() {
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const fechaFilterText = document.getElementById('fechaFilterText');
+    const dropdown = document.getElementById('fechaFilterDropdown');
     
-    currentFilters.fechaDesde = fechaDesde;
-    currentFilters.fechaHasta = fechaHasta;
+    if (fechaInicio && fechaFin) {
+        currentFilters.fechaInicio = fechaInicio.value;
+        currentFilters.fechaFin = fechaFin.value;
+        
+        // Actualizar texto del botón
+        if (fechaFilterText) {
+            if (fechaInicio.value && fechaFin.value) {
+                const inicio = new Date(fechaInicio.value);
+                const fin = new Date(fechaFin.value);
+                const formatoInicio = inicio.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const formatoFin = fin.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                fechaFilterText.textContent = formatoInicio + ' - ' + formatoFin;
+            } else {
+                fechaFilterText.textContent = 'Rango de Fechas';
+            }
+        }
+        
+        // Cerrar dropdown
+        if (dropdown) {
+            dropdown.classList.add('hidden');
+        }
+        
+        // Aplicar filtros
+        applyFilters();
+    }
+}
+
+function limpiarFiltroFechas() {
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
+    const fechaFilterText = document.getElementById('fechaFilterText');
+    const dropdown = document.getElementById('fechaFilterDropdown');
     
-    // Actualizar texto del botón
-    const button = document.getElementById('dateFilterButton');
-    if (fechaDesde && fechaHasta) {
-        const desde = new Date(fechaDesde).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        const hasta = new Date(fechaHasta).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        button.querySelector('span').textContent = `${desde} - ${hasta}`;
-    } else if (fechaDesde || fechaHasta) {
-        const fecha = fechaDesde || fechaHasta;
-        const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        button.querySelector('span').textContent = fechaDesde ? `Desde ${fechaFormateada}` : `Hasta ${fechaFormateada}`;
-    } else {
-        button.querySelector('span').textContent = 'Rango de Fechas';
+    if (fechaInicio && fechaFin) {
+        fechaInicio.value = '';
+        fechaFin.value = '';
+        currentFilters.fechaInicio = '';
+        currentFilters.fechaFin = '';
+        
+        // Actualizar texto del botón
+        if (fechaFilterText) {
+            fechaFilterText.textContent = 'Rango de Fechas';
+        }
+        
+        // Cerrar dropdown
+        if (dropdown) {
+            dropdown.classList.add('hidden');
+        }
+        
+        // Aplicar filtros
+        applyFilters();
+    }
+}
+
+function toggleEstadoFilter() {
+    const dropdown = document.getElementById('estadoFilterDropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('hidden');
+    }
+}
+
+function aplicarFiltroEstado(estado) {
+    const estadoFilterText = document.getElementById('estadoFilterText');
+    const dropdown = document.getElementById('estadoFilterDropdown');
+    const alertsButton = document.getElementById('alertsOnlyButton');
+    
+    // Actualizar estado y desactivar alertas
+    currentFilters.status = estado;
+    currentFilters.alertsOnly = false;
+    
+    // Actualizar texto del botón de estado
+    if (estadoFilterText) {
+        switch(estado) {
+            case 'success':
+                estadoFilterText.textContent = 'Estado: Exitoso';
+                break;
+            case 'error':
+                estadoFilterText.textContent = 'Estado: Fallido';
+                break;
+            default:
+                estadoFilterText.textContent = 'Estado: Todos';
+        }
     }
     
-    loadAuditData();
-}
-
-function clearDateFilter() {
-    document.getElementById('fechaDesde').value = '';
-    document.getElementById('fechaHasta').value = '';
-    currentFilters.fechaDesde = '';
-    currentFilters.fechaHasta = '';
-    const button = document.getElementById('dateFilterButton');
-    button.querySelector('span').textContent = 'Rango de Fechas';
-    loadAuditData();
-}
-
-function selectTypeFilter(value) {
-    currentFilters.type = value;
-    const button = document.getElementById('typeFilterButton');
-    const labels = { 
-        'all': 'Todos', 
-        'creacion_usuario': 'Creación de Usuario',
-        'login_exitoso': 'Login Exitoso',
-        'login_fallido': 'Login Fallido',
-        'edicion_usuario': 'Edición de Usuario',
-        'creacion_sorteo': 'Creación de Sorteo',
-        'generacion_ganador': 'Generación de Ganador',
-        'validacion_pago': 'Validación de Pago'
-    };
-    button.querySelector('span').textContent = `Tipo: ${labels[value] || 'Todos'}`;
-    document.getElementById('typeFilterDropdown').classList.add('hidden');
-    loadAuditData();
-}
-
-function selectStatusFilter(value) {
-    currentFilters.status = value;
-    const button = document.getElementById('statusFilterButton');
-    const labels = { 'all': 'Todos', 'success': 'Exitoso', 'error': 'Fallido' };
-    button.querySelector('span').textContent = `Estado: ${labels[value] || 'Todos'}`;
-    document.getElementById('statusFilterDropdown').classList.add('hidden');
-    loadAuditData();
-}
-
-function toggleAlertsOnly() {
-    currentFilters.alertsOnly = !currentFilters.alertsOnly;
-    const button = document.getElementById('alertsOnlyButton');
-    if (currentFilters.alertsOnly) {
-        button.classList.add('bg-red-500/20', 'dark:bg-red-500/30');
-    } else {
-        button.classList.remove('bg-red-500/20', 'dark:bg-red-500/30');
+    // Actualizar estilo del botón de alertas (desactivarlo)
+    if (alertsButton) {
+        alertsButton.classList.remove('bg-red-500/20', 'dark:bg-red-500/30');
+        alertsButton.classList.add('bg-red-500/10', 'dark:bg-red-500/20');
     }
-    loadAuditData();
+    
+    // Cerrar dropdown
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+    
+    // Aplicar filtros
+    applyFilters();
 }
 
 function applyFilters() {
-    // Recargar datos desde el servidor con los filtros aplicados
-    loadAuditData();
+    // Construir URL con filtros
+    const params = new URLSearchParams();
+    if (currentFilters.search) params.append('search', currentFilters.search);
+    if (currentFilters.tipo !== 'all') params.append('tipo', currentFilters.tipo);
+    if (currentFilters.status !== 'all') params.append('estado', currentFilters.status);
+    if (currentFilters.alertsOnly) params.append('alerts', '1');
+    if (currentFilters.fechaInicio) params.append('fecha_inicio', currentFilters.fechaInicio);
+    if (currentFilters.fechaFin) params.append('fecha_fin', currentFilters.fechaFin);
+    params.append('page', '1'); // Resetear a página 1
+    
+    window.location.href = '?' + params.toString();
 }
 
-function renderFilteredData() {
-    // Los datos ya vienen filtrados del servidor, solo renderizar
-    currentPage = 1; // Resetear a la primera página
-    renderTable(auditRecords);
-    renderPagination(auditRecords.length);
-}
-
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            console.warn('Fecha inválida:', dateString);
-            return dateString;
+function toggleAlertsOnly() {
+    const alertsButton = document.getElementById('alertsOnlyButton');
+    const estadoFilterText = document.getElementById('estadoFilterText');
+    
+    // Toggle del filtro de alertas
+    currentFilters.alertsOnly = !currentFilters.alertsOnly;
+    
+    // Si se activa alertas, desactivar filtro de estado
+    if (currentFilters.alertsOnly) {
+        currentFilters.status = 'all';
+        if (estadoFilterText) {
+            estadoFilterText.textContent = 'Estado: Todos';
         }
-        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    } catch (e) {
-        console.error('Error formateando fecha:', dateString, e);
-        return dateString;
-    }
-}
-
-function getTipoAccionBadge(tipoAccion) {
-    const badges = {
-        'creacion_usuario': '<span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 ring-1 ring-inset ring-purple-600/20 dark:ring-purple-400/20">Creación de Usuario</span>',
-        'login_exitoso': '<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/10 dark:ring-green-400/20">Login Exitoso</span>',
-        'login_fallido': '<span class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-600/10 dark:ring-red-400/20">Login Fallido</span>',
-        'edicion_usuario': '<span class="inline-flex items-center rounded-md bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 ring-1 ring-inset ring-yellow-600/20 dark:ring-yellow-400/20">Edición de Usuario</span>',
-        'creacion_sorteo': '<span class="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-700/10 dark:ring-indigo-400/20">Creación de Sorteo</span>',
-        'generacion_ganador': '<span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 ring-1 ring-inset ring-purple-700/10 dark:ring-purple-400/20">Generación de Ganador</span>',
-        'validacion_pago': '<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-700/10 dark:ring-blue-400/20">Validación de Pago</span>'
-    };
-    
-    const labels = {
-        'creacion_usuario': 'Creación de Usuario',
-        'login_exitoso': 'Login Exitoso',
-        'login_fallido': 'Login Fallido',
-        'edicion_usuario': 'Edición de Usuario',
-        'creacion_sorteo': 'Creación de Sorteo',
-        'generacion_ganador': 'Generación de Ganador',
-        'validacion_pago': 'Validación de Pago'
-    };
-    
-    return badges[tipoAccion] || `<span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-900/30 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-600/20 dark:ring-gray-400/20">${labels[tipoAccion] || tipoAccion}</span>`;
-}
-
-function renderTable(filteredRecords) {
-    const tbody = document.getElementById('auditTableBody');
-    
-    if (!tbody) {
-        console.error('Error: No se encontró el elemento auditTableBody');
-        return;
     }
     
-    console.log('Renderizando tabla con', filteredRecords?.length || 0, 'registros');
-    
-    if (!filteredRecords || filteredRecords.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-[#637588] dark:text-[#9da6b9]">
-                    <span class="material-symbols-outlined text-4xl mb-2 block">search_off</span>
-                    <p class="text-sm">No se encontraron registros de auditoría</p>
-                    <p class="text-xs mt-1 text-[#9da6b9]">Los registros aparecerán aquí cuando se realicen acciones en el sistema</p>
-                </td>
-            </tr>
-        `;
-        return;
+    // Actualizar estilo del botón de alertas
+    if (alertsButton) {
+        if (currentFilters.alertsOnly) {
+            alertsButton.classList.add('bg-red-500/20', 'dark:bg-red-500/30');
+            alertsButton.classList.remove('bg-red-500/10', 'dark:bg-red-500/20');
+        } else {
+            alertsButton.classList.remove('bg-red-500/20', 'dark:bg-red-500/30');
+            alertsButton.classList.add('bg-red-500/10', 'dark:bg-red-500/20');
+        }
     }
     
-    const start = (currentPage - 1) * recordsPerPage;
-    const end = start + recordsPerPage;
-    const pageRecords = filteredRecords.slice(start, end);
-    
-    if (pageRecords.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-[#637588] dark:text-[#9da6b9]">
-                    <span class="material-symbols-outlined text-4xl mb-2 block">search_off</span>
-                    <p class="text-sm">No se encontraron registros con los filtros aplicados</p>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = pageRecords.map((record, index) => {
-        // Validar que los campos requeridos existan
-        if (!record) {
-            console.error(`Registro ${index} es null o undefined`);
-            return '';
-        }
-        
-        if (!record.tipo_accion) {
-            console.warn(`Registro ${index} no tiene tipo_accion:`, record);
-        }
-        
-        if (!record.recurso) {
-            console.warn(`Registro ${index} no tiene recurso:`, record);
-        }
-        
-        // Validar y obtener valores con defaults
-        const estado = record.estado || 'success';
-        const tipoAccion = record.tipo_accion || 'desconocido';
-        const recurso = record.recurso || 'N/A';
-        const actor = record.actor || 'Sistema';
-        const fecha = record.fecha || (record.fecha_hora ? record.fecha_hora.split(' ')[0] : null);
-        const hora = record.hora || (record.fecha_hora ? record.fecha_hora.split(' ')[1] : null);
-        const ipAddress = record.ip_address || '127.0.0.1';
-        const esAlerta = record.es_alerta !== undefined ? record.es_alerta : false;
-        
-        const statusBadge = estado === 'success' 
-            ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Exitoso</span>'
-            : '<span class="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400"><span class="material-symbols-outlined text-[14px]">close</span>Fallido</span>';
-        
-        const tipoAccionBadge = getTipoAccionBadge(tipoAccion);
-        const formattedDate = formatDate(fecha || record.fecha_hora);
-        
-        const rowClass = esAlerta 
-            ? 'audit-row group bg-red-50/50 dark:bg-red-900/5 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border-l-2 border-l-red-500'
-            : 'audit-row group hover:bg-[#f1f5f9] dark:hover:bg-[#282d39] transition-colors';
-        
-        // Escapar valores para prevenir XSS
-        const escapeHtml = (text) => {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        };
-        
-        return `
-            <tr class="${rowClass}" data-actor="${escapeHtml(actor)}" data-tipo-accion="${escapeHtml(tipoAccion)}" data-recurso="${escapeHtml(recurso)}" data-estado="${escapeHtml(estado)}" data-fecha="${escapeHtml(fecha || '')}" data-hora="${escapeHtml(hora || '')}" data-ip="${escapeHtml(ipAddress)}" data-alert="${esAlerta}">
-                <td class="px-6 py-4 whitespace-nowrap font-medium text-[#111318] dark:text-white">
-                    ${formattedDate} <span class="text-[#9da6b9] ml-1 font-normal text-xs">${hora || 'N/A'}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center gap-3">
-                        <div class="size-8 rounded-full bg-[#e0e7ff] dark:bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                            ${actor === 'Sistema' ? '<span class="material-symbols-outlined text-[16px]">smart_toy</span>' : actor.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[#111318] dark:text-white font-medium">${escapeHtml(actor)}</span>
-                            <span class="text-xs">${actor === 'Sistema' ? 'Sistema' : actor.includes('Desconocido') || actor === 'Usuario Desconocido' ? 'IP: ' + escapeHtml(ipAddress) : 'Usuario'}</span>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">${tipoAccionBadge}</td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-[#111318] dark:text-[#cbd5e1]">${escapeHtml(recurso)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right">
-                    <button onclick="showDetailsModal(this)" class="${esAlerta ? 'text-red-500 hover:text-red-600 dark:hover:text-red-400' : 'text-[#9da6b9] hover:text-primary'} transition-colors">
-                        <span class="material-symbols-outlined text-[20px]">${esAlerta ? 'warning' : 'visibility'}</span>
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).filter(row => row !== '').join('');
+    // Aplicar filtros
+    applyFilters();
 }
 
-function renderPagination(totalRecords) {
-    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+function renderPagination() {
     const paginationNumbers = document.getElementById('paginationNumbers');
     
     let paginationHTML = '';
-    for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-        if (i === currentPage) {
-            paginationHTML += `<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer">${i}</a>`;
-        } else {
-            paginationHTML += `<a onclick="changePage(${i})" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">${i}</a>`;
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (startPage > 1) {
+        paginationHTML += `<a href="${buildPaginationUrl(1)}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">1</a>`;
+        if (startPage > 2) {
+            paginationHTML += `<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] focus:outline-offset-0">...</span>`;
         }
     }
     
-    if (totalPages > 5) {
-        paginationHTML = `<a onclick="changePage(1)" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">1</a>
-        <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] focus:outline-offset-0">...</span>
-        <a onclick="changePage(${totalPages})" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 md:inline-flex cursor-pointer">${totalPages}</a>`;
+    for (let i = startPage; i <= endPage; i++) {
+        if (i === currentPage) {
+            paginationHTML += `<a aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer">${i}</a>`;
+        } else {
+            paginationHTML += `<a href="${buildPaginationUrl(i)}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">${i}</a>`;
+        }
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] focus:outline-offset-0">...</span>`;
+        }
+        paginationHTML += `<a href="${buildPaginationUrl(totalPages)}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[#111318] dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-[#3e4556] hover:bg-gray-50 dark:hover:bg-[#333a4a] focus:z-20 focus:outline-offset-0 cursor-pointer">${totalPages}</a>`;
     }
     
     paginationNumbers.innerHTML = paginationHTML;
     
-    // Actualizar información de paginación
-    const start = (currentPage - 1) * recordsPerPage + 1;
-    const end = Math.min(currentPage * recordsPerPage, totalRecords);
-    document.getElementById('paginationInfo').textContent = start;
-    document.getElementById('paginationEnd').textContent = end;
-    document.getElementById('paginationTotal').textContent = totalRecords;
-    
     // Actualizar botones prev/next
+    const prevUrl = currentPage > 1 ? buildPaginationUrl(currentPage - 1) : '#';
+    const nextUrl = currentPage < totalPages ? buildPaginationUrl(currentPage + 1) : '#';
+    document.getElementById('prevPage').href = prevUrl;
     document.getElementById('prevPage').classList.toggle('opacity-50', currentPage === 1);
+    document.getElementById('prevPage').classList.toggle('cursor-not-allowed', currentPage === 1);
+    document.getElementById('nextPage').href = nextUrl;
     document.getElementById('nextPage').classList.toggle('opacity-50', currentPage === totalPages);
+    document.getElementById('nextPage').classList.toggle('cursor-not-allowed', currentPage === totalPages);
+}
+
+function buildPaginationUrl(page) {
+    const params = new URLSearchParams();
+    if (currentFilters.search) params.append('search', currentFilters.search);
+    if (currentFilters.tipo !== 'all') params.append('tipo', currentFilters.tipo);
+    if (currentFilters.status !== 'all') params.append('estado', currentFilters.status);
+    if (currentFilters.alertsOnly) params.append('alerts', '1');
+    if (currentFilters.fechaInicio) params.append('fecha_inicio', currentFilters.fechaInicio);
+    if (currentFilters.fechaFin) params.append('fecha_fin', currentFilters.fechaFin);
+    if (page > 1) params.append('page', page);
+    return '?' + params.toString();
 }
 
 function changePage(direction) {
-    const totalPages = Math.ceil(auditRecords.length / recordsPerPage);
+    let newPage = currentPage;
     if (direction === 'prev' && currentPage > 1) {
-        currentPage--;
+        newPage = currentPage - 1;
     } else if (direction === 'next' && currentPage < totalPages) {
-        currentPage++;
+        newPage = currentPage + 1;
     } else if (typeof direction === 'number') {
-        currentPage = direction;
+        newPage = direction;
     }
-    renderTable(auditRecords);
-    renderPagination(auditRecords.length);
+    
+    if (newPage !== currentPage) {
+        window.location.href = buildPaginationUrl(newPage);
+    }
 }
 
 function showDetailsModal(button) {
     const row = button.closest('tr');
     const actor = row.getAttribute('data-actor');
-    const tipoAccion = row.getAttribute('data-tipo-accion');
-    const resource = row.getAttribute('data-recurso');
-    const status = row.getAttribute('data-estado');
-    const date = row.getAttribute('data-fecha');
-    const time = row.getAttribute('data-hora');
+    const action = row.getAttribute('data-action');
+    const resource = row.getAttribute('data-resource');
+    const status = row.getAttribute('data-status');
+    const date = row.getAttribute('data-date');
+    const time = row.getAttribute('data-time');
     const ip = row.getAttribute('data-ip');
-    
-    // Mapear tipo_accion a nombre legible
-    const tipoAccionLabels = {
-        'creacion_usuario': 'Creación de Usuario',
-        'login_exitoso': 'Login Exitoso',
-        'login_fallido': 'Login Fallido',
-        'edicion_usuario': 'Edición de Usuario',
-        'creacion_sorteo': 'Creación de Sorteo',
-        'generacion_ganador': 'Generación de Ganador',
-        'validacion_pago': 'Validación de Pago'
-    };
-    const actionLabel = tipoAccionLabels[tipoAccion] || tipoAccion;
     
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-50 overflow-y-auto';
@@ -949,8 +1012,8 @@ function showDetailsModal(button) {
                             <p class="text-base font-medium text-[#111318] dark:text-white">${actor}</p>
                         </div>
                         <div>
-                            <p class="text-sm text-[#637588] dark:text-[#9da6b9]">Tipo de Acción:</p>
-                            <p class="text-base font-medium text-[#111318] dark:text-white">${actionLabel}</p>
+                            <p class="text-sm text-[#637588] dark:text-[#9da6b9]">Acción:</p>
+                            <p class="text-base font-medium text-[#111318] dark:text-white">${action}</p>
                         </div>
                         <div>
                             <p class="text-sm text-[#637588] dark:text-[#9da6b9]">Recurso:</p>
@@ -988,66 +1051,30 @@ function refreshData() {
     icon.classList.add('animate-spin-fast');
     button.disabled = true;
     
-    loadAuditData().then(() => {
-        icon.classList.remove('animate-spin-fast');
-        button.disabled = false;
-        showNotification('Datos actualizados correctamente', 'success');
-    }).catch(() => {
-        icon.classList.remove('animate-spin-fast');
-        button.disabled = false;
-        showNotification('Error al actualizar datos', 'error');
-    });
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
 }
 
 function exportToCsv() {
-    // Los datos ya están filtrados en auditRecords
-    if (auditRecords.length === 0) {
-        showNotification('No hay datos para exportar', 'error');
-        return;
-    }
+    // Construir URL para exportar con los mismos filtros
+    const params = new URLSearchParams();
+    if (currentFilters.search) params.append('search', currentFilters.search);
+    if (currentFilters.tipo !== 'all') params.append('tipo', currentFilters.tipo);
+    if (currentFilters.status !== 'all') params.append('estado', currentFilters.status);
+    if (currentFilters.alertsOnly) params.append('alerts', '1');
+    if (currentFilters.fechaInicio) params.append('fecha_inicio', currentFilters.fechaInicio);
+    if (currentFilters.fechaFin) params.append('fecha_fin', currentFilters.fechaFin);
     
-    const tipoAccionLabels = {
-        'creacion_usuario': 'Creación de Usuario',
-        'login_exitoso': 'Login Exitoso',
-        'login_fallido': 'Login Fallido',
-        'edicion_usuario': 'Edición de Usuario',
-        'creacion_sorteo': 'Creación de Sorteo',
-        'generacion_ganador': 'Generación de Ganador',
-        'validacion_pago': 'Validación de Pago'
-    };
-    
-    const headers = ['Fecha', 'Hora', 'Actor', 'Tipo de Acción', 'Recurso', 'Estado', 'IP', 'Alerta'];
-    const rows = auditRecords.map(r => [
-        formatDate(r.fecha),
-        r.hora,
-        r.actor,
-        tipoAccionLabels[r.tipo_accion] || r.tipo_accion,
-        r.recurso,
-        r.estado === 'success' ? 'Exitoso' : 'Fallido',
-        r.ip_address,
-        r.es_alerta ? 'Sí' : 'No'
-    ]);
-    
-    // Agregar BOM para UTF-8 (Excel)
-    const BOM = '\uFEFF';
-    const csv = BOM + [headers, ...rows].map(row => 
-        row.map(cell => {
-            // Escapar comillas y envolver en comillas si contiene comas o saltos de línea
-            const cellStr = String(cell).replace(/"/g, '""');
-            return `"${cellStr}"`;
-        }).join(',')
-    ).join('\n');
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const exportUrl = 'api_exportar_auditoria.php' + (params.toString() ? '?' + params.toString() : '');
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    const fechaExport = new Date().toISOString().split('T')[0];
-    link.download = `auditoria_${fechaExport}.csv`;
+    link.href = exportUrl;
+    link.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showNotification(`CSV exportado correctamente (${auditRecords.length} registros)`, 'success');
+    showNotification('CSV exportado correctamente', 'success');
 }
 
 function showNotification(message, type = 'info') {
@@ -1079,38 +1106,7 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
-
-function navegarAtras() {
-    window.history.back();
-}
-
-// Función para manejar el logout del administrador
-function handleLogoutAdmin() {
-    // Usar customConfirm para mantener consistencia con el resto de la aplicación
-    if (typeof customConfirm === 'function') {
-        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
-            if (confirmed) {
-                // Redirigir al logout.php que destruye la sesión del servidor
-                window.location.href = 'logout.php';
-            }
-        });
-    } else {
-        // Si customConfirm no está disponible, esperar a que se cargue
-        setTimeout(() => {
-            if (typeof customConfirm === 'function') {
-                handleLogoutAdmin();
-            } else {
-                // Fallback si customConfirm no se carga
-                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                    window.location.href = 'logout.php';
-                }
-            }
-        }, 200);
-    }
-}
 </script>
-<!-- Cargar custom-alerts.js para usar alertas personalizadas -->
-<script src="custom-alerts.js"></script>
 </body></html>
 
 //pagina para ver la auditoria de acciones como administrador despues de iniciar sesion

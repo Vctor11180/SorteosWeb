@@ -4,21 +4,10 @@
 require_once 'config.php';
 $conn = getDBConnection();
 
-// Validar conexión
-if (!$conn || $conn->connect_error) {
-    die("Error de conexión a la base de datos. Por favor, contacta al administrador.");
-}
-
-// Obtener parámetros de filtro
-$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m-01'); // Primer día del mes actual
-$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-t'); // Último día del mes actual
-$id_sorteo_filtro = isset($_GET['sorteo']) && $_GET['sorteo'] != 'todos' ? intval($_GET['sorteo']) : null;
-$estado_campana = isset($_GET['estado_campana']) ? $_GET['estado_campana'] : 'todas';
-
 /**
- * Obtiene KPIs para la página de informes
+ * Obtiene los KPIs principales
  */
-function obtenerKPIsInformes($conn, $fecha_inicio, $fecha_fin, $id_sorteo = null) {
+function obtenerKPIs($conn) {
     $kpis = [
         'ingresos_totales' => 0,
         'boletos_vendidos' => 0,
@@ -26,198 +15,130 @@ function obtenerKPIsInformes($conn, $fecha_inicio, $fecha_fin, $id_sorteo = null
         'tasa_conversion' => 0,
         'tendencia_ingresos' => 0,
         'tendencia_boletos' => 0,
-        'tendencia_usuarios' => 0,
-        'tendencia_conversion' => 0
+        'tendencia_usuarios' => 0
     ];
     
-    if (!$conn || $conn->connect_error) {
-        return $kpis;
-    }
-    
     try {
-        // Construir condición de filtro por sorteo
-        $condicion_sorteo = '';
-        if ($id_sorteo) {
-            $condicion_sorteo = " AND s.id_sorteo = " . intval($id_sorteo);
+        // Ingresos totales (pagos completados)
+        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total FROM transacciones WHERE estado_pago = 'Completado'";
+        $result = $conn->query($sql);
+        if ($result && $row = $result->fetch_assoc()) {
+            $kpis['ingresos_totales'] = floatval($row['total']);
         }
         
-        // Ingresos totales en el rango de fechas
-        $sql = "SELECT COALESCE(SUM(t.monto_total), 0) as total 
-                FROM transacciones t
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                WHERE t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio, $fecha_fin);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            $kpis['ingresos_totales'] = $row['total'];
-        }
-        $stmt->close();
-        
-        // Boletos vendidos en el rango
-        $sql = "SELECT COUNT(DISTINCT b.id_boleto) as total 
-                FROM boletos b
-                INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
-                INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE b.estado = 'Vendido'
-                AND t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio, $fecha_fin);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            $kpis['boletos_vendidos'] = $row['total'];
-        }
-        $stmt->close();
-        
-        // Usuarios activos (usuarios que han comprado en el rango)
-        $sql = "SELECT COUNT(DISTINCT t.id_usuario) as total 
-                FROM transacciones t
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                WHERE t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio, $fecha_fin);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            $kpis['usuarios_activos'] = $row['total'];
-        }
-        $stmt->close();
-        
-        // Tasa de conversión (usuarios que compraron / total usuarios)
-        $total_usuarios = $conn->query("SELECT COUNT(*) as total FROM usuarios WHERE estado = 'Activo'")->fetch_assoc()['total'];
-        if ($total_usuarios > 0) {
-            $kpis['tasa_conversion'] = round(($kpis['usuarios_activos'] / $total_usuarios) * 100, 1);
+        // Boletos vendidos
+        $sql = "SELECT COUNT(*) as total FROM boletos WHERE estado = 'Vendido'";
+        $result = $conn->query($sql);
+        if ($result && $row = $result->fetch_assoc()) {
+            $kpis['boletos_vendidos'] = intval($row['total']);
         }
         
-        // Calcular tendencias (comparar con período anterior de misma duración)
-        $dias_periodo = (strtotime($fecha_fin) - strtotime($fecha_inicio)) / 86400;
-        $fecha_inicio_anterior = date('Y-m-d', strtotime($fecha_inicio . " -$dias_periodo days"));
-        $fecha_fin_anterior = date('Y-m-d', strtotime($fecha_inicio . " -1 day"));
-        
-        // Tendencias de ingresos
-        $sql = "SELECT COALESCE(SUM(t.monto_total), 0) as total 
-                FROM transacciones t
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                WHERE t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio_anterior, $fecha_fin_anterior);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $ingresos_anterior = 0;
-        if ($row = $result->fetch_assoc()) {
-            $ingresos_anterior = $row['total'] > 0 ? $row['total'] : 1;
-        }
-        $stmt->close();
-        
-        if ($ingresos_anterior > 0) {
-            $kpis['tendencia_ingresos'] = round((($kpis['ingresos_totales'] - $ingresos_anterior) / $ingresos_anterior) * 100, 1);
+        // Usuarios activos
+        $sql = "SELECT COUNT(*) as total FROM usuarios WHERE estado = 'Activo'";
+        $result = $conn->query($sql);
+        if ($result && $row = $result->fetch_assoc()) {
+            $kpis['usuarios_activos'] = intval($row['total']);
         }
         
-        // Tendencias de boletos
-        $sql = "SELECT COUNT(DISTINCT b.id_boleto) as total 
-                FROM boletos b
-                INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
-                INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE b.estado = 'Vendido'
-                AND t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio_anterior, $fecha_fin_anterior);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $boletos_anterior = 1;
-        if ($row = $result->fetch_assoc()) {
-            $boletos_anterior = $row['total'] > 0 ? $row['total'] : 1;
-        }
-        $stmt->close();
-        
-        if ($boletos_anterior > 0) {
-            $kpis['tendencia_boletos'] = round((($kpis['boletos_vendidos'] - $boletos_anterior) / $boletos_anterior) * 100, 1);
+        // Tasa de conversión (boletos vendidos / total boletos)
+        $sql = "SELECT 
+                    COUNT(CASE WHEN estado = 'Vendido' THEN 1 END) as vendidos,
+                    COUNT(*) as total
+                FROM boletos";
+        $result = $conn->query($sql);
+        if ($result && $row = $result->fetch_assoc()) {
+            $total = $row['total'] > 0 ? $row['total'] : 1;
+            $kpis['tasa_conversion'] = round(($row['vendidos'] / $total) * 100, 1);
         }
         
-        // Tendencias de usuarios
-        $sql = "SELECT COUNT(DISTINCT t.id_usuario) as total 
-                FROM transacciones t
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                WHERE t.estado_pago = 'Completado'
-                AND DATE(t.fecha_creacion) BETWEEN ? AND ?" . $condicion_sorteo;
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $fecha_inicio_anterior, $fecha_fin_anterior);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $usuarios_anterior = 1;
-        if ($row = $result->fetch_assoc()) {
-            $usuarios_anterior = $row['total'] > 0 ? $row['total'] : 1;
-        }
-        $stmt->close();
-        
-        if ($usuarios_anterior > 0) {
-            $kpis['tendencia_usuarios'] = round((($kpis['usuarios_activos'] - $usuarios_anterior) / $usuarios_anterior) * 100, 1);
+        // Calcular tendencias (comparar con mes anterior)
+        // Ingresos
+        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_actual 
+                FROM transacciones 
+                WHERE estado_pago = 'Completado' 
+                AND MONTH(fecha_creacion) = MONTH(CURRENT_DATE())
+                AND YEAR(fecha_creacion) = YEAR(CURRENT_DATE())";
+        $result = $conn->query($sql);
+        $total_mes_actual = 0;
+        if ($result && $row = $result->fetch_assoc()) {
+            $total_mes_actual = floatval($row['total_mes_actual']);
         }
         
-        // Tendencias de conversión
-        $conversion_anterior = $usuarios_anterior > 0 && $total_usuarios > 0 ? round(($usuarios_anterior / $total_usuarios) * 100, 1) : 0;
-        if ($conversion_anterior > 0) {
-            $kpis['tendencia_conversion'] = round($kpis['tasa_conversion'] - $conversion_anterior, 1);
+        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_anterior 
+                FROM transacciones 
+                WHERE estado_pago = 'Completado' 
+                AND MONTH(fecha_creacion) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
+                AND YEAR(fecha_creacion) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))";
+        $result = $conn->query($sql);
+        $total_mes_anterior = 1;
+        if ($result && $row = $result->fetch_assoc()) {
+            $total_mes_anterior = floatval($row['total_mes_anterior']) > 0 ? floatval($row['total_mes_anterior']) : 1;
         }
+        $kpis['tendencia_ingresos'] = round((($total_mes_actual - $total_mes_anterior) / $total_mes_anterior) * 100, 1);
+        
+        // Boletos
+        $sql = "SELECT COUNT(*) as total_mes_actual 
+                FROM boletos 
+                WHERE estado = 'Vendido'
+                AND MONTH(fecha_reserva) = MONTH(CURRENT_DATE())
+                AND YEAR(fecha_reserva) = YEAR(CURRENT_DATE())";
+        $result = $conn->query($sql);
+        $boletos_mes_actual = 0;
+        if ($result && $row = $result->fetch_assoc()) {
+            $boletos_mes_actual = intval($row['total_mes_actual']);
+        }
+        
+        $sql = "SELECT COUNT(*) as total_mes_anterior 
+                FROM boletos 
+                WHERE estado = 'Vendido'
+                AND MONTH(fecha_reserva) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
+                AND YEAR(fecha_reserva) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))";
+        $result = $conn->query($sql);
+        $boletos_mes_anterior = 1;
+        if ($result && $row = $result->fetch_assoc()) {
+            $boletos_mes_anterior = intval($row['total_mes_anterior']) > 0 ? intval($row['total_mes_anterior']) : 1;
+        }
+        $kpis['tendencia_boletos'] = round((($boletos_mes_actual - $boletos_mes_anterior) / $boletos_mes_anterior) * 100, 1);
         
     } catch (Exception $e) {
-        error_log("Error obteniendo KPIs de informes: " . $e->getMessage());
+        error_log("Error obteniendo KPIs: " . $e->getMessage());
     }
     
     return $kpis;
 }
 
 /**
- * Obtiene datos de tendencia de ingresos para los últimos 6 meses
+ * Obtiene datos de tendencia de ingresos (últimos 6 meses)
  */
-function obtenerTendenciaIngresos($conn, $id_sorteo = null) {
+function obtenerTendenciaIngresos($conn) {
     $datos = [];
     
-    if (!$conn || $conn->connect_error) {
-        return $datos;
-    }
-    
     try {
-        $condicion_sorteo = '';
-        if ($id_sorteo) {
-            $condicion_sorteo = " AND s.id_sorteo = " . intval($id_sorteo);
-        }
-        
-        // Obtener ingresos por mes de los últimos 6 meses
-        $sql = "SELECT 
-                    DATE_FORMAT(t.fecha_creacion, '%Y-%m') as mes,
-                    DATE_FORMAT(t.fecha_creacion, '%b') as mes_nombre,
-                    COALESCE(SUM(t.monto_total), 0) as total
-                FROM transacciones t
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                WHERE t.estado_pago = 'Completado'
-                AND t.fecha_creacion >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)" . $condicion_sorteo . "
-                GROUP BY DATE_FORMAT(t.fecha_creacion, '%Y-%m'), DATE_FORMAT(t.fecha_creacion, '%b')
-                ORDER BY mes ASC";
-        
-        $result = $conn->query($sql);
-        while ($row = $result->fetch_assoc()) {
-            $datos[$row['mes']] = [
-                'nombre' => $row['mes_nombre'],
-                'total' => (float)$row['total']
+        for ($i = 5; $i >= 0; $i--) {
+            $fecha = date('Y-m', strtotime("-$i months"));
+            $mes = date('M', strtotime("-$i months"));
+            
+            $sql = "SELECT COALESCE(SUM(monto_total), 0) as total 
+                    FROM transacciones 
+                    WHERE estado_pago = 'Completado' 
+                    AND DATE_FORMAT(fecha_creacion, '%Y-%m') = ?";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $fecha);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            $total = 0;
+            if ($result && $row = $result->fetch_assoc()) {
+                $total = floatval($row['total']);
+            }
+            
+            $datos[] = [
+                'mes' => $mes,
+                'total' => $total
             ];
+            
+            $stmt->close();
         }
     } catch (Exception $e) {
         error_log("Error obteniendo tendencia de ingresos: " . $e->getMessage());
@@ -227,27 +148,27 @@ function obtenerTendenciaIngresos($conn, $id_sorteo = null) {
 }
 
 /**
- * Obtiene distribución de estado de boletos
+ * Obtiene estado de boletos (vendidos, disponibles)
  */
 function obtenerEstadoBoletos($conn) {
     $estados = [
         'vendidos' => 0,
-        'reservados' => 0,
         'disponibles' => 0,
         'total' => 0
     ];
     
-    if (!$conn || $conn->connect_error) {
-        return $estados;
-    }
-    
     try {
-        $sql = "SELECT estado, COUNT(*) as total FROM boletos GROUP BY estado";
-        $result = $conn->query($sql);
+        $sql = "SELECT 
+                    COUNT(CASE WHEN estado = 'Vendido' THEN 1 END) as vendidos,
+                    COUNT(CASE WHEN estado = 'Disponible' THEN 1 END) as disponibles,
+                    COUNT(*) as total
+                FROM boletos";
         
-        while ($row = $result->fetch_assoc()) {
-            $estados[strtolower($row['estado'])] = (int)$row['total'];
-            $estados['total'] += (int)$row['total'];
+        $result = $conn->query($sql);
+        if ($result && $row = $result->fetch_assoc()) {
+            $estados['vendidos'] = intval($row['vendidos']);
+            $estados['disponibles'] = intval($row['disponibles']);
+            $estados['total'] = intval($row['total']);
         }
     } catch (Exception $e) {
         error_log("Error obteniendo estado de boletos: " . $e->getMessage());
@@ -257,47 +178,42 @@ function obtenerEstadoBoletos($conn) {
 }
 
 /**
- * Obtiene ventas por sorteo (top sorteos)
+ * Obtiene ventas por sorteo
  */
-function obtenerVentasPorSorteo($conn, $fecha_inicio, $fecha_fin, $limit = 5) {
+function obtenerVentasPorSorteo($conn) {
     $ventas = [];
-    
-    if (!$conn || $conn->connect_error) {
-        return $ventas;
-    }
     
     try {
         $sql = "SELECT 
                     s.id_sorteo,
                     s.titulo,
-                    COUNT(DISTINCT b.id_boleto) as boletos_vendidos,
-                    COALESCE(SUM(t.monto_total), 0) as ingresos
+                    s.total_boletos_crear,
+                    COUNT(CASE WHEN b.estado = 'Vendido' THEN 1 END) as vendidos,
+                    COALESCE(SUM(CASE WHEN t.estado_pago = 'Completado' THEN t.monto_total ELSE 0 END), 0) as ingresos
                 FROM sorteos s
                 LEFT JOIN boletos b ON s.id_sorteo = b.id_sorteo
                 LEFT JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
                 LEFT JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
-                WHERE (t.estado_pago = 'Completado' OR t.estado_pago IS NULL)
-                AND (DATE(t.fecha_creacion) BETWEEN ? AND ? OR t.fecha_creacion IS NULL)
-                GROUP BY s.id_sorteo, s.titulo
-                HAVING boletos_vendidos > 0
+                GROUP BY s.id_sorteo, s.titulo, s.total_boletos_crear
                 ORDER BY ingresos DESC
-                LIMIT ?";
+                LIMIT 5";
         
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssi", $fecha_inicio, $fecha_fin, $limit);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        while ($row = $result->fetch_assoc()) {
-            $ventas[] = [
-                'id' => $row['id_sorteo'],
-                'titulo' => $row['titulo'],
-                'boletos' => (int)$row['boletos_vendidos'],
-                'ingresos' => (float)$row['ingresos']
-            ];
+        $result = $conn->query($sql);
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $porcentaje = $row['total_boletos_crear'] > 0 
+                    ? round(($row['vendidos'] / $row['total_boletos_crear']) * 100, 1) 
+                    : 0;
+                
+                $ventas[] = [
+                    'titulo' => $row['titulo'],
+                    'vendidos' => intval($row['vendidos']),
+                    'total' => intval($row['total_boletos_crear']),
+                    'porcentaje' => $porcentaje,
+                    'ingresos' => floatval($row['ingresos'])
+                ];
+            }
         }
-        
-        $stmt->close();
     } catch (Exception $e) {
         error_log("Error obteniendo ventas por sorteo: " . $e->getMessage());
     }
@@ -306,61 +222,49 @@ function obtenerVentasPorSorteo($conn, $fecha_inicio, $fecha_fin, $limit = 5) {
 }
 
 /**
- * Obtiene efectividad de campañas de marketing
+ * Obtiene información de campañas de marketing
  */
-function obtenerEfectividadCampanas($conn, $estado = 'todas') {
+function obtenerCampanas($conn) {
     $campanas = [];
     
-    if (!$conn || $conn->connect_error) {
-        return $campanas;
-    }
-    
     try {
-        // Verificar si existe la tabla
-        $table_check = $conn->query("SHOW TABLES LIKE 'campanas_marketing'");
-        if ($table_check->num_rows == 0) {
-            return $campanas; // Tabla no existe
-        }
-        
-        $condicion_estado = '';
-        if ($estado != 'todas') {
-            $estado_escaped = $conn->real_escape_string($estado);
-            $condicion_estado = " WHERE estado = '$estado_escaped'";
-        }
-        
         $sql = "SELECT 
                     id_campana,
                     red_social,
                     empresa,
                     costo_inversion,
                     clics_generados,
-                    estado
-                FROM campanas_marketing" . $condicion_estado . "
+                    estado,
+                    fecha_inicio,
+                    fecha_fin
+                FROM campanas_marketing
                 ORDER BY fecha_inicio DESC
                 LIMIT 10";
         
         $result = $conn->query($sql);
-        
-        while ($row = $result->fetch_assoc()) {
-            // Calcular ROI aproximado (simplificado)
-            $roi = 0;
-            if ($row['costo_inversion'] > 0) {
-                // ROI = (ingresos estimados - inversión) / inversión * 100
-                // Estimación: cada clic genera $X en ingresos (valor ficticio para ejemplo)
-                $ingresos_estimados = $row['clics_generados'] * 2.5; // $2.5 por clic estimado
-                $roi = (($ingresos_estimados - $row['costo_inversion']) / $row['costo_inversion']) * 100;
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                // Calcular ROI aproximado basado en ingresos generados
+                // Para simplificar, usamos un cálculo basado en clics
+                $ingresos_estimados = $row['clics_generados'] * 10; // Estimación
+                $roi = $row['costo_inversion'] > 0 
+                    ? round((($ingresos_estimados - $row['costo_inversion']) / $row['costo_inversion']) * 100, 1)
+                    : 0;
+                
+                $campanas[] = [
+                    'id' => $row['id_campana'],
+                    'nombre' => $row['red_social'] . ' - ' . $row['empresa'],
+                    'red_social' => $row['red_social'],
+                    'empresa' => $row['empresa'],
+                    'inversion' => floatval($row['costo_inversion']),
+                    'clics' => intval($row['clics_generados']),
+                    'estado' => $row['estado'],
+                    'roi' => $roi
+                ];
             }
-            
-            $campanas[] = [
-                'id' => $row['id_campana'],
-                'nombre' => $row['red_social'] . ($row['empresa'] ? ' - ' . $row['empresa'] : ''),
-                'estado' => $row['estado'],
-                'inversion' => (float)$row['costo_inversion'],
-                'roi' => round($roi, 1)
-            ];
         }
     } catch (Exception $e) {
-        error_log("Error obteniendo efectividad de campañas: " . $e->getMessage());
+        error_log("Error obteniendo campañas: " . $e->getMessage());
     }
     
     return $campanas;
@@ -372,19 +276,16 @@ function obtenerEfectividadCampanas($conn, $estado = 'todas') {
 function obtenerListaSorteos($conn) {
     $sorteos = [];
     
-    if (!$conn || $conn->connect_error) {
-        return $sorteos;
-    }
-    
     try {
-        $sql = "SELECT id_sorteo, titulo FROM sorteos ORDER BY titulo ASC";
+        $sql = "SELECT id_sorteo, titulo FROM sorteos ORDER BY titulo";
         $result = $conn->query($sql);
-        
-        while ($row = $result->fetch_assoc()) {
-            $sorteos[] = [
-                'id' => $row['id_sorteo'],
-                'titulo' => $row['titulo']
-            ];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $sorteos[] = [
+                    'id' => $row['id_sorteo'],
+                    'titulo' => $row['titulo']
+                ];
+            }
         }
     } catch (Exception $e) {
         error_log("Error obteniendo lista de sorteos: " . $e->getMessage());
@@ -393,151 +294,24 @@ function obtenerListaSorteos($conn) {
     return $sorteos;
 }
 
-/**
- * Genera SVG del gráfico de tendencia de ingresos
- */
-function generarGraficoTendenciaIngresos($datos_tendencia) {
-    // Generar últimos 6 meses
-    $meses = [];
-    $valores = [];
-    $fecha_actual = new DateTime();
-    
-    for ($i = 5; $i >= 0; $i--) {
-        $fecha = clone $fecha_actual;
-        $fecha->modify("-$i months");
-        $mes_key = $fecha->format('Y-m');
-        $mes_nombre = $fecha->format('M');
-        $meses[] = ['key' => $mes_key, 'nombre' => $mes_nombre];
-        $valores[] = isset($datos_tendencia[$mes_key]) ? $datos_tendencia[$mes_key]['total'] : 0;
-    }
-    
-    if (empty($valores) || max($valores) == 0) {
-        return '<div class="text-text-secondary text-center py-8">No hay datos disponibles</div>';
-    }
-    
-    $max_valor = max($valores);
-    $max_valor = $max_valor > 0 ? $max_valor : 1;
-    
-    // Calcular puntos
-    $puntos = [];
-    $num_puntos = count($valores);
-    for ($i = 0; $i < $num_puntos; $i++) {
-        $x = ($i / max(($num_puntos - 1), 1)) * 100;
-        $y = 100 - (($valores[$i] / $max_valor) * 80); // 80% del alto para dejar margen
-        $puntos[] = ['x' => $x, 'y' => $y];
-    }
-    
-    // Generar path
-    $path_area = "M{$puntos[0]['x']},100";
-    $path_linea = "M{$puntos[0]['x']},{$puntos[0]['y']}";
-    
-    for ($i = 1; $i < $num_puntos; $i++) {
-        $x_medio = ($puntos[$i-1]['x'] + $puntos[$i]['x']) / 2;
-        $path_area .= " C{$x_medio},{$puntos[$i-1]['y']} {$x_medio},{$puntos[$i]['y']} {$puntos[$i]['x']},{$puntos[$i]['y']}";
-        $path_linea .= " C{$x_medio},{$puntos[$i-1]['y']} {$x_medio},{$puntos[$i]['y']} {$puntos[$i]['x']},{$puntos[$i]['y']}";
-    }
-    $path_area .= " L{$puntos[$num_puntos-1]['x']},100 Z";
-    
-    $etiquetas_meses = '';
-    foreach ($meses as $mes) {
-        $etiquetas_meses .= '<span>' . $mes['nombre'] . '</span>';
-    }
-    
-    return <<<SVG
-<div class="relative h-64 w-full mt-auto">
-<div class="absolute inset-0 flex flex-col justify-between text-text-secondary text-xs font-medium">
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6">50k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6">40k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6">30k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6">20k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6">10k</span></div>
-</div>
-<svg class="absolute inset-0 h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-<defs>
-<linearGradient id="gradientLine" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#2463eb" stop-opacity="0.5"></stop>
-<stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-</linearGradient>
-</defs>
-<path d="$path_area" fill="url(#gradientLine)"></path>
-<path d="$path_linea" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
-SVG;
-}
-
-/**
- * Genera gráfico de dona para estado de boletos
- */
-function generarGraficoDonaBoletos($estado_boletos) {
-    $total = $estado_boletos['total'];
-    if ($total == 0) {
-        return '<div class="text-text-secondary text-center py-8">No hay boletos disponibles</div>';
-    }
-    
-    $vendidos = $estado_boletos['vendidos'] ?? 0;
-    $reservados = $estado_boletos['reservados'] ?? 0;
-    $disponibles = $estado_boletos['disponibles'] ?? 0;
-    
-    $porc_vendidos = ($vendidos / $total) * 100;
-    $porc_reservados = ($reservados / $total) * 100;
-    $porc_disponibles = ($disponibles / $total) * 100;
-    
-    $offset_reservados = $porc_vendidos;
-    $offset_disponibles = $porc_vendidos + $porc_reservados;
-    $fin_reservados = $offset_reservados + $porc_reservados;
-    
-    $total_display = $total >= 1000 ? number_format($total / 1000, 1) . 'k' : number_format($total);
-    
-    return '<div class="flex-1 flex flex-col items-center justify-center relative">
-<div class="size-48 rounded-full relative" style="background: conic-gradient(#2463eb 0% ' . $porc_vendidos . '%, #fa6538 ' . $offset_reservados . '% ' . $fin_reservados . '%, #282d39 ' . $offset_disponibles . '% 100%);">
-<div class="absolute inset-4 bg-[#1c1f27] rounded-full flex flex-col items-center justify-center">
-<span class="text-text-secondary text-xs font-medium">Total</span>
-<span class="text-white text-2xl font-bold">' . $total_display . '</span>
-</div>
-</div>
-</div>
-<div class="mt-6 space-y-3">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="size-3 rounded-full bg-primary"></span>
-<span class="text-text-secondary text-sm">Vendidos (' . round($porc_vendidos) . '%)</span>
-</div>
-<span class="text-white text-sm font-bold">' . number_format($vendidos) . '</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="size-3 rounded-full bg-danger"></span>
-<span class="text-text-secondary text-sm">Reservados (' . round($porc_reservados) . '%)</span>
-</div>
-<span class="text-white text-sm font-bold">' . number_format($reservados) . '</span>
-</div>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-2">
-<span class="size-3 rounded-full bg-[#282d39]"></span>
-<span class="text-text-secondary text-sm">Disponibles (' . round($porc_disponibles) . '%)</span>
-</div>
-<span class="text-white text-sm font-bold">' . number_format($disponibles) . '</span>
-</div>
-</div>';
-}
-
-// Obtener datos
-$kpis = obtenerKPIsInformes($conn, $fecha_inicio, $fecha_fin, $id_sorteo_filtro);
-$tendencia_ingresos = obtenerTendenciaIngresos($conn, $id_sorteo_filtro);
+// Obtener todos los datos
+$kpis = obtenerKPIs($conn);
+$tendencia_ingresos = obtenerTendenciaIngresos($conn);
 $estado_boletos = obtenerEstadoBoletos($conn);
-$ventas_sorteos = obtenerVentasPorSorteo($conn, $fecha_inicio, $fecha_fin);
-$campanas = obtenerEfectividadCampanas($conn, $estado_campana);
+$ventas_sorteos = obtenerVentasPorSorteo($conn);
+$campanas = obtenerCampanas($conn);
 $lista_sorteos = obtenerListaSorteos($conn);
 ?>
 
-
-<html class="dark" lang="es"><head>
+<html class="dark" lang="es">
+<head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Informes y Estadísticas Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -606,8 +380,7 @@ $lista_sorteos = obtenerListaSorteos($conn);
 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
                     Validación de Pagos
-                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
-</a>
+                </a>
 <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php">
 <span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
                     Generación de Ganadores
@@ -627,17 +400,13 @@ $lista_sorteos = obtenerListaSorteos($conn);
                 </a>
 </div>
 <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3 mb-3">
+<div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
 <div class="flex flex-col">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
 </div>
-<button id="logout-btn-admin" onclick="handleLogoutAdmin()" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-sm font-medium">
-<span class="material-symbols-outlined text-[20px]">logout</span>
-Cerrar Sesión
-</button>
 </div>
 </aside>
 <!-- Main Content -->
@@ -645,7 +414,6 @@ Cerrar Sesión
 <!-- Header -->
 <header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
 <div class="flex items-center gap-4">
-<!-- Mobile menu trigger (hidden on desktop) -->
 <button class="lg:hidden text-gray-500">
 <span class="material-symbols-outlined">menu</span>
 </button>
@@ -688,21 +456,19 @@ Cerrar Sesión
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 <div class="relative group">
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Rango de Fecha</label>
-<div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<button type="button" onclick="abrirModalFechas()" class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 hover:border-primary transition-all text-left">
 <span class="material-symbols-outlined text-text-secondary mr-2">date_range</span>
-<input id="dateRangeInput" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 placeholder-text-secondary" placeholder="Seleccionar fechas" type="date" value="<?php echo $fecha_inicio; ?>" onchange="actualizarFiltros()"/>
-<span class="text-text-secondary mx-2">-</span>
-<input id="dateRangeInputFin" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 placeholder-text-secondary" placeholder="Seleccionar fechas" type="date" value="<?php echo $fecha_fin; ?>" onchange="actualizarFiltros()"/>
-</div>
+<span class="bg-transparent border-none text-white text-sm w-full focus:ring-0 placeholder-text-secondary" id="fechaRangeDisplay"><?php echo date('d M, Y', strtotime('-1 month')) . ' - ' . date('d M, Y'); ?></span>
+</button>
 </div>
 <div class="relative group">
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Filtrar por Sorteo</label>
 <div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-text-secondary mr-2">confirmation_number</span>
-<select id="sorteoFilter" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black" onchange="actualizarFiltros()">
-<option value="todos">Todos los Sorteos</option>
+<select class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&>option]:text-black" id="filtroSorteo">
+<option value="">Todos los Sorteos</option>
 <?php foreach ($lista_sorteos as $sorteo): ?>
-<option value="<?php echo $sorteo['id']; ?>" <?php echo ($id_sorteo_filtro == $sorteo['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($sorteo['titulo']); ?></option>
+<option value="<?php echo $sorteo['id']; ?>"><?php echo htmlspecialchars($sorteo['titulo']); ?></option>
 <?php endforeach; ?>
 </select>
 </div>
@@ -711,11 +477,61 @@ Cerrar Sesión
 <label class="absolute -top-2.5 left-3 bg-background-dark px-1 text-xs font-medium text-text-secondary group-focus-within:text-primary transition-colors">Estado de Campaña</label>
 <div class="flex items-center h-12 w-full rounded-lg border border-[#3b4354] bg-[#1c1f27] px-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
 <span class="material-symbols-outlined text-text-secondary mr-2">filter_alt</span>
-<select id="campanaFilter" class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&amp;&gt;option]:text-black" onchange="actualizarFiltros()">
-<option value="todas" <?php echo $estado_campana == 'todas' ? 'selected' : ''; ?>>Todas las campañas</option>
-<option value="Activa" <?php echo $estado_campana == 'Activa' ? 'selected' : ''; ?>>Activas</option>
-<option value="Finalizada" <?php echo $estado_campana == 'Finalizada' ? 'selected' : ''; ?>>Finalizadas</option>
+<select class="bg-transparent border-none text-white text-sm w-full focus:ring-0 [&>option]:text-black" id="filtroCampana">
+<option value="">Todas las campañas</option>
+<option value="Activa">Activas</option>
+<option value="Pausada">Pausadas</option>
+<option value="Finalizada">Finalizadas</option>
 </select>
+</div>
+</div>
+</div>
+<!-- Modal de Rango de Fechas -->
+<div id="modalFechas" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm" onclick="cerrarModalFechas(event)">
+<div class="relative bg-[#1c1f27] rounded-xl border border-[#282d39] shadow-2xl w-full max-w-md mx-4" onclick="event.stopPropagation()">
+<!-- Header -->
+<div class="flex items-center justify-between p-4 border-b border-[#282d39]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">calendar_today</span>
+<h3 class="text-white text-base font-semibold">Rango de Fechas</h3>
+</div>
+<div class="relative">
+<select id="tipoFiltro" class="bg-[#282d39] border border-[#3b4354] rounded-lg px-3 py-1.5 text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary appearance-none pr-8 cursor-pointer">
+<option value="Todos">Tipo: Todos</option>
+<option value="Ingresos">Tipo: Ingresos</option>
+<option value="Boletos">Tipo: Boletos</option>
+<option value="Usuarios">Tipo: Usuarios</option>
+</select>
+<span class="absolute right-2 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary text-sm pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<!-- Contenido -->
+<div class="p-4 space-y-4">
+<!-- Fecha Inicio -->
+<div>
+<label class="block text-sm font-medium text-text-secondary mb-2">Fecha Inicio</label>
+<div class="relative">
+<input type="date" id="fechaInicio" class="w-full bg-[#282d39] border border-[#3b4354] rounded-lg px-3 py-2.5 pr-10 text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"/>
+<button type="button" onclick="document.getElementById('fechaInicio').showPicker()" class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary hover:text-white cursor-pointer text-lg pointer-events-auto">calendar_today</button>
+</div>
+</div>
+<!-- Fecha Fin -->
+<div>
+<label class="block text-sm font-medium text-text-secondary mb-2">Fecha Fin</label>
+<div class="relative">
+<input type="date" id="fechaFin" class="w-full bg-[#282d39] border border-[#3b4354] rounded-lg px-3 py-2.5 pr-10 text-white text-sm focus:ring-2 focus:ring-primary focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"/>
+<button type="button" onclick="document.getElementById('fechaFin').showPicker()" class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary hover:text-white cursor-pointer text-lg pointer-events-auto">calendar_today</button>
+</div>
+</div>
+</div>
+<!-- Botones -->
+<div class="flex gap-3 p-4 border-t border-[#282d39]">
+<button type="button" onclick="aplicarFiltroFechas()" class="flex-1 bg-primary text-white rounded-lg px-4 py-2.5 font-medium hover:bg-primary/90 transition-colors text-sm shadow-lg shadow-primary/20">
+Aplicar
+</button>
+<button type="button" onclick="limpiarFiltroFechas()" class="flex-1 bg-[#282d39] text-text-secondary rounded-lg px-4 py-2.5 font-medium hover:bg-[#3b4354] hover:text-white transition-colors text-sm">
+Limpiar
+</button>
 </div>
 </div>
 </div>
@@ -727,13 +543,20 @@ Cerrar Sesión
 <span class="material-symbols-outlined text-6xl text-white">payments</span>
 </div>
 <p class="text-text-secondary text-sm font-medium mb-1">Ingresos Totales</p>
-<h3 class="text-white text-2xl font-bold tracking-tight mb-2">$<?php echo number_format($kpis['ingresos_totales'], 2); ?></h3>
+<h3 class="text-white text-2xl font-bold tracking-tight mb-2">$<?php echo number_format($kpis['ingresos_totales'], 2, '.', ','); ?></h3>
 <div class="flex items-center gap-1.5">
-<div class="flex items-center justify-center <?php echo $kpis['tendencia_ingresos'] >= 0 ? 'bg-success/10' : 'bg-danger/10'; ?> rounded px-1.5 py-0.5">
-<span class="material-symbols-outlined <?php echo $kpis['tendencia_ingresos'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs mr-0.5"><?php echo $kpis['tendencia_ingresos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span>
-<span class="<?php echo $kpis['tendencia_ingresos'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs font-bold"><?php echo ($kpis['tendencia_ingresos'] >= 0 ? '+' : '') . $kpis['tendencia_ingresos']; ?>%</span>
+<?php 
+$tendencia_ingresos_class = $kpis['tendencia_ingresos'] >= 0 ? 'success' : 'danger';
+$tendencia_ingresos_icon = $kpis['tendencia_ingresos'] >= 0 ? 'trending_up' : 'trending_down';
+$tendencia_ingresos_sign = $kpis['tendencia_ingresos'] >= 0 ? '+' : '';
+$tendencia_ingresos_bg = $kpis['tendencia_ingresos'] >= 0 ? 'bg-success/10' : 'bg-danger/10';
+$tendencia_ingresos_text = $kpis['tendencia_ingresos'] >= 0 ? 'text-success' : 'text-danger';
+?>
+<div class="flex items-center justify-center <?php echo $tendencia_ingresos_bg; ?> rounded px-1.5 py-0.5">
+<span class="material-symbols-outlined <?php echo $tendencia_ingresos_text; ?> text-xs mr-0.5"><?php echo $tendencia_ingresos_icon; ?></span>
+<span class="<?php echo $tendencia_ingresos_text; ?> text-xs font-bold"><?php echo $tendencia_ingresos_sign . number_format($kpis['tendencia_ingresos'], 1); ?>%</span>
 </div>
-<span class="text-text-secondary text-xs">vs período anterior</span>
+<span class="text-text-secondary text-xs">vs mes anterior</span>
 </div>
 </div>
 <!-- Tickets -->
@@ -742,13 +565,20 @@ Cerrar Sesión
 <span class="material-symbols-outlined text-6xl text-white">confirmation_number</span>
 </div>
 <p class="text-text-secondary text-sm font-medium mb-1">Boletos Vendidos</p>
-<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo number_format($kpis['boletos_vendidos']); ?></h3>
+<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo number_format($kpis['boletos_vendidos'], 0, '.', ','); ?></h3>
 <div class="flex items-center gap-1.5">
-<div class="flex items-center justify-center <?php echo $kpis['tendencia_boletos'] >= 0 ? 'bg-success/10' : 'bg-danger/10'; ?> rounded px-1.5 py-0.5">
-<span class="material-symbols-outlined <?php echo $kpis['tendencia_boletos'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs mr-0.5"><?php echo $kpis['tendencia_boletos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span>
-<span class="<?php echo $kpis['tendencia_boletos'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs font-bold"><?php echo ($kpis['tendencia_boletos'] >= 0 ? '+' : '') . $kpis['tendencia_boletos']; ?>%</span>
+<?php 
+$tendencia_boletos_class = $kpis['tendencia_boletos'] >= 0 ? 'success' : 'danger';
+$tendencia_boletos_icon = $kpis['tendencia_boletos'] >= 0 ? 'trending_up' : 'trending_down';
+$tendencia_boletos_sign = $kpis['tendencia_boletos'] >= 0 ? '+' : '';
+$tendencia_boletos_bg = $kpis['tendencia_boletos'] >= 0 ? 'bg-success/10' : 'bg-danger/10';
+$tendencia_boletos_text = $kpis['tendencia_boletos'] >= 0 ? 'text-success' : 'text-danger';
+?>
+<div class="flex items-center justify-center <?php echo $tendencia_boletos_bg; ?> rounded px-1.5 py-0.5">
+<span class="material-symbols-outlined <?php echo $tendencia_boletos_text; ?> text-xs mr-0.5"><?php echo $tendencia_boletos_icon; ?></span>
+<span class="<?php echo $tendencia_boletos_text; ?> text-xs font-bold"><?php echo $tendencia_boletos_sign . number_format($kpis['tendencia_boletos'], 1); ?>%</span>
 </div>
-<span class="text-text-secondary text-xs">vs período anterior</span>
+<span class="text-text-secondary text-xs">vs mes anterior</span>
 </div>
 </div>
 <!-- Active Users -->
@@ -757,13 +587,13 @@ Cerrar Sesión
 <span class="material-symbols-outlined text-6xl text-white">group</span>
 </div>
 <p class="text-text-secondary text-sm font-medium mb-1">Usuarios Activos</p>
-<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo number_format($kpis['usuarios_activos']); ?></h3>
+<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo number_format($kpis['usuarios_activos'], 0, '.', ','); ?></h3>
 <div class="flex items-center gap-1.5">
-<div class="flex items-center justify-center <?php echo $kpis['tendencia_usuarios'] >= 0 ? 'bg-success/10' : 'bg-danger/10'; ?> rounded px-1.5 py-0.5">
-<span class="material-symbols-outlined <?php echo $kpis['tendencia_usuarios'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs mr-0.5"><?php echo $kpis['tendencia_usuarios'] >= 0 ? 'trending_up' : 'trending_down'; ?></span>
-<span class="<?php echo $kpis['tendencia_usuarios'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs font-bold"><?php echo ($kpis['tendencia_usuarios'] >= 0 ? '+' : '') . $kpis['tendencia_usuarios']; ?>%</span>
+<div class="flex items-center justify-center bg-success/10 rounded px-1.5 py-0.5">
+<span class="material-symbols-outlined text-success text-xs mr-0.5">group</span>
+<span class="text-success text-xs font-bold">Activos</span>
 </div>
-<span class="text-text-secondary text-xs">vs período anterior</span>
+<span class="text-text-secondary text-xs">en la plataforma</span>
 </div>
 </div>
 <!-- Conversion -->
@@ -772,13 +602,13 @@ Cerrar Sesión
 <span class="material-symbols-outlined text-6xl text-white">percent</span>
 </div>
 <p class="text-text-secondary text-sm font-medium mb-1">Tasa de Conversión</p>
-<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo $kpis['tasa_conversion']; ?>%</h3>
+<h3 class="text-white text-2xl font-bold tracking-tight mb-2"><?php echo number_format($kpis['tasa_conversion'], 1); ?>%</h3>
 <div class="flex items-center gap-1.5">
-<div class="flex items-center justify-center <?php echo $kpis['tendencia_conversion'] >= 0 ? 'bg-success/10' : 'bg-danger/10'; ?> rounded px-1.5 py-0.5">
-<span class="material-symbols-outlined <?php echo $kpis['tendencia_conversion'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs mr-0.5"><?php echo $kpis['tendencia_conversion'] >= 0 ? 'trending_up' : 'trending_down'; ?></span>
-<span class="<?php echo $kpis['tendencia_conversion'] >= 0 ? 'text-success' : 'text-danger'; ?> text-xs font-bold"><?php echo ($kpis['tendencia_conversion'] >= 0 ? '+' : '') . $kpis['tendencia_conversion']; ?>%</span>
+<div class="flex items-center justify-center bg-primary/10 rounded px-1.5 py-0.5">
+<span class="material-symbols-outlined text-primary text-xs mr-0.5">percent</span>
+<span class="text-primary text-xs font-bold">Boletos</span>
 </div>
-<span class="text-text-secondary text-xs">vs período anterior</span>
+<span class="text-text-secondary text-xs">vendidos / total</span>
 </div>
 </div>
 </div>
@@ -796,78 +626,37 @@ Cerrar Sesión
 <span class="text-text-secondary text-sm">Ventas Netas</span>
 </div>
 </div>
-<?php
-// Generar gráfico de tendencia de ingresos
-$meses_grafico = [];
-$valores_grafico = [];
-$fecha_actual_grafico = new DateTime();
-$max_valor_grafico = 0;
-
-for ($i = 5; $i >= 0; $i--) {
-    $fecha = clone $fecha_actual_grafico;
-    $fecha->modify("-$i months");
-    $mes_key = $fecha->format('Y-m');
-    $mes_nombre = $fecha->format('M');
-    $meses_grafico[] = $mes_nombre;
-    $valor = isset($tendencia_ingresos[$mes_key]) ? $tendencia_ingresos[$mes_key]['total'] : 0;
-    $valores_grafico[] = $valor;
-    if ($valor > $max_valor_grafico) $max_valor_grafico = $valor;
-}
-
-if ($max_valor_grafico == 0) $max_valor_grafico = 1;
-
-// Calcular puntos
-$puntos_grafico = [];
-for ($i = 0; $i < count($valores_grafico); $i++) {
-    $x = ($i / max((count($valores_grafico) - 1), 1)) * 100;
-    $y = 100 - (($valores_grafico[$i] / $max_valor_grafico) * 80);
-    $puntos_grafico[] = ['x' => $x, 'y' => $y];
-}
-
-// Generar paths
-$path_area_grafico = "M{$puntos_grafico[0]['x']},100";
-$path_linea_grafico = "M{$puntos_grafico[0]['x']},{$puntos_grafico[0]['y']}";
-
-for ($i = 1; $i < count($puntos_grafico); $i++) {
-    $x_medio = ($puntos_grafico[$i-1]['x'] + $puntos_grafico[$i]['x']) / 2;
-    $path_area_grafico .= " C{$x_medio},{$puntos_grafico[$i-1]['y']} {$x_medio},{$puntos_grafico[$i]['y']} {$puntos_grafico[$i]['x']},{$puntos_grafico[$i]['y']}";
-    $path_linea_grafico .= " C{$x_medio},{$puntos_grafico[$i-1]['y']} {$x_medio},{$puntos_grafico[$i]['y']} {$puntos_grafico[$i]['x']},{$puntos_grafico[$i]['y']}";
-}
-$path_area_grafico .= " L{$puntos_grafico[count($puntos_grafico)-1]['x']},100 Z";
-?>
 <div class="relative h-64 w-full mt-auto">
-<div class="absolute inset-0 flex flex-col justify-between text-text-secondary text-xs font-medium">
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6"><?php echo number_format($max_valor_grafico / 1000, 0); ?>k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6"><?php echo number_format($max_valor_grafico * 0.8 / 1000, 0); ?>k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6"><?php echo number_format($max_valor_grafico * 0.6 / 1000, 0); ?>k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6"><?php echo number_format($max_valor_grafico * 0.4 / 1000, 0); ?>k</span></div>
-<div class="border-b border-[#3b4354]/30 w-full h-0 flex items-center"><span class="-mt-6"><?php echo number_format($max_valor_grafico * 0.2 / 1000, 0); ?>k</span></div>
-</div>
-<svg class="absolute inset-0 h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-<defs>
-<linearGradient id="gradientLine" x1="0" x2="0" y1="0" y2="1">
-<stop offset="0%" stop-color="#2463eb" stop-opacity="0.5"></stop>
-<stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-</linearGradient>
-</defs>
-<path d="<?php echo $path_area_grafico; ?>" fill="url(#gradientLine)"></path>
-<path d="<?php echo $path_linea_grafico; ?>" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
-<?php foreach ($puntos_grafico as $punto): ?>
-<circle cx="<?php echo $punto['x']; ?>" cy="<?php echo $punto['y']; ?>" fill="#2463eb" r="1.5" stroke="white" stroke-width="0.5" vector-effect="non-scaling-stroke"></circle>
-<?php endforeach; ?>
-</svg>
-</div>
-<div class="flex justify-between w-full mt-2 text-text-secondary text-xs font-medium px-1">
-<?php foreach ($meses_grafico as $mes): ?>
-<span><?php echo $mes; ?></span>
-<?php endforeach; ?>
+<canvas id="chartIngresos"></canvas>
 </div>
 </div>
 <!-- Secondary Chart: Donut (Ticket Status) -->
 <div class="bg-[#1c1f27] rounded-xl border border-[#282d39] p-6 flex flex-col">
 <h3 class="text-white text-lg font-bold mb-1">Estado de Boletos</h3>
 <p class="text-text-secondary text-sm mb-6">Distribución actual del inventario</p>
-<?php echo generarGraficoDonaBoletos($estado_boletos); ?>
+<div class="flex-1 flex flex-col items-center justify-center relative">
+<canvas id="chartBoletos" style="max-width: 200px; max-height: 200px;"></canvas>
+</div>
+<div class="mt-6 space-y-3">
+<?php
+$porcentaje_vendidos = $estado_boletos['total'] > 0 ? round(($estado_boletos['vendidos'] / $estado_boletos['total']) * 100, 1) : 0;
+$porcentaje_disponibles = $estado_boletos['total'] > 0 ? round(($estado_boletos['disponibles'] / $estado_boletos['total']) * 100, 1) : 0;
+?>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-primary"></span>
+<span class="text-text-secondary text-sm">Vendidos (<?php echo $porcentaje_vendidos; ?>%)</span>
+</div>
+<span class="text-white text-sm font-bold"><?php echo number_format($estado_boletos['vendidos'], 0, '.', ','); ?></span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="size-3 rounded-full bg-[#282d39]"></span>
+<span class="text-text-secondary text-sm">Disponibles (<?php echo $porcentaje_disponibles; ?>%)</span>
+</div>
+<span class="text-white text-sm font-bold"><?php echo number_format($estado_boletos['disponibles'], 0, '.', ','); ?></span>
+</div>
+</div>
 </div>
 </div>
 <!-- Charts Row 2: Bar Chart & Table -->
@@ -878,33 +667,8 @@ $path_area_grafico .= " L{$puntos_grafico[count($puntos_grafico)-1]['x']},100 Z"
 <h3 class="text-white text-lg font-bold">Ventas por Sorteo</h3>
 <button onclick="viewSalesDetails()" class="text-primary text-sm font-medium hover:text-white transition-colors">Ver Detalles</button>
 </div>
-<div class="h-64 flex items-end justify-between gap-4">
-<?php
-if (empty($ventas_sorteos)) {
-    echo '<div class="w-full text-center text-text-secondary py-8">No hay ventas de sorteos en el período seleccionado</div>';
-} else {
-    // Calcular máximo para escalar las barras
-    $max_ingresos = 0;
-    foreach ($ventas_sorteos as $venta) {
-        if ($venta['ingresos'] > $max_ingresos) {
-            $max_ingresos = $venta['ingresos'];
-        }
-    }
-    if ($max_ingresos == 0) $max_ingresos = 1;
-    
-    foreach ($ventas_sorteos as $venta) {
-        $porcentaje = ($venta['ingresos'] / $max_ingresos) * 100;
-        $titulo_corto = strlen($venta['titulo']) > 10 ? substr($venta['titulo'], 0, 10) . '...' : $venta['titulo'];
-        echo '<div class="flex flex-col items-center flex-1 gap-2 group">
-<div class="w-full bg-[#282d39] rounded-t-lg relative h-40 group-hover:bg-[#3b4354] transition-colors">
-<div class="absolute bottom-0 w-full bg-primary rounded-t-lg transition-all duration-500" style="height: ' . $porcentaje . '%;"></div>
-<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">$' . number_format($venta['ingresos'], 0) . '</div>
-</div>
-<span class="text-text-secondary text-xs font-medium text-center truncate w-full" title="' . htmlspecialchars($venta['titulo']) . '">' . htmlspecialchars($titulo_corto) . '</span>
-</div>';
-    }
-}
-?>
+<div class="relative h-64 w-full">
+<canvas id="chartVentasSorteos"></canvas>
 </div>
 </div>
 <!-- Campaign Table -->
@@ -926,36 +690,53 @@ if (empty($ventas_sorteos)) {
 </tr>
 </thead>
 <tbody class="divide-y divide-[#282d39]">
+<?php if (empty($campanas)): ?>
+<tr>
+<td colspan="4" class="py-4 px-6 text-center text-text-secondary text-sm">No hay campañas registradas</td>
+</tr>
+<?php else: ?>
+<?php foreach ($campanas as $campana): ?>
 <?php
-if (empty($campanas)) {
-    echo '<tr><td colspan="4" class="py-8 text-center text-text-secondary">No hay campañas de marketing registradas</td></tr>';
-} else {
-    $iconos = ['thumb_up', 'mail', 'camera_alt', 'campaign', 'trending_up'];
-    foreach ($campanas as $index => $campana) {
-        $icono = $iconos[$index % count($iconos)];
-        $estado_class = $campana['estado'] == 'Activa' ? 'bg-success/10 text-success border-success/20' : 
-                       ($campana['estado'] == 'Pausada' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : 
-                       'bg-[#282d39] text-text-secondary border-[#3b4354]');
-        $roi_class = $campana['roi'] >= 0 ? 'text-success' : 'text-danger';
-        $roi_signo = $campana['roi'] >= 0 ? '+' : '';
-        echo '<tr class="hover:bg-[#282d39]/50 transition-colors">
-<td class="py-4 px-6">
-<div class="flex items-center gap-3">
-<div class="bg-[#282d39] p-1.5 rounded text-white">
-<span class="material-symbols-outlined text-sm">' . $icono . '</span>
-</div>
-<span class="text-white text-sm font-medium">' . htmlspecialchars($campana['nombre']) . '</span>
-</div>
-</td>
-<td class="py-4 px-6">
-<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ' . $estado_class . ' border">' . htmlspecialchars($campana['estado']) . '</span>
-</td>
-<td class="py-4 px-6 text-text-secondary text-sm text-right">$' . number_format($campana['inversion'], 2) . '</td>
-<td class="py-4 px-6 ' . $roi_class . ' text-sm font-bold text-right">' . $roi_signo . $campana['roi'] . '%</td>
-</tr>';
+$estado_class = [
+    'Activa' => 'bg-success/10 text-success border-success/20',
+    'Pausada' => 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+    'Finalizada' => 'bg-[#282d39] text-text-secondary border-[#3b4354]'
+];
+$estado_badge = $estado_class[$campana['estado']] ?? $estado_class['Finalizada'];
+$roi_class = $campana['roi'] >= 0 ? 'text-success' : 'text-danger';
+$roi_sign = $campana['roi'] >= 0 ? '+' : '';
+$icon_map = [
+    'Facebook' => 'thumb_up',
+    'Instagram' => 'camera_alt',
+    'Email' => 'mail',
+    'Twitter' => 'chat',
+    'Google' => 'ads_click'
+];
+$icon = 'campaign';
+foreach ($icon_map as $key => $val) {
+    if (stripos($campana['red_social'], $key) !== false) {
+        $icon = $val;
+        break;
     }
 }
 ?>
+<tr class="hover:bg-[#282d39]/50 transition-colors">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3">
+<div class="bg-[#282d39] p-1.5 rounded text-white">
+<span class="material-symbols-outlined text-sm"><?php echo $icon; ?></span>
+</div>
+<span class="text-white text-sm font-medium"><?php echo htmlspecialchars($campana['nombre']); ?></span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium <?php echo $estado_badge; ?> border"><?php echo $campana['estado']; ?></span>
+</td>
+<td class="py-4 px-6 text-text-secondary text-sm text-right">$<?php echo number_format($campana['inversion'], 2, '.', ','); ?></td>
+<td class="py-4 px-6 <?php echo $roi_class; ?> text-sm font-bold text-right"><?php echo $roi_sign . number_format($campana['roi'], 1); ?>%</td>
+</tr>
+<?php endforeach; ?>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
@@ -965,12 +746,173 @@ if (empty($campanas)) {
 </main>
 </div>
 </div>
+</div>
 <script>
-// ========== NAVEGACIÓN CON HISTORIAL ==========
+// Datos desde PHP
+const datosIngresos = <?php echo json_encode($tendencia_ingresos); ?>;
+const datosBoletos = <?php echo json_encode($estado_boletos); ?>;
+const datosVentasSorteos = <?php echo json_encode($ventas_sorteos); ?>;
 
-/**
- * Navega hacia atrás usando el historial del navegador
- */
+// Configuración de Chart.js para modo oscuro
+Chart.defaults.color = '#9da6b9';
+Chart.defaults.borderColor = '#3b4354';
+Chart.defaults.backgroundColor = '#1c1f27';
+
+// Gráfico de línea - Tendencia de Ingresos
+const ctxIngresos = document.getElementById('chartIngresos').getContext('2d');
+const chartIngresos = new Chart(ctxIngresos, {
+    type: 'line',
+    data: {
+        labels: datosIngresos.map(d => d.mes),
+        datasets: [{
+            label: 'Ingresos',
+            data: datosIngresos.map(d => d.total),
+            borderColor: '#2463eb',
+            backgroundColor: 'rgba(36, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#2463eb',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: '#1c1f27',
+                titleColor: '#ffffff',
+                bodyColor: '#9da6b9',
+                borderColor: '#3b4354',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        return '$' + context.parsed.y.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(59, 67, 84, 0.3)'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return '$' + (value / 1000).toFixed(0) + 'k';
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de dona - Estado de Boletos
+const ctxBoletos = document.getElementById('chartBoletos').getContext('2d');
+const chartBoletos = new Chart(ctxBoletos, {
+    type: 'doughnut',
+    data: {
+        labels: ['Vendidos', 'Disponibles'],
+        datasets: [{
+            data: [datosBoletos.vendidos, datosBoletos.disponibles],
+            backgroundColor: ['#2463eb', '#282d39'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: '#1c1f27',
+                titleColor: '#ffffff',
+                bodyColor: '#9da6b9',
+                borderColor: '#3b4354',
+                borderWidth: 1
+            }
+        }
+    }
+});
+
+// Gráfico de barras - Ventas por Sorteo
+const ctxVentasSorteos = document.getElementById('chartVentasSorteos').getContext('2d');
+const chartVentasSorteos = new Chart(ctxVentasSorteos, {
+    type: 'bar',
+    data: {
+        labels: datosVentasSorteos.map(d => d.titulo.length > 15 ? d.titulo.substring(0, 15) + '...' : d.titulo),
+        datasets: [{
+            label: 'Porcentaje Vendido',
+            data: datosVentasSorteos.map(d => d.porcentaje),
+            backgroundColor: datosVentasSorteos.map((d, i) => {
+                const colors = ['#2463eb', 'rgba(36, 99, 235, 0.6)', 'rgba(36, 99, 235, 0.8)', 'rgba(36, 99, 235, 0.4)', 'rgba(36, 99, 235, 1)'];
+                return colors[i % colors.length];
+            }),
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: '#1c1f27',
+                titleColor: '#ffffff',
+                bodyColor: '#9da6b9',
+                borderColor: '#3b4354',
+                borderWidth: 1,
+                callbacks: {
+                    label: function(context) {
+                        const index = context.dataIndex;
+                        const data = datosVentasSorteos[index];
+                        return [
+                            'Vendidos: ' + data.vendidos.toLocaleString(),
+                            'Total: ' + data.total.toLocaleString(),
+                            'Porcentaje: ' + data.porcentaje + '%'
+                        ];
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: {
+                    color: 'rgba(59, 67, 84, 0.3)'
+                },
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Función de navegación
 function navegarAtras() {
     try {
         if (window.history.length > 1) {
@@ -984,61 +926,172 @@ function navegarAtras() {
     }
 }
 
-// ========== ACTUALIZACIÓN DE FILTROS ==========
-
-/**
- * Actualiza los filtros y recarga la página con los nuevos parámetros
- */
-function actualizarFiltros() {
-    const fechaInicio = document.getElementById('dateRangeInput').value;
-    const fechaFin = document.getElementById('dateRangeInputFin').value;
-    const sorteo = document.getElementById('sorteoFilter').value;
-    const campana = document.getElementById('campanaFilter').value;
-    
-    const params = new URLSearchParams();
-    if (fechaInicio) params.append('fecha_inicio', fechaInicio);
-    if (fechaFin) params.append('fecha_fin', fechaFin);
-    if (sorteo && sorteo !== 'todos') params.append('sorteo', sorteo);
-    if (campana && campana !== 'todas') params.append('estado_campana', campana);
-    
-    window.location.href = 'InformesEstadisticasAdmin.php?' + params.toString();
-}
-
-/**
- * Función para ver detalles de ventas (placeholder)
- */
 function viewSalesDetails() {
-    // Redirigir a página de gestión de sorteos o mostrar modal
-    window.location.href = 'CrudGestionSorteo.php';
+    // Implementar navegación a detalles de ventas si es necesario
+    console.log('Ver detalles de ventas');
 }
-// Función para manejar el logout del administrador
-function handleLogoutAdmin() {
-    // Usar customConfirm para mantener consistencia con el resto de la aplicación
-    if (typeof customConfirm === 'function') {
-        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
-            if (confirmed) {
-                // Redirigir al logout.php que destruye la sesión del servidor
-                window.location.href = 'logout.php';
+
+// ========== FUNCIONES DEL MODAL DE FECHAS ==========
+
+/**
+ * Abre el modal de selección de rango de fechas
+ */
+function abrirModalFechas() {
+    const modal = document.getElementById('modalFechas');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Cargar fechas actuales si existen
+        const fechaDisplay = document.getElementById('fechaRangeDisplay').textContent.trim();
+        if (fechaDisplay && fechaDisplay.includes(' - ')) {
+            const fechas = fechaDisplay.split(' - ');
+            if (fechas.length === 2) {
+                // Convertir formato "d M, Y" a formato de fecha para input type="date"
+                const fechaInicio = convertirFechaParaInput(fechas[0].trim());
+                const fechaFin = convertirFechaParaInput(fechas[1].trim());
+                
+                if (fechaInicio) document.getElementById('fechaInicio').value = fechaInicio;
+                if (fechaFin) document.getElementById('fechaFin').value = fechaFin;
             }
-        });
-    } else {
-        // Si customConfirm no está disponible, esperar a que se cargue
-        setTimeout(() => {
-            if (typeof customConfirm === 'function') {
-                handleLogoutAdmin();
-            } else {
-                // Fallback si customConfirm no se carga
-                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                    window.location.href = 'logout.php';
-                }
-            }
-        }, 200);
+        }
     }
 }
-</script>
-<!-- Cargar custom-alerts.js para usar alertas personalizadas -->
-<script src="custom-alerts.js"></script>
-</body></html>
 
-//pagina para ver los informes y estadisticas como administrador despues de iniciar sesion
-//Se ve esta pagina para ver los informes y estadisticas de la plataforma y los sorteos.
+/**
+ * Cierra el modal de fechas
+ */
+function cerrarModalFechas(event) {
+    if (event && event.target.id === 'modalFechas') {
+        const modal = document.getElementById('modalFechas');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
+}
+
+/**
+ * Aplica el filtro de fechas seleccionado
+ */
+function aplicarFiltroFechas() {
+    const fechaInicio = document.getElementById('fechaInicio').value;
+    const fechaFin = document.getElementById('fechaFin').value;
+    const tipoFiltro = document.getElementById('tipoFiltro').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona ambas fechas');
+        return;
+    }
+    
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+        alert('La fecha de inicio no puede ser posterior a la fecha de fin');
+        return;
+    }
+    
+    // Formatear fechas para mostrar
+    const fechaInicioFormateada = formatearFecha(fechaInicio);
+    const fechaFinFormateada = formatearFecha(fechaFin);
+    
+    // Actualizar el texto del botón
+    document.getElementById('fechaRangeDisplay').textContent = fechaInicioFormateada + ' - ' + fechaFinFormateada;
+    
+    // Cerrar el modal
+    const modal = document.getElementById('modalFechas');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // Aquí puedes agregar la lógica para filtrar los datos
+    console.log('Filtrar por:', {
+        fechaInicio: fechaInicio,
+        fechaFin: fechaFin,
+        tipo: tipoFiltro
+    });
+    
+    // TODO: Implementar recarga de datos con filtros
+    // recargarDatosConFiltros(fechaInicio, fechaFin, tipoFiltro);
+}
+
+/**
+ * Limpia el filtro de fechas
+ */
+function limpiarFiltroFechas() {
+    document.getElementById('fechaInicio').value = '';
+    document.getElementById('fechaFin').value = '';
+    document.getElementById('tipoFiltro').value = 'Todos';
+    
+    // Restaurar fecha por defecto (último mes)
+    const hoy = new Date();
+    const haceUnMes = new Date();
+    haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+    
+    const fechaInicioFormateada = formatearFecha(haceUnMes.toISOString().split('T')[0]);
+    const fechaFinFormateada = formatearFecha(hoy.toISOString().split('T')[0]);
+    
+    document.getElementById('fechaRangeDisplay').textContent = fechaInicioFormateada + ' - ' + fechaFinFormateada;
+    
+    // Cerrar el modal
+    const modal = document.getElementById('modalFechas');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // TODO: Recargar datos sin filtros
+    // recargarDatosConFiltros(null, null, 'Todos');
+}
+
+/**
+ * Convierte fecha del formato "d M, Y" (ej: "01 Ene, 2023") a formato "YYYY-MM-DD"
+ */
+function convertirFechaParaInput(fechaTexto) {
+    if (!fechaTexto) return '';
+    
+    const meses = {
+        'Ene': '01', 'Feb': '02', 'Mar': '03', 'Abr': '04',
+        'May': '05', 'Jun': '06', 'Jul': '07', 'Ago': '08',
+        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dic': '12'
+    };
+    
+    const partes = fechaTexto.split(' ');
+    if (partes.length === 3) {
+        const dia = partes[0].padStart(2, '0');
+        const mes = meses[partes[1].replace(',', '')] || '01';
+        const año = partes[2];
+        return `${año}-${mes}-${dia}`;
+    }
+    
+    return '';
+}
+
+/**
+ * Formatea fecha de "YYYY-MM-DD" a "d M, Y" (ej: "01 Ene, 2023")
+ */
+function formatearFecha(fecha) {
+    if (!fecha) return '';
+    
+    const fechaObj = new Date(fecha + 'T00:00:00');
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    
+    const dia = fechaObj.getDate();
+    const mes = meses[fechaObj.getMonth()];
+    const año = fechaObj.getFullYear();
+    
+    return `${dia} ${mes}, ${año}`;
+}
+
+// Cerrar modal con ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('modalFechas');
+        if (modal && !modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
+});
+</script>
+</body>
+</html>

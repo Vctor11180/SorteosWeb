@@ -171,22 +171,6 @@ function generateWinner($conn, $data) {
         $resInfo = $conn->query($sqlWinnerInfo);
         $userInfo = $resInfo->fetch_assoc();
         
-        // Obtener título del sorteo
-        $sqlSorteo = "SELECT titulo FROM sorteos WHERE id_sorteo = $id_sorteo";
-        $resSorteo = $conn->query($sqlSorteo);
-        $sorteoInfo = $resSorteo->fetch_assoc();
-        
-        // Registrar en auditoría
-        registrarAuditoria(
-            $conn,
-            $id_admin,
-            'generacion_ganador',
-            'Generación de Ganador',
-            "Sorteo #$id_sorteo - {$sorteoInfo['titulo']} - Boleto: {$winnerTicket['numero_boleto']}",
-            'success',
-            false
-        );
-        
         echo json_encode([
             'success' => true, 
             'message' => 'Ganador generado exitosamente',
