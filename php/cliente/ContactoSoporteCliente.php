@@ -1,0 +1,556 @@
+<?php
+/**
+ * ContactoSoporteCliente
+ * Sistema de Sorteos Web
+ */
+
+// Iniciar sesión
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar autenticación para páginas protegidas
+$protectedPages = ['DashboardCliente', 'AjustesPefilCliente', 'MisBoletosCliente', 'MisGanancias', 'SeleccionBoletos', 'SorteoClienteDetalles', 'FinalizarPagoBoletos'];
+if (in_array('ContactoSoporteCliente', $protectedPages) && (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true)) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+// Obtener datos del usuario desde la base de datos
+require_once __DIR__ . '/includes/user-data.php';
+$datosUsuario = obtenerDatosUsuarioCompletos();
+if (!$datosUsuario) {
+    header('Location: InicioSesion.php');
+    exit;
+}
+$usuarioNombre = $datosUsuario['nombre'];
+$usuarioEmail = $datosUsuario['email'];
+$usuarioSaldo = $datosUsuario['saldo'];
+$usuarioAvatar = $datosUsuario['avatar'];
+$tipoUsuario = $datosUsuario['tipoUsuario'];
+?>
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contacto y Soporte - Plataforma Sorteos</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2463eb",
+              "background-light": "#f6f6f8",
+              "background-dark": "#111318",
+              "card-dark": "#282d39",
+              "text-secondary": "#9da6b9"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #1c1f27; 
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #3b4354; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #4b5563; 
+        }
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #282d39; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4254; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white overflow-hidden h-screen flex">
+<!-- Sidebar -->
+<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39]/50 bg-gradient-to-b from-[#111318] to-[#151a23] h-full shadow-2xl shadow-black/20">
+<div class="p-6 pb-2">
+<div class="flex items-center gap-3 mb-8">
+<div class="size-8 text-primary">
+<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
+</div>
+<!-- User Mini Profile -->
+<div class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-card-dark/80 to-[#151a23] mb-6 border border-[#282d39]/50 shadow-lg">
+<div class="relative">
+<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-2 ring-primary/30 ring-offset-2 ring-offset-[#111318] shadow-lg" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
+</div>
+<div class="flex flex-col overflow-hidden">
+<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
+<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-2">
+<a id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="DashboardCliente.php">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</a>
+<a id="nav-sorteos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="ListadoSorteosActivos.php">
+<span class="material-symbols-outlined text-xl">local_activity</span>
+<p class="text-sm font-medium">Sorteos</p>
+</a>
+<a id="nav-boletos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="MisBoletosCliente.php">
+<span class="material-symbols-outlined text-xl">confirmation_number</span>
+<p class="text-sm font-medium">Mis Boletos</p>
+</a>
+<a id="nav-ganadores" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="MisGanancias.php">
+<span class="material-symbols-outlined text-xl">emoji_events</span>
+<p class="text-sm font-medium">Ganadores</p>
+</a>
+<a id="nav-perfil" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="AjustesPefilCliente.php">
+<span class="material-symbols-outlined text-xl">person</span>
+<p class="text-sm font-medium">Perfil</p>
+</a>
+<a id="nav-soporte" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30" href="ContactoSoporteCliente.php">
+<span class="material-symbols-outlined text-xl">support_agent</span>
+<p class="text-sm font-bold">Soporte</p>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6">
+<button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-xl h-11 px-4 bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-[#9da6b9] hover:text-white text-sm font-bold transition-all duration-200 border border-[#3e4552]/50 shadow-lg hover:shadow-xl">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
+</div>
+</aside>
+<!-- Mobile Menu Container -->
+<div id="client-mobile-menu-container"></div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+<!-- Top Header -->
+<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39]/50 bg-gradient-to-r from-[#111318] via-[#151a23] to-[#111318] backdrop-blur-sm sticky top-0 z-20 shadow-lg shadow-black/10">
+<!-- Mobile Menu Toggle -->
+<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Page Title -->
+<h1 class="text-xl font-bold text-white hidden sm:block">Contacto y Soporte</h1>
+<div class="ml-auto"></div>
+</header>
+<!-- Scrollable Content Area -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
+<div class="flex flex-col items-center w-full">
+<div class="w-full max-w-[1080px] flex flex-col gap-8">
+<!-- PageHeading -->
+<div class="flex flex-col gap-4 pb-6 border-b border-[#282d39]/50">
+<h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em] bg-gradient-to-r from-white to-[#9da6b9] bg-clip-text text-transparent">Contacto y Soporte</h1>
+<p class="text-[#9da6b9] text-base font-normal leading-relaxed max-w-[720px]">
+                    Estamos aquí para ayudarte. Completa el formulario a continuación o utiliza nuestros canales de contacto directo.
+                </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Form -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] p-6 md:p-8 shadow-2xl shadow-black/20 backdrop-blur-sm">
+<div class="mb-6 pb-6 border-b border-[#282d39]/50">
+<h2 class="text-white text-2xl font-bold flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl">support_agent</span>
+Envíanos un mensaje
+</h2>
+<p class="text-[#9da6b9] text-sm mt-2">Responderemos a tu consulta en un plazo de 24 horas.</p>
+</div>
+<form id="contact-form" action="#" class="flex flex-col gap-5">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<label class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium leading-normal pb-2">Nombre completo</p>
+<input class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary px-4 py-3.5 placeholder-[#566074] transition-all duration-200 shadow-inner" placeholder="Ej. Juan Pérez" required="" type="text"/>
+</label>
+<label class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium leading-normal pb-2">Correo electrónico</p>
+<input class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary px-4 py-3.5 placeholder-[#566074] transition-all duration-200 shadow-inner" placeholder="tucorreo@ejemplo.com" required="" type="email"/>
+</label>
+</div>
+<label class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium leading-normal pb-2">Asunto</p>
+<div class="relative">
+<select class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary px-4 py-3.5 pr-10 appearance-none transition-all duration-200 shadow-inner">
+<option disabled="" selected="" value="" class="bg-[#0d1117] text-[#566074]">Selecciona un motivo</option>
+<option value="pagos" class="bg-[#0d1117] text-white">Problemas con pagos</option>
+<option value="boletos" class="bg-[#0d1117] text-white">Consulta sobre mis boletos</option>
+<option value="tecnico" class="bg-[#0d1117] text-white">Soporte técnico</option>
+<option value="otros" class="bg-[#0d1117] text-white">Otros</option>
+</select>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#9da6b9]">
+<span class="material-symbols-outlined text-xl">expand_more</span>
+</div>
+</div>
+</label>
+<label class="flex flex-col flex-1">
+<p class="text-white text-sm font-medium leading-normal pb-2">Mensaje</p>
+<textarea class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary px-4 py-3.5 placeholder-[#566074] transition-all duration-200 shadow-inner resize-y" placeholder="Describe tu problema o consulta con detalle..." required="" rows="5"></textarea>
+</label>
+<div class="pt-2">
+<button class="w-full md:w-auto min-w-[180px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-8 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary active:from-blue-700 active:to-blue-800 transition-all duration-200 text-white text-base font-bold leading-normal tracking-[0.015em] flex gap-2 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>Enviar Mensaje</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Right Column: Info & FAQ -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Contact Methods Card -->
+<div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] p-6 shadow-2xl shadow-black/20 backdrop-blur-sm">
+<h3 class="text-white text-xl font-bold mb-6 flex items-center gap-2 pb-4 border-b border-[#282d39]/50">
+<span class="material-symbols-outlined text-primary text-xl">contact_support</span>
+Información de Contacto
+</h3>
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-[#1a1f28]/50 to-transparent hover:from-[#1a1f28] hover:to-[#151a23] transition-all duration-200 border border-transparent hover:border-[#282d39]/30">
+<div class="size-12 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 flex items-center justify-center text-primary shrink-0 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-xl">mail</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-[#9da6b9] text-sm font-medium mb-1">Correo de soporte</p>
+<a class="text-white font-bold hover:text-primary transition-colors duration-200 text-sm break-all" href="mailto:ayuda@plataformasorteos.com">ayuda@plataformasorteos.com</a>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-[#1a1f28]/50 to-transparent hover:from-[#1a1f28] hover:to-[#151a23] transition-all duration-200 border border-transparent hover:border-[#282d39]/30">
+<div class="size-12 rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 flex items-center justify-center text-primary shrink-0 shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-xl">call</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-[#9da6b9] text-sm font-medium mb-1">Teléfono</p>
+<a class="text-white font-bold hover:text-primary transition-colors duration-200 text-sm break-words" href="tel:+525512345678">+52 55 1234 5678</a>
+<p class="text-xs text-[#566074] mt-2">Lun - Vie, 9:00 AM - 6:00 PM</p>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-br from-[#1a1f28]/50 to-transparent hover:from-[#1a1f28] hover:to-[#151a23] transition-all duration-200 border border-transparent hover:border-[#282d39]/30">
+<div class="size-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center text-green-400 shrink-0 shadow-lg shadow-green-500/10">
+<span class="material-symbols-outlined text-xl">chat</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-[#9da6b9] text-sm font-medium mb-1">Chat en vivo</p>
+<span class="text-green-400 text-sm font-bold flex items-center gap-2">
+<span class="size-2.5 rounded-full bg-green-400 animate-pulse shadow-lg shadow-green-400/50"></span>
+                                        Disponible ahora
+                                    </span>
+</div>
+</div>
+</div>
+</div>
+<!-- FAQ Mini Section -->
+<div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] p-6 shadow-2xl shadow-black/20 backdrop-blur-sm">
+<h3 class="text-white text-xl font-bold mb-6 flex items-center gap-3 pb-4 border-b border-[#282d39]/50">
+<div class="rounded-xl bg-gradient-to-br from-primary/20 to-blue-600/20 p-2 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-xl">help</span>
+</div>
+<span>Preguntas Frecuentes</span>
+</h3>
+<div class="flex flex-col gap-3">
+<a class="group relative flex items-center justify-between rounded-xl border border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28]/80 via-[#1a1f28]/50 to-transparent p-4.5 transition-all duration-300 hover:border-primary/60 hover:from-[#1a1f28] hover:via-[#151a23] hover:to-[#1a1f28] hover:shadow-xl hover:shadow-primary/20 transform hover:-translate-y-0.5" href="FAQCliente.php?section=sorteos">
+<div class="flex items-center gap-4">
+<div class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2.5 border border-primary/20 group-hover:from-primary/30 group-hover:to-blue-600/30 transition-all duration-300">
+<span class="material-symbols-outlined text-primary text-xl group-hover:scale-110 transition-transform duration-300">confirmation_number</span>
+</div>
+<span class="text-white text-sm font-semibold group-hover:text-white">¿Cómo ver mis boletos?</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#9da6b9] text-xs font-medium group-hover:text-primary transition-colors duration-300">Ver más</span>
+<span class="material-symbols-outlined text-[#9da6b9] text-lg group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">arrow_forward_ios</span>
+</div>
+</a>
+<a class="group relative flex items-center justify-between rounded-xl border border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28]/80 via-[#1a1f28]/50 to-transparent p-4.5 transition-all duration-300 hover:border-primary/60 hover:from-[#1a1f28] hover:via-[#151a23] hover:to-[#1a1f28] hover:shadow-xl hover:shadow-primary/20 transform hover:-translate-y-0.5" href="FAQCliente.php?section=pagos">
+<div class="flex items-center gap-4">
+<div class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2.5 border border-primary/20 group-hover:from-primary/30 group-hover:to-blue-600/30 transition-all duration-300">
+<span class="material-symbols-outlined text-primary text-xl group-hover:scale-110 transition-transform duration-300">payments</span>
+</div>
+<span class="text-white text-sm font-semibold group-hover:text-white">Métodos de pago</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#9da6b9] text-xs font-medium group-hover:text-primary transition-colors duration-300">Ver más</span>
+<span class="material-symbols-outlined text-[#9da6b9] text-lg group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">arrow_forward_ios</span>
+</div>
+</a>
+<a class="group relative flex items-center justify-between rounded-xl border border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28]/80 via-[#1a1f28]/50 to-transparent p-4.5 transition-all duration-300 hover:border-primary/60 hover:from-[#1a1f28] hover:via-[#151a23] hover:to-[#1a1f28] hover:shadow-xl hover:shadow-primary/20 transform hover:-translate-y-0.5" href="FAQCliente.php?section=ganadores">
+<div class="flex items-center gap-4">
+<div class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2.5 border border-primary/20 group-hover:from-primary/30 group-hover:to-blue-600/30 transition-all duration-300">
+<span class="material-symbols-outlined text-primary text-xl group-hover:scale-110 transition-transform duration-300">emoji_events</span>
+</div>
+<span class="text-white text-sm font-semibold group-hover:text-white">Reclamar premios</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#9da6b9] text-xs font-medium group-hover:text-primary transition-colors duration-300">Ver más</span>
+<span class="material-symbols-outlined text-[#9da6b9] text-lg group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">arrow_forward_ios</span>
+</div>
+</a>
+</div>
+<div class="mt-6 pt-5 border-t border-[#282d39]/50">
+<a class="group w-full flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:border-primary/40 px-5 py-3.5 text-primary font-bold text-sm transition-all duration-300 hover:from-primary/20 hover:via-primary/10 hover:to-primary/5 hover:shadow-lg hover:shadow-primary/20 transform hover:-translate-y-0.5" href="FAQCliente.php">
+<span class="material-symbols-outlined text-lg">quiz</span>
+<span>Ver centro de ayuda completo</span>
+<span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform duration-300">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Additional Help Banner -->
+<div class="w-full mt-8 rounded-2xl bg-gradient-to-br from-card-dark via-[#151a23] to-card-dark border border-[#282d39]/50 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group shadow-2xl shadow-black/20 backdrop-blur-sm">
+<!-- Abstract decoration -->
+<div class="absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-primary/20 via-primary/10 to-transparent pointer-events-none"></div>
+<div class="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-blue-600/10 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-5 z-10">
+<div class="rounded-2xl bg-gradient-to-br from-primary/30 to-blue-600/30 p-4 text-white shadow-xl shadow-primary/20 border border-primary/20">
+<span class="material-symbols-outlined text-4xl">verified_user</span>
+</div>
+<div>
+<h3 class="text-white text-2xl font-bold mb-2">Seguridad y Confianza</h3>
+<p class="text-[#9da6b9] text-sm leading-relaxed max-w-md">Todas tus transacciones y datos están protegidos con encriptación de nivel bancario.</p>
+</div>
+</div>
+<button id="privacy-policy-btn" class="z-10 whitespace-nowrap rounded-xl border border-[#282d39]/50 bg-gradient-to-r from-[#282d39] to-[#323846] px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:from-[#323846] hover:to-[#3b4254] hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 transform hover:-translate-y-0.5 active:translate-y-0">
+                     Ver política de privacidad
+                 </button>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full mt-12 pt-8 border-t border-[#282d39]">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-text-secondary text-sm">© 2023 Plataforma Sorteos. Todos los derechos reservados.</p>
+<div class="flex gap-6">
+<a class="text-text-secondary hover:text-white text-sm transition-colors" href="#">Términos</a>
+<a class="text-text-secondary hover:text-white text-sm transition-colors" href="#">Privacidad</a>
+<a class="text-text-secondary hover:text-white text-sm transition-colors" href="#">Cookies</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+<!-- Footer Spacing -->
+<div class="h-10"></div>
+</div>
+</main>
+<!-- Client Layout Script -->
+<script src="js/custom-alerts.js"></script>
+<script src="js/client-layout.js"></script>
+<!-- EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!-- Custom Alerts Script -->
+<script src="js/custom-alerts.js"></script>
+<script>
+// Configuración de EmailJS
+const EMAILJS_SERVICE_ID = 'service_t6dgdll';
+const EMAILJS_TEMPLATE_ID = 'template_lrz706t';
+const EMAILJS_PUBLIC_KEY = 'AbarWURbTBo53jPRO';
+const RECIPIENT_EMAIL = 'ismaeldev04@gmail.com'; // Correo destinatario
+
+// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+const userSessionData = {
+    nombre: '<?php echo addslashes($usuarioNombre); ?>',
+    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+    email: '<?php echo addslashes($usuarioEmail); ?>',
+    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+};
+
+// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+if (userSessionData.nombre && userSessionData.tipoUsuario) {
+    const sessionClientData = {
+        nombre: userSessionData.nombre,
+        tipoUsuario: userSessionData.tipoUsuario,
+        email: userSessionData.email,
+        saldo: userSessionData.saldo,
+        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+    };
+    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+}
+
+// Inicializar EmailJS cuando el SDK esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.ClientLayout) {
+        ClientLayout.init('soporte');
+    }
+    
+    // Inicializar EmailJS
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+    
+    // Manejar el envío del formulario de contacto
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Obtener valores del formulario
+            const nombre = contactForm.querySelector('input[type="text"]').value.trim();
+            const email = contactForm.querySelector('input[type="email"]').value.trim();
+            const selectElement = contactForm.querySelector('select');
+            const asuntoTexto = selectElement.options[selectElement.selectedIndex].text;
+            const asunto = selectElement.value || asuntoTexto;
+            const mensaje = contactForm.querySelector('textarea').value.trim();
+            
+            // Validar campos
+            if (!nombre || !email || !mensaje || !asunto || asunto === '') {
+                if (typeof customToast === 'function') {
+                    customToast('Por favor, completa todos los campos', 'error', 3000);
+                } else {
+                    alert('Por favor, completa todos los campos');
+                }
+                return;
+            }
+            
+            // Usar EmailJS para enviar el correo
+            if (typeof emailjs !== 'undefined') {
+                // Preparar los parámetros del template (deben coincidir con las variables de tu plantilla en EmailJS)
+                const templateParams = {
+                    from_name: nombre,
+                    from_email: email,
+                    subject: `[Soporte Sorteos Web] ${asuntoTexto}`,
+                    message: mensaje,
+                    reply_to: email
+                };
+                
+                // Deshabilitar el botón de envío mientras se procesa
+                const submitButton = contactForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Enviando...</span>';
+                
+                // Enviar el correo usando EmailJS
+                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+                    .then(function(response) {
+                        console.log('Email enviado exitosamente!', response.status, response.text);
+                        if (typeof customToast === 'function') {
+                            customToast('Mensaje enviado exitosamente. Te responderemos pronto.', 'success', 4000);
+                        } else {
+                            alert('Mensaje enviado exitosamente');
+                        }
+                        contactForm.reset();
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    }, function(error) {
+                        console.error('Error completo al enviar email:', error);
+                        console.error('Código de error:', error.text || error);
+                        console.error('Status:', error.status);
+                        
+                        let errorMessage = 'Error al enviar el mensaje. ';
+                        if (error.text) {
+                            errorMessage += error.text;
+                        } else {
+                            errorMessage += 'Por favor, verifica la consola para más detalles.';
+                        }
+                        
+                        if (typeof customToast === 'function') {
+                            customToast(errorMessage, 'error', 6000);
+                        } else {
+                            alert(errorMessage);
+                        }
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    });
+            } else {
+                // EmailJS no está disponible, usar mailto
+                const subject = encodeURIComponent(`[Soporte Sorteos Web] ${asuntoTexto}`);
+                const body = encodeURIComponent(`Nombre: ${nombre}\nCorreo: ${email}\nAsunto: ${asuntoTexto}\n\nMensaje:\n${mensaje}`);
+                const mailtoLink = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
+                
+                window.location.href = mailtoLink;
+                
+                setTimeout(() => {
+                    if (typeof customToast === 'function') {
+                        customToast('Se abrirá tu cliente de correo para enviar el mensaje.', 'info', 4000);
+                    } else {
+                        alert('Se abrirá tu cliente de correo para enviar el mensaje.');
+                    }
+                    contactForm.reset();
+                }, 500);
+            }
+        });
+    }
+    
+    // Manejar el botón de política de privacidad
+    const privacyPolicyBtn = document.getElementById('privacy-policy-btn');
+    if (privacyPolicyBtn) {
+        privacyPolicyBtn.addEventListener('click', function() {
+            window.location.href = 'TerminosCondicionesCliente.php';
+        });
+    }
+    
+    // Verificar si hay un parámetro de enfoque en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const focusParam = urlParams.get('focus');
+    
+    if (focusParam === 'mensaje') {
+        // Esperar un momento para que el DOM esté completamente cargado
+        setTimeout(() => {
+            const textarea = contactForm ? contactForm.querySelector('textarea') : null;
+            if (textarea) {
+                // Hacer scroll suave hacia el textarea
+                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Enfocar el textarea después de un pequeño delay
+                setTimeout(() => {
+                    textarea.focus();
+                    
+                    // Resaltar el textarea con una animación
+                    textarea.style.borderColor = '#2463eb';
+                    textarea.style.boxShadow = '0 0 0 3px rgba(36, 99, 235, 0.3)';
+                    
+                    // Remover el resaltado después de 3 segundos
+                    setTimeout(() => {
+                        textarea.style.borderColor = '';
+                        textarea.style.boxShadow = '';
+                    }, 3000);
+                    
+                    // Mostrar un mensaje indicando dónde escribir
+                    if (typeof customToast === 'function') {
+                        customToast('Escribe tu solicitud o consulta en el campo de mensaje', 'info', 4000);
+                    }
+                }, 500);
+            }
+        }, 300);
+    }
+});
+</script>
+</body></html>
+
+<!-- Página para contactar al soporte como cliente después de iniciar sesión
+     Se ve esta página para contactar al soporte de la plataforma y obtener ayuda con los problemas que se presenten. -->

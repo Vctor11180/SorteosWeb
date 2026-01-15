@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<?php
+// Conexión a la base de datos
+require_once 'config.php';
+$conn = getDBConnection();
+
+// Obtener userId de la URL
+$userId = isset($_GET['userId']) ? intval($_GET['userId']) : 0;
+
+// Obtener datos del usuario
+$userData = null;
+if ($userId > 0) {
+    $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno,
+                     u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url,
+                     (SELECT COUNT(*) FROM boletos WHERE id_usuario_actual = u.id_usuario AND estado = 'Vendido') as boletos_comprados,
+                     (SELECT COUNT(*) FROM ganadores WHERE id_usuario = u.id_usuario) as sorteos_ganados,
+                     (SELECT COALESCE(SUM(monto_total), 0) FROM transacciones WHERE id_usuario = u.id_usuario AND estado_pago = 'Completado') as total_gastado
+              FROM usuarios u
+              WHERE u.id_usuario = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $userData = $result->fetch_assoc();
+        $nombreCompleto = trim($userData['primer_nombre'] . ' ' . ($userData['segundo_nombre'] ?? '') . ' ' . $userData['apellido_paterno'] . ' ' . $userData['apellido_materno']);
+        $fechaRegistro = date('M Y', strtotime($userData['fecha_registro']));
+        $estado = $userData['estado'];
+        $estadoClasses = [
+            'Activo' => 'bg-green-400/10 text-green-400 ring-green-400/20',
+            'Inactivo' => 'bg-gray-400/10 text-gray-400 ring-gray-400/20',
+            'Baneado' => 'bg-red-400/10 text-red-400 ring-red-400/20'
+        ];
+        $estadoClass = $estadoClasses[$estado] ?? $estadoClasses['Inactivo'];
+    }
+    $stmt->close();
+}
+?>
+
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalles de Usuario Admin</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "card-dark": "#1e2433",
+                        "border-dark": "#2a3241",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111621; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a3241; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4657; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]">
+<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl">confirmation_number</span>
+<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                    Gestión de Sorteos
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                    Validación de Pagos
+                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    Generación de Ganadores
+                </a>
+<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="GestionUsuariosAdministrador.php">
+<span class="material-symbols-outlined">group</span>
+                    Usuarios
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                    Auditoría
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.php">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    Informes
+                </a>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+<span class="text-xs text-gray-500">admin@sorteos.web</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full bg-background-light dark:bg-background-dark relative overflow-hidden">
+<!-- Header -->
+<header class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md z-20">
+<div class="flex items-center gap-4">
+<!-- Mobile menu trigger (hidden on desktop) -->
+<button class="lg:hidden text-gray-500">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Detalles de Usuario</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block w-64">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
+</div>
+<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6">
+<div class="max-w-[1200px] mx-auto w-full space-y-8">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap items-center gap-2 py-3">
+<button onclick="goBack()" class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" title="Volver">
+<span class="material-symbols-outlined !text-lg">arrow_back</span>
+                            Volver
+                        </button>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">|</span>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal flex items-center gap-1" href="DashboardAdmnistrador.php">
+<span class="material-symbols-outlined !text-lg">dashboard</span>
+                            Dashboard
+                        </a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<a class="text-[#9da6b9] hover:text-white transition-colors text-sm font-medium leading-normal" href="GestionUsuariosAdministrador.php">Gestión de Usuarios</a>
+<span class="text-[#9da6b9] text-sm font-medium leading-normal">/</span>
+<span class="text-white text-sm font-medium leading-normal">Detalles de Usuario</span>
+</div>
+<!-- Page Heading & Actions -->
+<div class="flex flex-col md:flex-row flex-wrap justify-between gap-6 py-6 border-b border-[#282d39]">
+<div class="flex items-start gap-5">
+<?php if ($userData): ?>
+<?php 
+$avatarUrl = $userData['avatar_url'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($nombreCompleto) . '&background=2463eb&color=fff';
+?>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-24 border-2 border-[#282d39] shadow-md ring-2 ring-primary/20" data-alt="User Profile Picture" style='background-image: url("<?php echo htmlspecialchars($avatarUrl); ?>");'></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 flex-wrap">
+<h1 id="user-nombre-header" class="text-white text-3xl font-bold leading-tight"><?php echo htmlspecialchars($nombreCompleto); ?></h1>
+<span class="inline-flex items-center gap-1.5 rounded-full <?php echo $estadoClass; ?> px-3 py-1.5 text-xs font-semibold ring-1 ring-inset">
+                                        <?php echo htmlspecialchars($estado); ?>
+                                    </span>
+</div>
+<p class="text-[#9da6b9] text-sm font-normal">ID: <span id="user-id-display" class="text-white font-medium">#<?php echo $userData['id_usuario']; ?></span> • Miembro desde <span class="text-white"><?php echo $fechaRegistro; ?></span></p>
+</div>
+<?php else: ?>
+<div class="text-red-400">Usuario no encontrado</div>
+<?php endif; ?>
+</div>
+<div class="flex gap-3 items-center">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] border border-[#3b4354]">
+<span class="material-symbols-outlined mr-2 text-[18px]">lock_reset</span>
+<span class="truncate">Resetear Password</span>
+</button>
+<button id="btnEditarUsuario" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="material-symbols-outlined mr-2 text-[18px]">edit</span>
+<span class="truncate">Editar Usuario</span>
+</button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-primary/30 transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Boletos Comprados</p>
+<div class="p-2.5 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined text-xl">local_activity</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold"><?php echo $userData ? $userData['boletos_comprados'] : '0'; ?></p>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-yellow-500/30 transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Sorteos Ganados</p>
+<div class="p-2.5 bg-yellow-500/10 rounded-lg text-yellow-500">
+<span class="material-symbols-outlined text-xl">trophy</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold"><?php echo $userData ? $userData['sorteos_ganados'] : '0'; ?></p>
+</div>
+<div class="flex flex-col gap-3 rounded-xl border border-[#282d39] bg-[#1e232e] p-6 hover:border-green-500/30 transition-colors">
+<div class="flex items-center justify-between">
+<p class="text-[#9da6b9] text-sm font-medium">Total Gastado</p>
+<div class="p-2.5 bg-green-500/10 rounded-lg text-green-500">
+<span class="material-symbols-outlined text-xl">payments</span>
+</div>
+</div>
+<p class="text-white text-3xl font-bold">$<?php echo $userData ? number_format($userData['total_gastado'], 2) : '0.00'; ?></p>
+</div>
+</div>
+<!-- Main Grid Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4">
+<!-- Left Column: Info & Actions -->
+<div class="flex flex-col gap-6 lg:col-span-1">
+<!-- Personal Info Card -->
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-[#282d39] bg-[#282d39]/30">
+<h3 class="text-white text-lg font-bold">Información Personal</h3>
+</div>
+<div class="p-6 flex flex-col gap-5">
+<?php if ($userData): ?>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Nombre Completo</p>
+<p id="user-nombre" class="text-white text-sm"><?php echo htmlspecialchars($nombreCompleto); ?></p>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Correo Electrónico</p>
+<div class="flex items-center gap-2">
+<p id="user-email" class="text-white text-sm"><?php echo htmlspecialchars($userData['email']); ?></p>
+<span class="material-symbols-outlined text-green-500 text-[16px]" title="Verificado">verified</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Teléfono</p>
+<p id="user-telefono" class="text-white text-sm"><?php echo htmlspecialchars($userData['telefono'] ?: 'No proporcionado'); ?></p>
+</div>
+<?php endif; ?>
+</div>
+</div>
+<!-- Zona de Peligro -->
+<div class="rounded-xl border border-red-500/30 bg-red-500/5 overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-red-500/20 bg-red-500/10">
+<h3 class="text-white text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-red-500">warning</span>
+Zona de Peligro
+</h3>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<button type="button" id="btnBanearTemporal" class="w-full px-4 py-3 bg-amber-500 hover:bg-amber-600 transition-colors text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">schedule</span>
+Baneo Temporal
+</button>
+<button type="button" id="btnBanearPermanente" class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 transition-colors text-white font-semibold rounded-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">block</span>
+Baneo Permanente
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: History -->
+<div class="flex flex-col gap-6 lg:col-span-2">
+<!-- Tabs & Content Wrapper -->
+<div class="rounded-xl border border-[#282d39] bg-[#1e232e] overflow-hidden flex flex-col h-full shadow-sm">
+<!-- Tabs Header -->
+<div class="flex border-b border-[#282d39] overflow-x-auto">
+<button id="tabBoletos" onclick="switchTab('boletos')" class="px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                                        Historial de Boletos
+                                    </button>
+<button id="tabPagos" onclick="switchTab('pagos')" class="px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                        Historial de Pagos
+                                    </button>
+</div>
+<!-- Table: Tickets -->
+<div id="tablaBoletos" class="p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#282d39]/50 border-b border-[#282d39]">
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Sorteo</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Fecha</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Boletos</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Estado</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#282d39]/30 transition-colors group" data-fecha="2023-12-24">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Abstract colorful raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD9eDYvieG69qdNkIILqBzH6zAnxWWKvPFkFVNpgU6pEzWTRS-oOXJjfNCSsV4FBpzijjSQSL8wunjneR7-m4TjeyJWq_58sy4GtOhPPTWR0AMxNjOrBfNMyJ8y45famsGcT0-u0wihzmqiaCl05vpWvGVt-mVOPzRXf8l0CutYr03EhmxldpjRjgR4xh_XhloqcO0gn1xSHAhz_dxtqJ1_zPOhKbe9b8vwb6Ga04kz9kD275clS9wGelddzKs_eWcwVzL1nQPLvhY");'></div>
+<div>
+<p class="text-white text-sm font-medium">Gran Sorteo Navideño</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2023-001</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">24 Dic 2023</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">5 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/20">
+                                                        Finalizado
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="btn-ver-sorteo text-[#9da6b9] hover:text-white transition-colors" 
+        data-sorteo="Gran Sorteo Navideño"
+        data-id="#SRT-2023-001"
+        data-fecha="24 Dic 2023"
+        data-boletos="5"
+        data-estado="Finalizado"
+        data-imagen="https://lh3.googleusercontent.com/aida-public/AB6AXuD9eDYvieG69qdNkIILqBzH6zAnxWWKvPFkFVNpgU6pEzWTRS-oOXJjfNCSsV4FBpzijjSQSL8wunjneR7-m4TjeyJWq_58sy4GtOhPPTWR0AMxNjOrBfNMyJ8y45famsGcT0-u0wihzmqiaCl05vpWvGVt-mVOPzRXf8l0CutYr03EhmxldpjRjgR4xh_XhloqcO0gn1xSHAhz_dxtqJ1_zPOhKbe9b8vwb6Ga04kz9kD275clS9wGelddzKs_eWcwVzL1nQPLvhY">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group" data-fecha="2024-01-15">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Tech gadget raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBYbBWcV7WzsMcmShPucG0UX0IldctNPj9PRQU6sikgTeRvXmKJODtyKFlVMO13tXKbCvm4Han1LE6reXtzeVHngXoCUrpARRb9BggZGUUDxhbCQs5ngtXbVsfBPjaq7mHGMJiE3blBido-uPlJhTs4LofqXt5fR2MzDy5auHFHfNqEBZXSCE6mnZOQ90QaNOdHUOhFn3GulNqXh8ta2SCOTbDcvYSXrPRBlGKGqunpN1IXZ-fFsMJ9XjaJ7wJVc_9pN_aJYkw0cV8");'></div>
+<div>
+<p class="text-white text-sm font-medium">MacBook Pro M3</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-012</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">15 Ene 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">2 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">
+                                                        Ganador
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="btn-ver-sorteo text-[#9da6b9] hover:text-white transition-colors" 
+        data-sorteo="MacBook Pro M3"
+        data-id="#SRT-2024-012"
+        data-fecha="15 Ene 2024"
+        data-boletos="2"
+        data-estado="Ganador"
+        data-boleto-ganador="BLT-2024-012-847"
+        data-imagen="https://lh3.googleusercontent.com/aida-public/AB6AXuBYbBWcV7WzsMcmShPucG0UX0IldctNPj9PRQU6sikgTeRvXmKJODtyKFlVMO13tXKbCvm4Han1LE6reXtzeVHngXoCUrpARRb9BggZGUUDxhbCQs5ngtXbVsfBPjaq7mHGMJiE3blBido-uPlJhTs4LofqXt5fR2MzDy5auHFHfNqEBZXSCE6mnZOQ90QaNOdHUOhFn3GulNqXh8ta2SCOTbDcvYSXrPRBlGKGqunpN1IXZ-fFsMJ9XjaJ7wJVc_9pN_aJYkw0cV8">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group" data-fecha="2024-02-28">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Car raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAFvAWT1Iq67VhBJWPFN225tm261KmWKF3ZOXDwCis1_P1f8NxIf0PKSMy5fHj2HOzQHlhXDqCghs1FUZ_tEu8pkPQR5_LV46TTatwE5n-QOWgp4RP5k_o47K4dvB1D97uB_TjmYcA5MKvoEsnUbiBXuQPg-JbEwicbQ48CQ7xHGZcNMUT2Gbr2gnMrJHCgFbVxPPfKEVgtRsCyw5nYP3LwKql81YUThddgntLM69zVDXdNd2K2WIimzD89EU0yrifdG1-d9VtRflU");'></div>
+<div>
+<p class="text-white text-sm font-medium">Tesla Model 3</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-045</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">28 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">1 Boleto</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/20">
+                                                        En curso
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="btn-ver-sorteo text-[#9da6b9] hover:text-white transition-colors" 
+        data-sorteo="Tesla Model 3"
+        data-id="#SRT-2024-045"
+        data-fecha="28 Feb 2024"
+        data-boletos="1"
+        data-estado="En curso"
+        data-imagen="https://lh3.googleusercontent.com/aida-public/AB6AXuAFvAWT1Iq67VhBJWPFN225tm261KmWKF3ZOXDwCis1_P1f8NxIf0PKSMy5fHj2HOzQHlhXDqCghs1FUZ_tEu8pkPQR5_LV46TTatwE5n-QOWgp4RP5k_o47K4dvB1D97uB_TjmYcA5MKvoEsnUbiBXuQPg-JbEwicbQ48CQ7xHGZcNMUT2Gbr2gnMrJHCgFbVxPPfKEVgtRsCyw5nYP3LwKql81YUThddgntLM69zVDXdNd2K2WIimzD89EU0yrifdG1-d9VtRflU">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors group" data-fecha="2024-02-20">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded bg-[#282d39] bg-cover bg-center" data-alt="Cash prize raffle icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdzxSMhWMYOWZHBwBGzN-OBH70M_Nqs15AvWlBXodv7r6hRnoSW_SIkiLAE7v3jCuO75Hln-PunxERYQ_6Z3dImXkiw4mKdxuAQrL3BPv5bm6D9UuCq23PWtlubX-zpqlZsbaZlWgUELtLOZhdqUCogv-rf9jdzAP5hFVQKJGDO2tSvtyBfA5Av7EIxw2DjXWSOGiXU6af9oa0cG-HJCj91FhMM1HnvCcya3W2eueDhqFUNU6JGfAiyezMp6l4slcmPOFGQqY7yrw");'></div>
+<div>
+<p class="text-white text-sm font-medium">Sorteo Semanal $500</p>
+<p class="text-[#9da6b9] text-xs">#SRT-2024-044</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">20 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">10 Boletos</td>
+<td class="py-4 px-5">
+<span class="inline-flex items-center gap-1 rounded-full bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">
+                                                        No Ganador
+                                                    </span>
+</td>
+<td class="py-4 px-5 text-right">
+<button class="btn-ver-sorteo text-[#9da6b9] hover:text-white transition-colors" 
+        data-sorteo="Sorteo Semanal $500"
+        data-id="#SRT-2024-044"
+        data-fecha="20 Feb 2024"
+        data-boletos="10"
+        data-estado="No Ganador"
+        data-imagen="https://lh3.googleusercontent.com/aida-public/AB6AXuAdzxSMhWMYOWZHBwBGzN-OBH70M_Nqs15AvWlBXodv7r6hRnoSW_SIkiLAE7v3jCuO75Hln-PunxERYQ_6Z3dImXkiw4mKdxuAQrL3BPv5bm6D9UuCq23PWtlubX-zpqlZsbaZlWgUELtLOZhdqUCogv-rf9jdzAP5hFVQKJGDO2tSvtyBfA5Av7EIxw2DjXWSOGiXU6af9oa0cG-HJCj91FhMM1HnvCcya3W2eueDhqFUNU6JGfAiyezMp6l4slcmPOFGQqY7yrw">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-[#282d39] flex justify-center">
+<button class="text-[#9da6b9] text-sm hover:text-white transition-colors flex items-center gap-1">
+                                        Ver historial completo
+                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Table: Payments -->
+<div id="tablaPagos" class="p-0 overflow-x-auto" style="display: none;">
+<!-- Date Filter -->
+<div class="p-5 border-b border-[#282d39] bg-[#282d39]/30">
+<div class="flex flex-col sm:flex-row gap-4 items-end">
+<div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="flex flex-col gap-2">
+<label class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Fecha Desde</label>
+<input type="date" id="filtroFechaDesde" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-[#9da6b9] text-xs font-medium uppercase tracking-wider">Fecha Hasta</label>
+<input type="date" id="filtroFechaHasta" class="w-full bg-background-dark text-white border border-[#3b4354] rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"/>
+</div>
+</div>
+<button id="btnAplicarFiltro" class="flex items-center justify-center gap-2 h-10 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold rounded-lg">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span>
+Aplicar Filtro
+</button>
+<button id="btnLimpiarFiltro" class="flex items-center justify-center gap-2 h-10 px-4 bg-[#282d39] hover:bg-[#3b4354] transition-colors text-white text-sm font-medium rounded-lg border border-[#3b4354]">
+<span class="material-symbols-outlined text-[18px]">clear</span>
+Limpiar
+</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#282d39]/50 border-b border-[#282d39]">
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">ID Pago</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Fecha</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Método</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Monto</th>
+<th class="py-3 px-5 text-[#9da6b9] text-xs font-medium uppercase">Estado</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#282d39]">
+<tr class="hover:bg-[#282d39]/30 transition-colors" data-fecha="2024-02-28">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9921</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">28 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Visa
+                                                </td>
+<td class="py-4 px-5 text-white text-sm font-bold">$25.00</td>
+<td class="py-4 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors" data-fecha="2024-02-20">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9854</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">20 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> PayPal
+                                                </td>
+<td class="py-4 px-5 text-white text-sm font-bold">$100.00</td>
+<td class="py-4 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors" data-fecha="2024-02-10">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9812</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">10 Feb 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Visa
+                                                </td>
+<td class="py-4 px-5 text-white text-sm font-bold">$50.00</td>
+<td class="py-4 px-5">
+<span class="text-red-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">cancel</span> Fallido
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors" data-fecha="2024-01-15">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9785</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">15 Ene 2024</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Visa
+                                                </td>
+<td class="py-4 px-5 text-white text-sm font-bold">$75.00</td>
+<td class="py-4 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-[#282d39]/30 transition-colors" data-fecha="2023-12-24">
+<td class="py-4 px-5 text-[#d1d5db] text-sm">#PAY-9650</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm">24 Dic 2023</td>
+<td class="py-4 px-5 text-[#d1d5db] text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span> PayPal
+                                                </td>
+<td class="py-4 px-5 text-white text-sm font-bold">$150.00</td>
+<td class="py-4 px-5">
+<span class="text-green-400 text-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Completado
+                                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 border-t border-[#282d39] flex justify-center">
+<button class="text-[#9da6b9] text-sm hover:text-white transition-colors flex items-center gap-1">
+                                        Ver historial completo
+                                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+/**
+ * DETALLES DE USUARIO ADMINISTRADOR - Funcionalidades JavaScript
+ * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
+ */
+
+// ========== SISTEMA DE TABS ==========
+/**
+ * Cambia entre tabs de historial (Boletos/Pagos)
+ * @param {string} tab - 'boletos' o 'pagos'
+ */
+function switchTab(tab) {
+    const tabBoletos = document.getElementById('tabBoletos');
+    const tabPagos = document.getElementById('tabPagos');
+    const tablaBoletos = document.getElementById('tablaBoletos');
+    const tablaPagos = document.getElementById('tablaPagos');
+    
+    if (tab === 'boletos') {
+        // Activar tab de boletos
+        tabBoletos.className = 'px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap';
+        tabPagos.className = 'px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap';
+        
+        // Mostrar tabla de boletos, ocultar tabla de pagos
+        if (tablaBoletos) tablaBoletos.style.display = 'block';
+        if (tablaPagos) tablaPagos.style.display = 'none';
+    } else if (tab === 'pagos') {
+        // Activar tab de pagos
+        tabPagos.className = 'px-6 py-4 text-primary text-sm font-bold border-b-2 border-primary bg-[#282d39]/50 flex items-center gap-2 whitespace-nowrap';
+        tabBoletos.className = 'px-6 py-4 text-[#9da6b9] hover:text-white transition-colors text-sm font-medium border-b-2 border-transparent flex items-center gap-2 whitespace-nowrap';
+        
+        // Mostrar tabla de pagos, ocultar tabla de boletos
+        if (tablaPagos) tablaPagos.style.display = 'block';
+        if (tablaBoletos) tablaBoletos.style.display = 'none';
+    }
+}
+
+// ========== EDITAR USUARIO ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const btnEditarUsuario = document.getElementById('btnEditarUsuario');
+    if (btnEditarUsuario) {
+        btnEditarUsuario.addEventListener('click', editUserDetails);
+    }
+    
+    // Botón resetear password
+    const resetBtn = document.querySelector('button span[class*="lock_reset"]')?.closest('button');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetUserPassword);
+    }
+    
+    // Botones de banear
+    const btnBanearTemporal = document.getElementById('btnBanearTemporal');
+    console.log('btnBanearTemporal encontrado:', btnBanearTemporal);
+    if (btnBanearTemporal) {
+        btnBanearTemporal.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click en Baneo Temporal');
+            mostrarModalBanearTemporal();
+        });
+    }
+    
+    const btnBanearPermanente = document.getElementById('btnBanearPermanente');
+    console.log('btnBanearPermanente encontrado:', btnBanearPermanente);
+    if (btnBanearPermanente) {
+        btnBanearPermanente.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click en Baneo Permanente');
+            mostrarModalBanearPermanente();
+        });
+    }
+});
+
+/**
+ * Muestra modal para editar usuario
+ */
+function editUserDetails() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    
+    const nombre = document.getElementById('user-nombre')?.textContent || '';
+    const email = document.getElementById('user-email')?.textContent || '';
+    const telefono = document.getElementById('user-telefono')?.textContent || '';
+    const direccion1 = document.getElementById('user-direccion1')?.textContent || '';
+    const direccion2 = document.getElementById('user-direccion2')?.textContent || '';
+    const direccion3 = document.getElementById('user-direccion3')?.textContent || '';
+    
+    modal.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Editar Usuario</h3>
+                    <form onsubmit="saveUserChanges(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre Completo</label>
+                            <input type="text" name="nombre" value="${nombre}" required class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                            <input type="email" name="email" value="${email}" required class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
+                            <input type="tel" name="telefono" value="${telefono}" class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
+                            <input type="text" name="direccion1" value="${direccion1}" class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary mb-2">
+                            <input type="text" name="direccion2" value="${direccion2}" class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary mb-2">
+                            <input type="text" name="direccion3" value="${direccion3}" class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div class="flex justify-end gap-2 pt-4">
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 dark:bg-[#282d39] text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3b4354] text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 text-sm font-medium">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/**
+ * Guarda los cambios del usuario
+ * @param {Event} event - Evento del formulario
+ */
+async function saveUserChanges(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
+        return;
+    }
+    
+    // Preparar datos para enviar
+    const datos = {
+        action: 'editar_usuario',
+        userId: userId,
+        nombre: formData.get('nombre'),
+        email: formData.get('email'),
+        telefono: formData.get('telefono') || ''
+    };
+    
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(datos)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Cerrar modal
+            event.target.closest('.fixed').remove();
+            
+            showNotification('Usuario actualizado exitosamente', 'success');
+            
+            // Recargar la página después de 1 segundo para mostrar los cambios
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al actualizar el usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al comunicarse con el servidor', 'error');
+    }
+}
+
+// ========== RESETEAR PASSWORD ==========
+/**
+ * Resetea la contraseña del usuario
+ */
+async function resetUserPassword() {
+    const confirmado = await mostrarModalConfirmacion(
+        '¿Deseas resetear la contraseña de este usuario? Se enviará un email con la nueva contraseña.',
+        'Confirmar reseteo de contraseña',
+        'info'
+    );
+    
+    if (!confirmado) {
+        return;
+    }
+    
+    showNotification('Email con nueva contraseña enviado exitosamente', 'success');
+    
+    // En producción: llamada API
+    // fetch('/api/users/reset-password', { method: 'POST' })
+}
+
+// ========== SUSPENDER USUARIO ==========
+/**
+ * Suspende temporalmente al usuario
+ */
+async function suspendUser() {
+    const motivo = await mostrarModalInput(
+        'Motivo de la suspensión:',
+        'Suspender usuario',
+        'Ingresa el motivo de la suspensión...',
+        ''
+    );
+    
+    if (!motivo || motivo.trim() === '') {
+        return;
+    }
+    
+    const duracion = await mostrarModalInput(
+        'Duración (días) o "indefinido":',
+        'Duración de la suspensión',
+        'Ej: 7, 30, indefinido',
+        ''
+    );
+    
+    if (!duracion) {
+        return;
+    }
+    
+    const confirmado = await mostrarModalConfirmacion(
+        `¿Confirmas suspender al usuario por ${duracion}?`,
+        'Confirmar suspensión',
+        'warning'
+    );
+    
+    if (!confirmado) {
+        return;
+    }
+    
+    showNotification('Usuario suspendido exitosamente', 'success');
+    
+    // En producción: llamada API
+    // fetch('/api/users/suspend', {
+    //     method: 'POST',
+    //     body: JSON.stringify({ motivo, duracion })
+    // })
+}
+
+// ========== BLOQUEAR TEMPORAL ==========
+/**
+ * Muestra modal para banear temporalmente
+ */
+function mostrarModalBanearTemporal() {
+    console.log('mostrarModalBanearTemporal llamado');
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    modalOverlay.onclick = function(e) { 
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    };
+    
+    modalOverlay.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+            <div class="relative bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark" onclick="event.stopPropagation()">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-amber-500">schedule</span>
+                        Baneo Temporal
+                    </h3>
+                    <form id="formBanearTemporal" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hasta qué fecha será baneada <span class="text-red-400">*</span></label>
+                            <input type="date" id="fechaBaneoTemporal" required class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Razón <span class="text-red-400">*</span></label>
+                            <textarea id="razonBaneoTemporal" rows="3" required placeholder="Describe el motivo del baneo temporal..." class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 resize-none"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-4">
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 dark:bg-[#282d39] text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3b4354] text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-medium">
+                                Confirmar Baneo Temporal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Establecer fecha mínima como hoy
+    const fechaInput = modalOverlay.querySelector('#fechaBaneoTemporal');
+    if (fechaInput) {
+        const hoy = new Date().toISOString().split('T')[0];
+        fechaInput.min = hoy;
+    }
+    
+    // Agregar event listener al formulario
+    const form = modalOverlay.querySelector('#formBanearTemporal');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            procesarBanearTemporal(e, modalOverlay);
+        });
+    }
+}
+
+/**
+ * Procesa el baneo temporal
+ */
+async function procesarBanearTemporal(event, modalOverlay) {
+    event.preventDefault();
+    const fechaBaneo = document.getElementById('fechaBaneoTemporal').value;
+    const razon = document.getElementById('razonBaneoTemporal').value.trim();
+    
+    if (!fechaBaneo || !razon) {
+        showNotification('Por favor completa todos los campos', 'error');
+        return;
+    }
+    
+    // Calcular duración basada en la fecha
+    const fechaActual = new Date();
+    const fechaBaneoDate = new Date(fechaBaneo);
+    const diffTime = fechaBaneoDate - fechaActual;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 1) {
+        showNotification('La fecha de baneo debe ser posterior a hoy', 'error');
+        return;
+    }
+    
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
+        return;
+    }
+    
+    // Convertir fecha a formato de duración para la API
+    let duracion = '';
+    if (diffDays <= 1) {
+        duracion = '24h';
+    } else if (diffDays <= 3) {
+        duracion = '3d';
+    } else if (diffDays <= 7) {
+        duracion = '1w';
+    } else {
+        duracion = '1m';
+    }
+    
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'bloquear_temporal',
+                userId: userId,
+                duracion: duracion,
+                fecha_fin: fechaBaneo,
+                razon: razon
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (modalOverlay) modalOverlay.remove();
+            showNotification('Usuario baneado temporalmente exitosamente', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al banear usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al procesar la solicitud', 'error');
+    }
+}
+
+// ========== BANEAR PERMANENTE ==========
+/**
+ * Muestra modal para banear permanentemente
+ */
+function mostrarModalBanearPermanente() {
+    console.log('mostrarModalBanearPermanente llamado');
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
+    modalOverlay.onclick = function(e) { 
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    };
+    
+    modalOverlay.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20">
+            <div class="relative bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark" onclick="event.stopPropagation()">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-500">block</span>
+                        Baneo Permanente
+                    </h3>
+                    <form id="formBanearPermanente" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Razón <span class="text-red-400">*</span></label>
+                            <textarea id="razonBaneoPermanente" rows="4" required placeholder="Describe el motivo del baneo permanente..." class="w-full bg-white dark:bg-[#111621] border border-gray-300 dark:border-[#3b4354] rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 resize-none"></textarea>
+                        </div>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                            <p class="text-sm text-red-400 font-semibold mb-2">⚠️ Acción Irreversible</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Esta acción es PERMANENTE e IRREVERSIBLE. El usuario perderá acceso permanente a la plataforma y no podrá ser revertido.</p>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-4">
+                            <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 dark:bg-[#282d39] text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3b4354] text-sm font-medium">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
+                                Acción Irreversible
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modalOverlay);
+    
+    // Agregar event listener al formulario
+    const form = modalOverlay.querySelector('#formBanearPermanente');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            procesarBanearPermanente(e, modalOverlay);
+        });
+    }
+}
+
+/**
+ * Procesa el baneo permanente
+ */
+async function procesarBanearPermanente(event, modalOverlay) {
+    event.preventDefault();
+    const razon = document.getElementById('razonBaneoPermanente').value.trim();
+    
+    if (!razon) {
+        showNotification('Por favor ingresa el motivo del baneo', 'error');
+        return;
+    }
+    
+    const confirmado = await mostrarModalConfirmacion(
+        '¿Estás seguro de banear permanentemente a este usuario? Esta acción es PERMANENTE e IRREVERSIBLE.',
+        'Confirmar baneo permanente',
+        'danger'
+    );
+    
+    if (!confirmado) {
+        return;
+    }
+    
+    // Obtener userId de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    
+    if (!userId) {
+        showNotification('Error: No se pudo identificar al usuario', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('api_usuarios.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'banear_permanente',
+                userId: userId,
+                razon: razon
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (modalOverlay) modalOverlay.remove();
+            showNotification('Usuario baneado permanentemente exitosamente', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message || 'Error al banear usuario', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al procesar la solicitud', 'error');
+    }
+}
+
+// ========== VER DETALLES DE PAGO ==========
+/**
+ * Muestra detalles de un pago
+ * @param {string} paymentId - ID del pago
+ */
+function viewPaymentDetails(paymentId) {
+    window.location.href = `ValidacionPagosAdministrador.php?payment=${paymentId}`;
+}
+
+// ========== NOTIFICACIONES ==========
+/**
+ * Muestra una notificación toast
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo: 'success', 'error', 'info'
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
+        type === 'success' ? 'bg-green-500 text-white' : 
+        type === 'error' ? 'bg-red-500 text-white' : 
+        'bg-blue-500 text-white'
+    }`;
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'all 0.3s ease-in-out';
+    
+    notification.innerHTML = `
+        <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
+        <span class="font-medium">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// ========== NAVEGACIÓN ==========
+/**
+ * Navega hacia atrás en el historial
+ */
+// ========== NAVEGACIÓN CON HISTORIAL Y CONTEXTUAL ==========
+
+/**
+ * Obtiene la página de origen desde los parámetros o sessionStorage
+ */
+function obtenerPaginaOrigen() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const origen = params.get('origen');
+        if (origen) {
+            return decodeURIComponent(origen);
+        }
+        
+        const ultimaPagina = sessionStorage.getItem('ultimaPagina');
+        if (ultimaPagina) {
+            return ultimaPagina;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error al obtener página de origen:', error);
+        return null;
+    }
+}
+
+/**
+ * Navega hacia atrás usando el historial o contexto guardado
+ */
+function goBack() {
+    try {
+        // Intentar usar el historial del navegador primero
+        if (window.history.length > 1) {
+            // Verificar si hay una página de origen guardada
+            const paginaOrigen = obtenerPaginaOrigen();
+            if (paginaOrigen && paginaOrigen !== window.location.pathname.split('/').pop()) {
+                // Si hay un origen específico, navegar a él
+                window.location.href = paginaOrigen;
+            } else {
+                // Usar historial del navegador
+                window.history.back();
+            }
+        } else {
+            // Fallback: usar página de origen o página padre por defecto
+            const paginaOrigen = obtenerPaginaOrigen();
+            window.location.href = paginaOrigen || 'GestionUsuariosAdministrador.php';
+        }
+    } catch (error) {
+        console.error('Error al navegar atrás:', error);
+        window.location.href = 'GestionUsuariosAdministrador.php';
+    }
+}
+
+// ========== SISTEMA DE MODALES ==========
+/**
+ * Muestra un modal de confirmación (reemplazo de confirm())
+ */
+function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 'warning') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.2s ease-in-out';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'confirm-modal-title');
+        overlay.onclick = function(e) {
+            if (e.target === overlay) {
+                cerrarModal(overlay);
+                resolve(false);
+            }
+        };
+        
+        const iconos = {
+            warning: { icon: 'warning', color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+            danger: { icon: 'error', color: 'text-red-400', bg: 'bg-red-500/10' },
+            info: { icon: 'info', color: 'text-blue-400', bg: 'bg-blue-500/10' }
+        };
+        
+        const config = iconos[tipo] || iconos.warning;
+        
+        const modal = document.createElement('div');
+        modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
+        
+        modal.innerHTML = `
+            <div aria-hidden="true" class="fixed inset-0 transition-opacity">
+                <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            </div>
+            <span aria-hidden="true" class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${config.bg} sm:mx-0 sm:h-10 sm:w-10">
+                            <span class="material-symbols-outlined ${config.color}">${config.icon}</span>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 id="confirm-modal-title" class="text-lg leading-6 font-medium text-slate-900 dark:text-white">${titulo}</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${mensaje}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                    <button id="confirmBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                        Confirmar
+                    </button>
+                    <button id="cancelBtn" onclick="cerrarModal(this.closest('.modal-overlay')); window.modalConfirmResolve(false);" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        window.modalConfirmResolve = resolve;
+        
+        const confirmBtn = overlay.querySelector('#confirmBtn');
+        confirmBtn.onclick = () => {
+            cerrarModal(overlay);
+            resolve(true);
+        };
+        
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+        }, 10);
+        
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                cerrarModal(overlay);
+                resolve(false);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        setTimeout(() => confirmBtn.focus(), 100);
+    });
+}
+
+/**
+ * Muestra un modal de entrada de texto (reemplazo de prompt())
+ */
+function mostrarModalInput(mensaje, titulo = 'Ingresar información', placeholder = '', valorInicial = '') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.2s ease-in-out';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'input-modal-title');
+        overlay.onclick = function(e) {
+            if (e.target === overlay) {
+                cerrarModal(overlay);
+                resolve(null);
+            }
+        };
+        
+        const modal = document.createElement('div');
+        modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
+        
+        modal.innerHTML = `
+            <div aria-hidden="true" class="fixed inset-0 transition-opacity">
+                <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            </div>
+            <span aria-hidden="true" class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 sm:mx-0 sm:h-10 sm:w-10">
+                            <span class="material-symbols-outlined text-primary">edit</span>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 id="input-modal-title" class="text-lg leading-6 font-medium text-slate-900 dark:text-white">${titulo}</h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">${mensaje}</p>
+                                <input id="modalInput" type="text" value="${valorInicial}" placeholder="${placeholder}" class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" autofocus/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                    <button id="submitBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                        Aceptar
+                    </button>
+                    <button id="cancelInputBtn" onclick="cerrarModal(this.closest('.modal-overlay')); window.modalInputResolve(null);" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        window.modalInputResolve = resolve;
+        
+        const input = overlay.querySelector('#modalInput');
+        const submitBtn = overlay.querySelector('#submitBtn');
+        
+        submitBtn.onclick = () => {
+            const valor = input.value.trim();
+            cerrarModal(overlay);
+            resolve(valor || null);
+        };
+        
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                submitBtn.click();
+            }
+        };
+        
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            input.focus();
+            input.select();
+        }, 10);
+        
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                cerrarModal(overlay);
+                resolve(null);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    });
+}
+
+/**
+ * Cierra un modal
+ */
+function cerrarModal(overlay) {
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.remove();
+        }, 200);
+    }
+}
+</script>
+</body></html>
+
+//pagina para ver los detalles de un usuario como administrador despues de iniciar sesion
+//Se ve esta pagina para ver los detalles de un usuario y sus datos, los boletos comprados, los sorteos ganados, el total gastado y los pagos pendientes.

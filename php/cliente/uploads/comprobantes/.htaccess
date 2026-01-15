@@ -1,0 +1,17 @@
+# Proteger carpeta de comprobantes
+# Solo permitir acceso directo a archivos específicos
+
+# Denegar acceso a listado de directorios
+Options -Indexes
+
+# Permitir acceso a archivos específicos
+<FilesMatch "\.(png|jpg|jpeg|pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Denegar acceso a archivos PHP
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
