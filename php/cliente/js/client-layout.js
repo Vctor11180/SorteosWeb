@@ -59,7 +59,14 @@ const ClientLayout = {
     init(currentPageId = null) {
         this.state.currentPage = currentPageId || this.detectCurrentPage();
         this.loadClientData();
-        this.renderMobileMenu();
+        
+        // Verificar que renderNavigationLinks existe antes de llamarlo
+        if (typeof this.renderNavigationLinks === 'function') {
+            this.renderMobileMenu();
+        } else {
+            console.error('renderNavigationLinks no está definida. El menú móvil no se renderizará.');
+        }
+        
         this.attachEventListeners();
         this.updateActiveNavigation();
         this.updateUserInfo();
@@ -205,8 +212,32 @@ const ClientLayout = {
     },
 
     /**
-     * Los enlaces de navegaci?n ahora est?n directamente en el HTML
+     * Renderiza los enlaces de navegaci?n
+     * @returns {string} HTML de los enlaces de navegaci?n
      */
+    renderNavigationLinks() {
+        const currentPage = this.state.currentPage;
+        let linksHTML = '';
+        
+        Object.entries(this.navigationRoutes).forEach(([key, route]) => {
+            const isActive = currentPage === key;
+            const activeClasses = isActive 
+                ? 'bg-primary text-white' 
+                : 'text-text-secondary hover:text-white hover:bg-card-dark';
+            
+            linksHTML += `
+                <a id="${route.id}" 
+                   href="${route.path}" 
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg ${activeClasses} transition-colors group"
+                   ${isActive ? 'aria-current="page"' : ''}>
+                    <span class="material-symbols-outlined text-[24px]">${route.icon}</span>
+                    <p class="text-sm font-medium">${route.label}</p>
+                </a>
+            `;
+        });
+        
+        return linksHTML;
+    },
 
     /**
      * Renderiza el men? m?vil
@@ -214,6 +245,12 @@ const ClientLayout = {
     renderMobileMenu() {
         const mobileMenuContainer = document.getElementById('client-mobile-menu-container');
         if (!mobileMenuContainer) return;
+        
+        // Verificar que renderNavigationLinks existe
+        if (typeof this.renderNavigationLinks !== 'function') {
+            console.error('renderNavigationLinks no está definida. No se puede renderizar el menú móvil.');
+            return;
+        }
 
         mobileMenuContainer.innerHTML = `
             <!-- Mobile Menu Overlay -->

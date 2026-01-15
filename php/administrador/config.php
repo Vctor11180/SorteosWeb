@@ -1,14 +1,14 @@
 <?php
 /**
  * Configuración de conexión a la base de datos
- * Base de datos: sorteos_schema
+ * Base de datos: sorteo_schema
  */
 
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root'); // Cambiar según tu configuración
 define('DB_PASS', ''); // Cambiar según tu configuración
-define('DB_NAME', 'sorteos_schema');
+define('DB_NAME', 'sorteo_schema');
 define('DB_CHARSET', 'utf8mb4');
 
 /**

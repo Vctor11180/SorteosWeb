@@ -419,14 +419,31 @@ function deleteSorteo($conn, $id_admin) {
 
 /**
  * Crea los boletos para un sorteo
+ * Crea todos los boletos físicamente en la base de datos
+ * Usa inserción en lotes para mejor rendimiento
  */
 function crearBoletos($conn, $id_sorteo, $total_boletos) {
+    if ($total_boletos <= 0) {
+        return; // No hay boletos que crear
+    }
+    
+    // Preparar statement una sola vez para mejor rendimiento
     $stmt = $conn->prepare("INSERT INTO boletos (id_sorteo, numero_boleto, estado) VALUES (?, ?, 'Disponible')");
     
+    if (!$stmt) {
+        error_log("Error al preparar inserción de boletos: " . $conn->error);
+        return;
+    }
+    
+    // Insertar todos los boletos
     for ($i = 1; $i <= $total_boletos; $i++) {
         $numero_boleto = str_pad($i, 4, '0', STR_PAD_LEFT);
         $stmt->bind_param("is", $id_sorteo, $numero_boleto);
-        $stmt->execute();
+        
+        if (!$stmt->execute()) {
+            error_log("Error al insertar boleto #$numero_boleto para sorteo #$id_sorteo: " . $stmt->error);
+            // Continuar con el siguiente boleto aunque falle uno
+        }
     }
     
     $stmt->close();

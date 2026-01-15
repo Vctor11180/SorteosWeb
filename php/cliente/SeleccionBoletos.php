@@ -216,115 +216,49 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 </div>
 </div>
 </div>
-<!-- Toolbar: Search & Legend -->
-<div class="sticky top-20 z-30 bg-[#111318] py-4 mb-6 border-b border-[#282d39] flex flex-col md:flex-row gap-4 justify-between items-center">
-<!-- Search -->
-<div class="w-full md:w-96">
-<div class="relative group">
+<!-- Toolbar: Search & Filters -->
+<div class="sticky top-16 z-30 bg-[#111318] py-4 mb-6 border-b border-[#282d39] shadow-lg">
+<div class="flex flex-col gap-4">
+<!-- Search Bar -->
+<div class="w-full">
+<div class="relative group max-w-md mx-auto md:mx-0">
 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <span class="material-symbols-outlined text-text-secondary group-focus-within:text-primary transition-colors">search</span>
 </div>
-<input class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número (ej. 45)..." type="text"/>
+<input id="ticket-search-input" class="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg leading-5 bg-card-dark text-white placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Buscar número de boleto (ej. 45)..." type="text"/>
 </div>
 </div>
-<!-- Legend -->
-<div class="flex flex-wrap justify-center gap-4 text-sm font-medium text-text-secondary">
-<div class="flex items-center gap-2">
+<!-- Filter Buttons -->
+<div class="flex flex-wrap justify-center md:justify-start gap-3">
+<button id="filter-all" class="filter-btn active flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-primary bg-primary/20 text-white hover:bg-primary/30" data-filter="all">
+<span class="w-3 h-3 rounded-full bg-white border border-white"></span>
+<span>Todos</span>
+</button>
+<button id="filter-disponible" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-emerald-500/30 bg-card-dark text-text-secondary hover:bg-emerald-500/10 hover:text-white hover:border-emerald-500" data-filter="disponible">
 <span class="w-3 h-3 rounded-full bg-card-dark border border-emerald-500"></span>
 <span>Disponible</span>
-</div>
-<div class="flex items-center gap-2">
+</button>
+<button id="filter-seleccionado" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-primary/30 bg-card-dark text-text-secondary hover:bg-primary/10 hover:text-white hover:border-primary" data-filter="seleccionado">
 <span class="w-3 h-3 rounded-full bg-primary border border-primary"></span>
 <span>Seleccionado</span>
-</div>
-<div class="flex items-center gap-2">
+</button>
+<button id="filter-reservado" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-yellow-600/30 bg-card-dark text-text-secondary hover:bg-yellow-900/20 hover:text-yellow-400 hover:border-yellow-600" data-filter="reservado">
 <span class="w-3 h-3 rounded-full bg-yellow-900/40 border border-yellow-600"></span>
-<span>Pendiente</span>
-</div>
-<div class="flex items-center gap-2">
+<span>Reservado</span>
+</button>
+<button id="filter-vendido" class="filter-btn flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2 border-red-800/30 bg-card-dark text-text-secondary hover:bg-red-900/20 hover:text-red-400 hover:border-red-800" data-filter="vendido">
 <span class="w-3 h-3 rounded-full bg-red-900/40 border border-red-800"></span>
 <span>Vendido</span>
+</button>
 </div>
 </div>
 </div>
-<!-- Ticket Grid -->
-<div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3 pb-20 select-none">
-<!-- Render logic simulation -->
-<!-- Available -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
-<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">001</span>
-</button>
-<!-- Sold -->
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled="">
-<span class="font-mono font-bold text-red-700 decoration-red-500/50 line-through">002</span>
-</button>
-<!-- Available -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
-<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">003</span>
-</button>
-<!-- Selected -->
-<button class="h-12 rounded-lg border border-primary bg-primary shadow-[0_0_15px_rgba(36,99,235,0.4)] flex items-center justify-center relative overflow-hidden">
-<span class="font-mono font-bold text-white z-10">004</span>
-<div class="absolute inset-0 bg-white/10"></div>
-<span class="absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5">check</span>
-</button>
-<!-- Available -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center">
-<span class="font-mono font-bold text-emerald-400 group-hover:scale-110 transition-transform">005</span>
-</button>
-<!-- Pending -->
-<button class="h-12 rounded-lg border border-yellow-700/30 bg-yellow-900/10 cursor-not-allowed flex items-center justify-center opacity-80" disabled="">
-<span class="material-symbols-outlined text-yellow-600 text-lg absolute opacity-20">lock</span>
-<span class="font-mono font-bold text-yellow-600 relative z-10">006</span>
-</button>
-<!-- Available Loop -->
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">007</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">008</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">009</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">010</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">011</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">012</span></button>
-<!-- Selected -->
-<button class="h-12 rounded-lg border border-primary bg-primary shadow-[0_0_15px_rgba(36,99,235,0.4)] flex items-center justify-center relative overflow-hidden">
-<span class="font-mono font-bold text-white z-10">013</span>
-<div class="absolute inset-0 bg-white/10"></div>
-</button>
-<!-- More grid items simulation -->
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">014</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">015</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">016</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">017</span></button>
-<button class="group relative h-12 rounded-lg border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500 transition-all duration-200 flex items-center justify-center"><span class="font-mono font-bold text-emerald-400">018</span></button>
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">019</span></button>
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">020</span></button>
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">021</span></button>
-<button class="h-12 rounded-lg border border-red-900/30 bg-red-900/10 cursor-not-allowed flex items-center justify-center opacity-60" disabled=""><span class="font-mono font-bold text-red-700 line-through">022</span></button>
-<!-- Generate a block of available for visual density -->
-<!-- Using a pattern to fill space without too much repetition -->
-<div class="contents text-emerald-400">
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-card-dark flex items-center justify-center font-mono font-bold">023</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">024</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">025</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">026</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">027</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">028</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">029</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">030</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">031</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">032</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">033</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">034</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">035</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">036</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">037</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">038</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">039</button>
-<button class="h-12 rounded-lg border border-emerald-500/30 bg-[#1a202c] flex items-center justify-center font-mono font-bold">040</button>
+<!-- Ticket Grid (se renderizará dinámicamente desde la API) -->
+<div id="tickets-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3 pb-20 select-none">
+<!-- Los boletos se cargarán aquí dinámicamente desde la API -->
+<div id="tickets-loading" class="col-span-full text-center py-12">
+    <p class="text-text-secondary text-lg">Cargando boletos...</p>
 </div>
-<!-- Disabled -->
-<button class="h-12 rounded-lg border border-gray-700/30 bg-gray-800/30 text-gray-600 cursor-not-allowed flex items-center justify-center" disabled="">
-<span class="font-mono font-bold">041</span>
-</button>
 </div>
 </main>
 <!-- Sticky Cart Footer -->
@@ -367,27 +301,26 @@ if (in_array('SeleccionBoletos', $protectedPages) && (!isset($_SESSION['is_logge
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el layout con 'sorteos' como página activa
-    if (window.ClientLayout) {
-        ClientLayout.init('sorteos');
-    }
-    
-    // Cargar información del sorteo seleccionado
-    loadSorteoData();
-    
-    // Asegurar que los contadores se inicialicen (igual que DashboardCliente)
+    // Esperar un momento para asegurar que el script se haya cargado completamente
     setTimeout(function() {
-        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-        if (sorteoData.tiempoRestante) {
-            initSorteoCountdown(sorteoData.tiempoRestante);
-        } else {
-            initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+        if (window.ClientLayout && typeof ClientLayout.init === 'function') {
+            try {
+                ClientLayout.init('sorteos');
+            } catch (error) {
+                console.error('Error al inicializar ClientLayout:', error);
+            }
         }
-        startReservationTimer();
     }, 100);
     
-    // Inicializar funcionalidad de selección de boletos
-    initTicketSelection();
-    initTicketSearch();
+    // Cargar información del sorteo seleccionado
+    loadSorteoData().then(() => {
+        // Los contadores se inicializan dentro de loadSorteoData después de cargar los datos
+        // Inicializar funcionalidad de selección de boletos (se hace en renderTickets)
+        initTicketSelection();
+        initTicketSearch();
+    }).catch(error => {
+        console.error('Error al inicializar:', error);
+    });
     
     // Cargar boletos previamente seleccionados
     const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
@@ -407,47 +340,416 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Función para cargar los datos del sorteo desde localStorage
-function loadSorteoData() {
-    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-    
-    // Actualizar título
-    const titleElement = document.getElementById('sorteo-title-text');
-    if (titleElement) {
-        titleElement.textContent = sorteoData.titulo || 'Gran Sorteo Anual';
+// Variable global para almacenar el ID del sorteo
+let currentSorteoId = null;
+let currentSorteoData = null;
+
+// Función para cargar los datos del sorteo desde la API
+async function loadSorteoData() {
+    try {
+        // Obtener ID del sorteo desde localStorage o URL
+        const sorteoDataFromStorage = JSON.parse(localStorage.getItem('selectedSorteo') || '{}');
+        const urlParams = new URLSearchParams(window.location.search);
+        const sorteoIdFromUrl = urlParams.get('id');
+        const sorteoId = sorteoIdFromUrl || sorteoDataFromStorage.id || null;
+        
+        if (!sorteoId) {
+            console.error('No se encontró ID del sorteo');
+            showError('No se encontró información del sorteo. Por favor, selecciona un sorteo primero.');
+            return;
+        }
+        
+        currentSorteoId = parseInt(sorteoId);
+        
+        // Cargar detalles del sorteo desde la API
+        const response = await fetch(`api_sorteos.php?action=get_details&id=${currentSorteoId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (!data.success || !data.data) {
+            throw new Error(data.error || 'Error al cargar el sorteo');
+        }
+        
+        currentSorteoData = data.data;
+        
+        // Actualizar título
+        const titleElement = document.getElementById('sorteo-title-text');
+        if (titleElement) {
+            titleElement.textContent = currentSorteoData.titulo || 'Gran Sorteo Anual';
+        }
+        
+        // Actualizar descripción
+        const descElement = document.getElementById('sorteo-description');
+        if (descElement) {
+            const descripcion = currentSorteoData.descripcion || '';
+            descElement.textContent = descripcion + '. Selecciona tus números de la suerte a continuación.';
+        }
+        
+        // Actualizar imagen mini
+        const miniImage = document.querySelector('#sorteo-mini-image div');
+        if (miniImage && currentSorteoData.imagen_url) {
+            miniImage.style.backgroundImage = `url('${currentSorteoData.imagen_url}')`;
+        }
+        
+        // Actualizar precio
+        const precioElement = document.getElementById('precio-boleto-display');
+        if (precioElement) {
+            const precio = parseFloat(currentSorteoData.precio_boleto) || 0;
+            precioElement.textContent = `$${precio.toFixed(2)} MXN`;
+        }
+        
+        // Inicializar contador regresivo del sorteo
+        if (currentSorteoData.tiempo_restante) {
+            initSorteoCountdown(currentSorteoData.tiempo_restante);
+        } else {
+            initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+        }
+        
+        // Guardar el precio del boleto para calcular el total
+        window.currentTicketPrice = parseFloat(currentSorteoData.precio_boleto) || 50.00;
+        updateTotalPrice();
+        
+        // Iniciar timer de reserva
+        startReservationTimer();
+        
+        // Cargar boletos disponibles desde la API
+        await loadAvailableTickets();
+        
+    } catch (error) {
+        console.error('Error al cargar datos del sorteo:', error);
+        showError('Error al cargar la información del sorteo: ' + error.message);
+    }
+}
+
+// Función para cargar boletos disponibles desde la API
+async function loadAvailableTickets() {
+    if (!currentSorteoId) {
+        console.error('No hay ID de sorteo disponible');
+        return;
     }
     
-    // Actualizar descripción
-    const descElement = document.getElementById('sorteo-description');
-    if (descElement && sorteoData.subtitulo) {
-        descElement.textContent = sorteoData.subtitulo + '. Selecciona tus números de la suerte a continuación.';
+    const loadingEl = document.getElementById('tickets-loading');
+    const gridEl = document.getElementById('tickets-grid');
+    
+    if (loadingEl) loadingEl.style.display = 'block';
+    
+    try {
+        const response = await fetch(`api_boletos.php?action=get_available&id_sorteo=${currentSorteoId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log('Respuesta API boletos (primeros 500 chars):', text.substring(0, 500));
+        
+        const data = JSON.parse(text);
+        console.log('Datos parseados de boletos:', data);
+        
+        if (!data.success || !data.data) {
+            throw new Error(data.error || 'Error al cargar los boletos');
+        }
+        
+        console.log('Boletos disponibles:', data.data.disponibles?.length || 0);
+        console.log('Boletos reservados:', data.data.reservados?.length || 0);
+        console.log('Boletos vendidos:', data.data.vendidos?.length || 0);
+        console.log('Total boletos:', data.data.total_boletos);
+        
+        // Renderizar boletos dinámicamente
+        renderTickets(data.data);
+        
+        // Verificar si hay reservas activas del usuario
+        await checkUserReservations();
+        
+    } catch (error) {
+        console.error('Error al cargar boletos:', error);
+        showError('Error al cargar los boletos: ' + error.message);
+        if (gridEl) {
+            gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">Error al cargar los boletos. Por favor, recarga la página.</p></div>';
+        }
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
+    } finally {
+        // Asegurar que el mensaje de carga se oculte
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+        }
+    }
+}
+
+// Función para renderizar los boletos dinámicamente
+function renderTickets(boletosData) {
+    const gridEl = document.getElementById('tickets-grid');
+    const loadingEl = document.getElementById('tickets-loading');
+    
+    if (!gridEl) {
+        console.error('Contenedor de boletos no encontrado');
+        return;
     }
     
-    // Actualizar imagen mini
-    const miniImage = document.querySelector('#sorteo-mini-image div');
-    if (miniImage && sorteoData.imagen) {
-        miniImage.style.backgroundImage = `url('${sorteoData.imagen}')`;
+    // Ocultar mensaje de carga
+    if (loadingEl) {
+        loadingEl.style.display = 'none';
     }
     
-    // Actualizar precio
-    const precioElement = document.getElementById('precio-boleto-display');
-    if (precioElement) {
-        precioElement.textContent = `$${sorteoData.precio.toFixed(2)} MXN`;
+    // Limpiar el grid
+    gridEl.innerHTML = '';
+    
+    if (!boletosData) {
+        console.error('No hay datos de boletos para renderizar');
+        gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">No se recibieron datos de boletos.</p></div>';
+        return;
     }
     
-    // Inicializar contador regresivo del sorteo (igual que DashboardCliente)
-    if (sorteoData.tiempoRestante) {
-        initSorteoCountdown(sorteoData.tiempoRestante);
+    const { total_boletos, disponibles, reservados, vendidos } = boletosData;
+    
+    if (!total_boletos || total_boletos <= 0) {
+        console.error('Total de boletos inválido:', total_boletos);
+        gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">No hay boletos disponibles para este sorteo.</p></div>';
+        return;
+    }
+    
+    // Crear un mapa de todos los boletos
+    const allTickets = new Map();
+    
+    // Agregar boletos disponibles
+    disponibles.forEach(boleto => {
+        allTickets.set(parseInt(boleto.numero_boleto), {
+            ...boleto,
+            estado: 'Disponible'
+        });
+    });
+    
+    // Agregar boletos reservados
+    reservados.forEach(boleto => {
+        allTickets.set(parseInt(boleto.numero_boleto), {
+            ...boleto,
+            estado: 'Reservado'
+        });
+    });
+    
+    // Agregar boletos vendidos
+    vendidos.forEach(boleto => {
+        allTickets.set(parseInt(boleto.numero_boleto), {
+            ...boleto,
+            estado: 'Vendido'
+        });
+    });
+    
+    // Generar todos los boletos del 1 al total_boletos
+    for (let i = 1; i <= total_boletos; i++) {
+        const numeroBoleto = String(i).padStart(4, '0');
+        const boleto = allTickets.get(i);
+        
+        const button = document.createElement('button');
+        button.className = 'h-12 rounded-lg transition-all duration-200 flex items-center justify-center relative';
+        button.dataset.numeroBoleto = numeroBoleto;
+        button.dataset.numeroBoletoInt = i;
+        
+        const span = document.createElement('span');
+        span.className = 'font-mono font-bold';
+        span.textContent = numeroBoleto;
+        button.appendChild(span);
+        
+        // Aplicar estilos según el estado
+        if (!boleto || boleto.estado === 'Disponible') {
+            button.className += ' group border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500';
+            span.className += ' text-emerald-400 group-hover:scale-110 transition-transform';
+            button.disabled = false;
+            button.dataset.estado = 'disponible';
+            button.addEventListener('click', () => toggleTicketSelection(i, button));
+        } else if (boleto.estado === 'Reservado') {
+            // Verificar si está reservado por el usuario actual (esto se verificará después)
+            button.className += ' border border-yellow-700/30 bg-yellow-900/10 opacity-80';
+            span.className += ' text-yellow-600 relative z-10';
+            button.dataset.estado = 'reservado';
+            const lockIcon = document.createElement('span');
+            lockIcon.className = 'material-symbols-outlined text-yellow-600 text-lg absolute opacity-20';
+            lockIcon.textContent = 'lock';
+            button.appendChild(lockIcon);
+            button.disabled = true;
+        } else if (boleto.estado === 'Vendido') {
+            button.className += ' border border-red-900/30 bg-red-900/10 opacity-60';
+            span.className += ' text-red-700 decoration-red-500/50 line-through';
+            button.dataset.estado = 'vendido';
+            button.disabled = true;
+        }
+        
+        gridEl.appendChild(button);
+    }
+    
+    console.log(`✅ Renderizados ${total_boletos} boletos: ${disponibles.length} disponibles, ${reservados.length} reservados, ${vendidos.length} vendidos`);
+    
+    // Reinicializar la funcionalidad de selección
+    initTicketSelection();
+    
+    // Restaurar boletos previamente seleccionados
+    const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+    if (savedTickets.length > 0) {
+        savedTickets.forEach(num => {
+            const button = document.querySelector(`button[data-numero-boleto-int="${num}"]`);
+            if (button && !button.disabled) {
+                toggleTicketSelection(num, button);
+            }
+        });
+    }
+}
+
+// Función para verificar reservas activas del usuario
+async function checkUserReservations() {
+    if (!currentSorteoId) return;
+    
+    try {
+        const response = await fetch(`api_boletos.php?action=check_reservation&id_sorteo=${currentSorteoId}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (data.success && data.data && data.data.reservas_activas && data.data.reservas_activas.length > 0) {
+            // Marcar boletos reservados por el usuario como seleccionados
+            data.data.reservas_activas.forEach(reserva => {
+                const numeroBoleto = parseInt(reserva.numero_boleto);
+                selectedTickets.add(numeroBoleto);
+                
+                const button = document.querySelector(`button[data-numero-boleto-int="${numeroBoleto}"]`);
+                if (button && !button.disabled) {
+                    markTicketAsSelected(button);
+                }
+            });
+            
+            updateSelectedTicketsDisplay();
+            updateTotalPrice();
+            
+            // Actualizar el timer de reserva basado en la reserva más antigua
+            const oldestReservation = data.data.reservas_activas.reduce((oldest, current) => {
+                const oldestTime = new Date(oldest.fecha_reserva).getTime();
+                const currentTime = new Date(current.fecha_reserva).getTime();
+                return currentTime < oldestTime ? current : oldest;
+            });
+            
+            const reservationTime = new Date(oldestReservation.fecha_reserva).getTime();
+            const now = new Date().getTime();
+            const elapsed = Math.floor((now - reservationTime) / 1000);
+            const remaining = 900 - elapsed; // 15 minutos = 900 segundos
+            
+            if (remaining > 0) {
+                // Reiniciar el timer con el tiempo restante
+                startReservationTimerWithSeconds(remaining);
+            }
+        }
+    } catch (error) {
+        console.error('Error al verificar reservas:', error);
+    }
+}
+
+// Función para alternar selección de boleto
+function toggleTicketSelection(numeroBoleto, button) {
+    if (!button || button.disabled) return;
+    
+    if (selectedTickets.has(numeroBoleto)) {
+        selectedTickets.delete(numeroBoleto);
+        markTicketAsAvailable(button);
     } else {
-        initSorteoCountdown({ dias: 3, horas: 12, minutos: 45, segundos: 0 });
+        if (selectedTickets.size >= maxTickets) {
+            customAlert(`Solo puedes seleccionar hasta ${maxTickets} boletos a la vez.`, 'Límite alcanzado', 'warning');
+            return;
+        }
+        selectedTickets.add(numeroBoleto);
+        markTicketAsSelected(button);
+        
+        // Reservar el boleto automáticamente en el servidor
+        reserveTicketOnServer(numeroBoleto);
     }
     
-    // Iniciar timer de reserva
-    startReservationTimer();
-    
-    // Guardar el precio del boleto para calcular el total
-    window.currentTicketPrice = sorteoData.precio || 50.00;
+    updateSelectedTicketsDisplay();
     updateTotalPrice();
+    
+    // Guardar en localStorage
+    const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
+    localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
+}
+
+// Función para reservar un boleto en el servidor
+async function reserveTicketOnServer(numeroBoleto) {
+    if (!currentSorteoId) return;
+    
+    try {
+        const response = await fetch('api_boletos.php?action=reserve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_sorteo: currentSorteoId,
+                numeros_boletos: [numeroBoleto]
+            })
+        });
+        
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (!data.success) {
+            console.error('Error al reservar boleto:', data.error);
+            // Remover del Set local si falló la reserva
+            selectedTickets.delete(numeroBoleto);
+            updateSelectedTicketsDisplay();
+            updateTotalPrice();
+            customAlert(`Error al reservar el boleto ${String(numeroBoleto).padStart(4, '0')}: ${data.error}`, 'Error de Reserva', 'error');
+        }
+    } catch (error) {
+        console.error('Error al reservar boleto:', error);
+    }
+}
+
+// Función para iniciar timer de reserva con segundos específicos
+function startReservationTimerWithSeconds(seconds) {
+    const timerElement = document.getElementById('reservation-timer');
+    if (!timerElement) return;
+    
+    if (activeCountdownIntervals.has('reservation-timer')) {
+        clearInterval(activeCountdownIntervals.get('reservation-timer'));
+        activeCountdownIntervals.delete('reservation-timer');
+    }
+    
+    let remainingSeconds = Math.max(0, seconds);
+    
+    function updateReservationTimer() {
+        if (remainingSeconds <= 0) {
+            timerElement.textContent = '00:00';
+            if (activeCountdownIntervals.has('reservation-timer')) {
+                clearInterval(activeCountdownIntervals.get('reservation-timer'));
+                activeCountdownIntervals.delete('reservation-timer');
+            }
+            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
+            window.location.href = 'ListadoSorteosActivos.php';
+            return;
+        }
+        
+        const minutes = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        
+        remainingSeconds--;
+    }
+    
+    updateReservationTimer();
+    const intervalId = setInterval(updateReservationTimer, 1000);
+    activeCountdownIntervals.set('reservation-timer', intervalId);
+}
+
+// Función para mostrar errores
+function showError(message) {
+    if (typeof customAlert === 'function') {
+        customAlert(message, 'Error', 'error');
+    } else {
+        console.error(message);
+        alert(message);
+    }
 }
 
 // Función para obtener datos por defecto
@@ -600,61 +902,16 @@ const maxTickets = 100; // Límite máximo de boletos
 
 // Función para inicializar la funcionalidad de selección de boletos
 function initTicketSelection() {
-    // Obtener todos los botones de boletos disponibles
-    const ticketButtons = document.querySelectorAll('.grid button:not([disabled])');
-    
-    ticketButtons.forEach(button => {
-        // Obtener el número del boleto desde el texto del botón
-        const ticketNumber = parseInt(button.textContent.trim());
-        
-        if (isNaN(ticketNumber)) return;
-        
-        // Agregar evento de clic
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleTicketSelection(ticketNumber, button);
-        });
-        
-        // Verificar si el boleto ya está seleccionado (desde localStorage)
-        const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-        if (savedTickets.includes(ticketNumber)) {
-            selectedTickets.add(ticketNumber);
-            markTicketAsSelected(button);
-        }
-    });
-    
-    // Actualizar la visualización inicial
-    updateSelectedTicketsDisplay();
-    updateTotalPrice();
-}
-
-// Función para alternar la selección de un boleto
-function toggleTicketSelection(ticketNumber, button) {
-    if (selectedTickets.has(ticketNumber)) {
-        // Deseleccionar
-        selectedTickets.delete(ticketNumber);
-        markTicketAsAvailable(button);
-    } else {
-        // Verificar límite
-        if (selectedTickets.size >= maxTickets) {
-            customAlert(`Solo puedes seleccionar hasta ${maxTickets} boletos a la vez.`, 'Límite de Boletos', 'warning');
-            return;
-        }
-        
-        // Seleccionar
-        selectedTickets.add(ticketNumber);
-        markTicketAsSelected(button);
-    }
-    
-    // Actualizar visualización
-    updateSelectedTicketsDisplay();
-    updateTotalPrice();
+    // Los event listeners ya se agregan en renderTickets() cuando se crean los botones dinámicamente
+    // Esta función solo se mantiene para compatibilidad con código existente
+    console.log('Inicialización de selección de boletos completada');
 }
 
 // Función para marcar un boleto como seleccionado
 function markTicketAsSelected(button) {
     button.classList.remove('border-emerald-500/30', 'bg-card-dark', 'bg-[#1a202c]', 'hover:bg-emerald-500/10', 'hover:border-emerald-500');
     button.classList.add('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
+    button.dataset.estado = 'seleccionado';
     
     const span = button.querySelector('span');
     if (span) {
@@ -676,12 +933,18 @@ function markTicketAsSelected(button) {
         overlay.className = 'ticket-overlay absolute inset-0 bg-white/10';
         button.appendChild(overlay);
     }
+    
+    // Aplicar filtro actual si no es "all"
+    if (currentFilter !== 'all') {
+        applyFilter(currentFilter);
+    }
 }
 
 // Función para marcar un boleto como disponible
 function markTicketAsAvailable(button) {
     button.classList.remove('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
     button.classList.add('border-emerald-500/30', 'bg-card-dark', 'hover:bg-emerald-500/10', 'hover:border-emerald-500', 'group');
+    button.dataset.estado = 'disponible';
     
     const span = button.querySelector('span');
     if (span) {
@@ -694,6 +957,11 @@ function markTicketAsAvailable(button) {
     const overlay = button.querySelector('.ticket-overlay');
     if (checkmark) checkmark.remove();
     if (overlay) overlay.remove();
+    
+    // Aplicar filtro actual si no es "all"
+    if (currentFilter !== 'all') {
+        applyFilter(currentFilter);
+    }
 }
 
 // Función para actualizar la visualización de boletos seleccionados
@@ -723,9 +991,12 @@ function updateSelectedTicketsDisplay() {
     }
 }
 
+// Variable global para el filtro activo
+let currentFilter = 'all';
+
 // Función para inicializar la búsqueda de boletos
 function initTicketSearch() {
-    const searchInput = document.querySelector('input[placeholder*="Buscar número"]');
+    const searchInput = document.getElementById('ticket-search-input');
     if (!searchInput) return;
     
     let searchTimeout;
@@ -747,41 +1018,159 @@ function initTicketSearch() {
             searchTickets(e.target.value.trim());
         }
     });
+    
+    // Inicializar botones de filtro
+    initFilterButtons();
+}
+
+// Función para inicializar los botones de filtro
+function initFilterButtons() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Actualizar estado activo visual
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active', 'bg-primary/20', 'text-white', 'border-primary');
+                btn.classList.add('bg-card-dark', 'text-text-secondary');
+            });
+            
+            this.classList.add('active', 'bg-primary/20', 'text-white', 'border-primary');
+            this.classList.remove('bg-card-dark', 'text-text-secondary');
+            
+            // Limpiar búsqueda
+            const searchInput = document.getElementById('ticket-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // Aplicar filtro
+            currentFilter = filter;
+            applyFilter(filter);
+        });
+    });
+}
+
+// Función para aplicar filtro a los boletos
+function applyFilter(filter) {
+    const allButtons = document.querySelectorAll('#tickets-grid button[data-numero-boleto]');
+    let visibleCount = 0;
+    
+    allButtons.forEach(button => {
+        const estado = button.dataset.estado || 'disponible';
+        let shouldShow = false;
+        
+        switch(filter) {
+            case 'all':
+                shouldShow = true;
+                break;
+            case 'disponible':
+                shouldShow = estado === 'disponible' && !button.disabled;
+                break;
+            case 'seleccionado':
+                shouldShow = estado === 'seleccionado' || button.classList.contains('bg-primary');
+                break;
+            case 'reservado':
+                shouldShow = estado === 'reservado' || 
+                           (button.disabled && button.classList.contains('border-yellow-700'));
+                break;
+            case 'vendido':
+                shouldShow = estado === 'vendido' || 
+                           (button.disabled && button.classList.contains('border-red-900'));
+                break;
+        }
+        
+        if (shouldShow) {
+            button.style.display = '';
+            visibleCount++;
+        } else {
+            button.style.display = 'none';
+        }
+    });
+    
+    console.log(`Filtro "${filter}" aplicado: ${visibleCount} boletos visibles`);
 }
 
 // Función para buscar boletos
 function searchTickets(query) {
     if (!query) {
-        // Mostrar todos los boletos
-        const allButtons = document.querySelectorAll('.grid button');
-        allButtons.forEach(btn => {
-            btn.style.display = '';
-        });
+        // Si no hay búsqueda, aplicar solo el filtro
+        applyFilter(currentFilter);
         return;
     }
     
     const ticketNumber = parseInt(query);
-    if (isNaN(ticketNumber)) return;
+    const allButtons = document.querySelectorAll('#tickets-grid button[data-numero-boleto]');
     
-    // Ocultar todos los botones excepto el buscado
-    const allButtons = document.querySelectorAll('.grid button');
+    if (isNaN(ticketNumber)) {
+        // Si no es un número, buscar por texto en los números de boleto
+        allButtons.forEach(btn => {
+            const btnText = btn.textContent.trim();
+            const btnNumber = btn.dataset.numeroBoleto || '';
+            const matches = btnText.includes(query) || btnNumber.includes(query);
+            const estado = btn.dataset.estado || 'disponible';
+            
+            let matchesFilter = true;
+            if (currentFilter !== 'all') {
+                matchesFilter = shouldShowByFilter(btn, currentFilter, estado);
+            }
+            
+            btn.style.display = (matches && matchesFilter) ? '' : 'none';
+        });
+        return;
+    }
+    
+    // Buscar el boleto específico
+    let found = false;
+    
     allButtons.forEach(btn => {
-        const btnNumber = parseInt(btn.textContent.trim());
-        if (!isNaN(btnNumber)) {
-            btn.style.display = btnNumber === ticketNumber ? '' : 'none';
+        const btnNumber = parseInt(btn.dataset.numeroBoletoInt);
+        const matches = btnNumber === ticketNumber;
+        const estado = btn.dataset.estado || 'disponible';
+        
+        let matchesFilter = true;
+        if (currentFilter !== 'all') {
+            matchesFilter = shouldShowByFilter(btn, currentFilter, estado);
+        }
+        
+        if (matches && matchesFilter) {
+            btn.style.display = '';
+            if (!found) {
+                btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Resaltar temporalmente
+                btn.style.animation = 'pulse 0.5s ease-in-out 3';
+                setTimeout(() => {
+                    btn.style.animation = '';
+                }, 1500);
+                found = true;
+            }
+        } else {
+            btn.style.display = 'none';
         }
     });
     
-    // Scroll al boleto encontrado
-    const foundButton = Array.from(allButtons).find(btn => {
-        const btnNumber = parseInt(btn.textContent.trim());
-        return btnNumber === ticketNumber;
-    });
-    
-    if (foundButton) {
-        foundButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Resaltar temporalmente
-        foundButton.style.animation = 'pulse 0.5s ease-in-out 3';
+    if (!found) {
+        console.log(`Boleto #${ticketNumber} no encontrado o no coincide con el filtro activo`);
+    }
+}
+
+// Función auxiliar para verificar si un boleto debe mostrarse según el filtro
+function shouldShowByFilter(button, filter, estado) {
+    switch(filter) {
+        case 'disponible':
+            return estado === 'disponible' && !button.disabled;
+        case 'seleccionado':
+            return estado === 'seleccionado' || button.classList.contains('bg-primary');
+        case 'reservado':
+            return estado === 'reservado' || 
+                   (button.disabled && button.classList.contains('border-yellow-700'));
+        case 'vendido':
+            return estado === 'vendido' || 
+                   (button.disabled && button.classList.contains('border-red-900'));
+        default:
+            return true;
     }
 }
 
@@ -796,9 +1185,25 @@ function handleProceedToPayment() {
     const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
     localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
     
-    // Guardar también información del sorteo si no está guardada
-    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-    localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    // Guardar también información del sorteo actual
+    if (currentSorteoData) {
+        const sorteoData = {
+            id: currentSorteoData.id_sorteo.toString(),
+            titulo: currentSorteoData.titulo,
+            subtitulo: currentSorteoData.descripcion ? currentSorteoData.descripcion.substring(0, 50) + '...' : '',
+            descripcion: currentSorteoData.descripcion || '',
+            descripcionCompleta: currentSorteoData.descripcion || '',
+            imagen: currentSorteoData.imagen_url || '',
+            precio: parseFloat(currentSorteoData.precio_boleto) || 0,
+            boletosVendidos: currentSorteoData.boletos_vendidos || 0,
+            boletosTotales: currentSorteoData.total_boletos || 0,
+            tiempoRestante: currentSorteoData.tiempo_restante || {}
+        };
+        localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    } else {
+        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
+        localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
+    }
     
     console.log('Boletos guardados:', ticketsArray);
     return true;
@@ -809,18 +1214,6 @@ function saveSelectedTickets() {
     return handleProceedToPayment();
 }
 
-</script>
-
-<!-- Client Layout Script -->
-<script src="js/custom-alerts.js"></script>
-<script src="js/client-layout.js"></script>
-<script>
-// Inicializar layout del cliente
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.ClientLayout) {
-        ClientLayout.init('sorteos');
-    }
-});
 </script>
 
 </body></html>

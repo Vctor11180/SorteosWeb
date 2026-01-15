@@ -29,16 +29,8 @@ $usuarioSaldo = $datosUsuario['saldo'];
 $usuarioAvatar = $datosUsuario['avatar'];
 $tipoUsuario = $datosUsuario['tipoUsuario'];
 
-// Obtener todos los sorteos activos desde la base de datos
-require_once __DIR__ . '/includes/sorteos-data.php';
-$sorteosActivos = obtenerSorteosActivos(0); // 0 = sin límite
-
-// DEBUG: Verificar qué se está obteniendo (eliminar después de verificar)
-if (empty($sorteosActivos)) {
-    error_log("DEBUG ListadoSorteosActivos: No se obtuvieron sorteos. Verificar base de datos.");
-} else {
-    error_log("DEBUG ListadoSorteosActivos: Se obtuvieron " . count($sorteosActivos) . " sorteos activos.");
-}
+// Los sorteos se cargarán dinámicamente desde la API
+// Ya no se cargan desde PHP para permitir actualización en tiempo real
 ?>
 <!DOCTYPE html>
 
@@ -187,56 +179,8 @@ if (empty($sorteosActivos)) {
 </header>
 <!-- Scrollable Content Area -->
 <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
-<!-- Hero Section -->
-<?php if (!empty($sorteosActivos)): 
-    $sorteoDestacado = $sorteosActivos[0]; // Primer sorteo como destacado
-    $imagenHero = !empty($sorteoDestacado['imagen_url']) 
-        ? htmlspecialchars($sorteoDestacado['imagen_url']) 
-        : 'https://via.placeholder.com/800x400?text=Sorteo';
-    $tiempoHero = $sorteoDestacado['tiempo_restante'];
-    $diasHero = $tiempoHero['dias'];
-    $horasHero = $tiempoHero['horas'];
-    $minutosHero = $tiempoHero['minutos'];
-    $textoTiempoHero = $diasHero > 0 
-        ? sprintf("%dd %dh %dm", $diasHero, $horasHero, $minutosHero)
-        : sprintf("%dh %dm", $horasHero, $minutosHero);
-?>
-<div class="w-full bg-gradient-to-b from-[#111318] to-[#161b26] rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12">
-<div class="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
-<div class="@container">
-<div class="flex flex-col gap-6 rounded-xl bg-card-dark p-6 shadow-lg border border-[#282d39] @[864px]:flex-row @[864px]:items-center">
-<div class="w-full bg-center bg-no-repeat bg-cover rounded-lg aspect-video @[864px]:w-1/2 min-h-[250px]" data-alt="<?php echo htmlspecialchars($sorteoDestacado['titulo']); ?>" style='background-image: url("<?php echo $imagenHero; ?>");'>
-<div class="w-full h-full flex items-start justify-end p-4">
-<span class="bg-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-md">Destacado</span>
-</div>
-</div>
-<div class="flex flex-col gap-6 @[864px]:w-1/2 @[864px]:pl-6">
-<div class="flex flex-col gap-3 text-left">
-<h1 class="text-white text-3xl font-black leading-tight tracking-[-0.033em] md:text-5xl">
-                                        <?php echo htmlspecialchars($sorteoDestacado['titulo']); ?>
-                                    </h1>
-<p class="text-[#9da6b9] text-base font-normal leading-relaxed">
-                                        <?php echo htmlspecialchars($sorteoDestacado['descripcion'] ?: 'Participa y gana este increíble premio. El tiempo se acaba, ¡asegura tu boleto hoy!'); ?>
-                                    </p>
-<div class="flex items-center gap-2 mt-2">
-<span class="material-symbols-outlined text-primary">timer</span>
-<span class="text-white font-mono font-medium">Cierra en: <?php echo $textoTiempoHero; ?></span>
-</div>
-</div>
-<div class="flex flex-wrap gap-4">
-<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoDestacado['id_sorteo']; ?>" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
-<span class="truncate">Participar Ahora</span>
-</a>
-<a href="SorteoClienteDetalles.php?id=<?php echo $sorteoDestacado['id_sorteo']; ?>" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
-<span class="truncate">Ver Detalles</span>
-</a>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<?php endif; ?>
+<!-- Hero Section (se llenará dinámicamente con JavaScript) -->
+<div id="hero-section-container"></div>
 <!-- Main Content Area -->
 <div class="w-full flex flex-col gap-8">
 <!-- Page Heading & Search -->
@@ -251,7 +195,7 @@ if (empty($sorteosActivos)) {
 <div class="text-[#9da6b9] flex items-center justify-center pl-4 pr-2">
 <span class="material-symbols-outlined">search</span>
 </div>
-<input class="flex w-full min-w-0 flex-1 resize-none bg-transparent text-white focus:outline-0 placeholder:text-[#9da6b9]/70 px-2 text-base font-normal leading-normal" placeholder="Buscar sorteos por nombre o premio..." value=""/>
+<input id="search-sorteos-input" class="flex w-full min-w-0 flex-1 resize-none bg-transparent text-white focus:outline-0 placeholder:text-[#9da6b9]/70 px-2 text-base font-normal leading-normal" placeholder="Buscar sorteos por nombre o premio..." value=""/>
 </div>
 </label>
 </div>
@@ -278,87 +222,15 @@ if (empty($sorteosActivos)) {
 <span class="material-symbols-outlined text-[#9da6b9] text-[20px]">expand_more</span>
 </button>
 </div>
-<!-- Raffles Grid -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<?php if (empty($sorteosActivos)): ?>
-    <!-- Mensaje cuando no hay sorteos -->
-    <div class="col-span-3 text-center py-12">
+<!-- Raffles Grid (se llenará dinámicamente con JavaScript) -->
+<div id="sorteos-container">
+    <div id="sorteos-loading" class="text-center py-12">
+        <p class="text-[#9da6b9] text-lg">Cargando sorteos...</p>
+    </div>
+    <div id="sorteos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style="display: none;"></div>
+    <div id="sorteos-empty" class="text-center py-12" style="display: none;">
         <p class="text-[#9da6b9] text-lg">No hay sorteos disponibles en este momento.</p>
     </div>
-<?php else: ?>
-    <?php foreach ($sorteosActivos as $sorteo): 
-        $imagenUrl = !empty($sorteo['imagen_url']) 
-            ? htmlspecialchars($sorteo['imagen_url']) 
-            : 'https://via.placeholder.com/400x200?text=Sorteo';
-        $tiempoRestante = $sorteo['tiempo_restante'];
-        $segundosTotales = $tiempoRestante['total_segundos'];
-        $diasRestantes = $tiempoRestante['dias'];
-        $horasRestantes = $tiempoRestante['horas'];
-        $minutosRestantes = $tiempoRestante['minutos'];
-        
-        // Formatear tiempo restante
-        if ($diasRestantes > 0) {
-            $textoTiempo = $diasRestantes . 'd ' . $horasRestantes . 'h ' . $minutosRestantes . 'm';
-            $colorTiempo = $sorteo['esta_por_finalizar'] ? 'text-red-400' : 'text-orange-400';
-        } else {
-            $textoTiempo = sprintf("%02dh %02dm", $horasRestantes, $minutosRestantes);
-            $colorTiempo = 'text-red-500 animate-pulse';
-        }
-        
-        $porcentajeVendido = $sorteo['porcentaje_vendido'];
-        $colorBarra = $porcentajeVendido >= 90 ? 'bg-red-500' : ($porcentajeVendido >= 50 ? 'bg-primary' : 'bg-primary');
-        
-        // Badge según estado
-        $badge = '';
-        $badgeColor = '';
-        if ($sorteo['porcentaje_vendido'] >= 90) {
-            $badge = 'ÚLTIMOS BOLETOS';
-            $badgeColor = 'bg-red-500/90';
-        } elseif ($sorteo['porcentaje_vendido'] >= 50) {
-            $badge = 'POPULAR';
-            $badgeColor = 'bg-primary/90';
-        } else {
-            $badge = 'NUEVO';
-            $badgeColor = 'bg-green-500/90';
-        }
-    ?>
-    <!-- Card -->
-    <div class="group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer" onclick="window.location.href='SorteoClienteDetalles.php?id=<?php echo $sorteo['id_sorteo']; ?>';">
-        <div class="relative h-48 bg-cover bg-center" data-alt="<?php echo htmlspecialchars($sorteo['titulo']); ?>" style='background-image: url("<?php echo $imagenUrl; ?>");'>
-            <?php if ($badge): ?>
-            <div class="absolute top-3 left-3 <?php echo $badgeColor; ?> text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
-                <?php echo $badge; ?>
-            </div>
-            <?php endif; ?>
-            <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-                <span class="material-symbols-outlined text-[16px]">confirmation_number</span> $<?php echo number_format($sorteo['precio_boleto'], 2, '.', ''); ?> / boleto
-            </div>
-        </div>
-        <div class="flex flex-col p-5 gap-4 flex-1">
-            <div>
-                <h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors"><?php echo htmlspecialchars($sorteo['titulo']); ?></h3>
-                <p class="text-[#9da6b9] text-sm line-clamp-2"><?php echo htmlspecialchars($sorteo['descripcion'] ?: 'Participa y gana este increíble premio.'); ?></p>
-            </div>
-            <div class="mt-auto flex flex-col gap-2">
-                <div class="flex justify-between text-xs font-medium text-[#9da6b9]">
-                    <span>Boletos vendidos</span>
-                    <span class="text-white"><?php echo $sorteo['boletos_vendidos']; ?> / <?php echo $sorteo['total_boletos']; ?></span>
-                </div>
-                <div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
-                    <div class="<?php echo $colorBarra; ?> h-2 rounded-full" style="width: <?php echo $porcentajeVendido; ?>%"></div>
-                </div>
-            </div>
-            <div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
-                <div class="flex items-center gap-1.5 <?php echo $colorTiempo; ?>">
-                    <span class="material-symbols-outlined text-[18px]">timer</span>
-                    <span class="text-sm font-medium tabular-nums"><?php echo $textoTiempo; ?></span>
-                </div>
-                <a href="SorteoClienteDetalles.php?id=<?php echo $sorteo['id_sorteo']; ?>" onclick="event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
-            </div>
-        </div>
-    </div>
-    <?php endforeach; ?>
-<?php endif; ?>
 </div>
 <!-- Pagination / Load More -->
 <div class="flex justify-center mt-8 mb-8">
@@ -385,8 +257,8 @@ const userSessionData = {
     avatar: '<?php echo addslashes($usuarioAvatar); ?>'
 };
 
-// Datos de los sorteos desde PHP (base de datos)
-const sorteosDataFromDB = <?php echo json_encode($sorteosActivos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
+// Los sorteos se cargarán dinámicamente desde la API
+let sorteosDataFromDB = [];
 
 // Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
 if (userSessionData.nombre && userSessionData.tipoUsuario) {
@@ -403,17 +275,270 @@ if (userSessionData.nombre && userSessionData.tipoUsuario) {
 
 // Inicializar layout del cliente
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar el layout con 'sorteos' como página activa
-    if (window.ClientLayout) {
-        ClientLayout.init('sorteos');
+    // Inicializar el layout con 'sorteos' como página activa (con manejo de errores)
+    try {
+        if (window.ClientLayout && typeof ClientLayout.init === 'function') {
+            ClientLayout.init('sorteos');
+        }
+    } catch (error) {
+        console.warn('Error al inicializar ClientLayout:', error);
+        // Continuar aunque falle el layout
     }
     
-    // Inicializar funcionalidades de botones
-    initListadoButtons();
+    // Cargar sorteos desde la API (esto debe ejecutarse siempre)
+    loadSorteosFromAPI();
     
-    // Inicializar contadores de tiempo
-    initRaffleCardTimers();
+    // Inicializar funcionalidades de botones
+    try {
+        initListadoButtons();
+    } catch (error) {
+        console.warn('Error al inicializar botones:', error);
+    }
 });
+
+// Función para cargar sorteos desde la API
+async function loadSorteosFromAPI() {
+    try {
+        console.log('Cargando sorteos desde API...');
+        const response = await fetch('api_sorteos.php?action=list_active');
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log('Respuesta recibida:', text.substring(0, 200));
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Error al parsear JSON:', parseError);
+            console.error('Texto recibido:', text);
+            showError('Error en la respuesta del servidor. Por favor, recarga la página.');
+            return;
+        }
+        
+        console.log('Datos parseados:', data);
+        
+        if (data.success && data.data && Array.isArray(data.data)) {
+            sorteosDataFromDB = data.data;
+            console.log(`Se cargaron ${sorteosDataFromDB.length} sorteos`);
+            console.log('Primer sorteo:', sorteosDataFromDB[0]);
+            
+            // Renderizar hero section con el primer sorteo
+            if (sorteosDataFromDB.length > 0) {
+                console.log('Renderizando hero section...');
+                renderHeroSection(sorteosDataFromDB[0]);
+            }
+            
+            // Renderizar grid de sorteos
+            console.log('Renderizando grid de sorteos...');
+            renderSorteosGrid(sorteosDataFromDB);
+            
+            // Inicializar contadores de tiempo después de renderizar
+            setTimeout(() => {
+                console.log('Inicializando contadores de tiempo...');
+                initRaffleCardTimers();
+            }, 100);
+        } else {
+            console.error('Error en la respuesta:', data);
+            console.error('data.success:', data.success);
+            console.error('data.data:', data.data);
+            console.error('Es array?', Array.isArray(data.data));
+            showError(data.error || 'No se pudieron cargar los sorteos. Por favor, recarga la página.');
+        }
+    } catch (error) {
+        console.error('Error al cargar sorteos:', error);
+        console.error('Stack:', error.stack);
+        showError('Error al cargar los sorteos: ' + error.message);
+    }
+}
+
+// Función para renderizar el hero section
+function renderHeroSection(sorteo) {
+    console.log('renderHeroSection llamado con:', sorteo);
+    const container = document.getElementById('hero-section-container');
+    if (!container) {
+        console.error('No se encontró el elemento hero-section-container');
+        return;
+    }
+    console.log('Container encontrado, renderizando hero section...');
+    
+    const imagenHero = sorteo.imagen_url || 'https://via.placeholder.com/800x400?text=Sorteo';
+    const tiempoRestante = sorteo.tiempo_restante;
+    const diasHero = tiempoRestante.dias || 0;
+    const horasHero = tiempoRestante.horas || 0;
+    const minutosHero = tiempoRestante.minutos || 0;
+    const textoTiempoHero = diasHero > 0 
+        ? `${diasHero}d ${horasHero}h ${minutosHero}m`
+        : `${horasHero}h ${minutosHero}m`;
+    
+    container.innerHTML = `
+        <div class="w-full bg-gradient-to-b from-[#111318] to-[#161b26] rounded-xl overflow-hidden relative min-h-[300px] flex items-end p-8 sm:p-12">
+            <div class="layout-content-container flex flex-col max-w-[1200px] mx-auto w-full">
+                <div class="@container">
+                    <div class="flex flex-col gap-6 rounded-xl bg-card-dark p-6 shadow-lg border border-[#282d39] @[864px]:flex-row @[864px]:items-center">
+                        <div class="w-full bg-center bg-no-repeat bg-cover rounded-lg aspect-video @[864px]:w-1/2 min-h-[250px]" style='background-image: url("${imagenHero}");'>
+                            <div class="w-full h-full flex items-start justify-end p-4">
+                                <span class="bg-primary/90 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm shadow-md">Destacado</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-6 @[864px]:w-1/2 @[864px]:pl-6">
+                            <div class="flex flex-col gap-3 text-left">
+                                <h1 class="text-white text-3xl font-black leading-tight tracking-[-0.033em] md:text-5xl">${escapeHtml(sorteo.titulo)}</h1>
+                                <p class="text-[#9da6b9] text-base font-normal leading-relaxed">${escapeHtml(sorteo.descripcion || 'Participa y gana este increíble premio. El tiempo se acaba, ¡asegura tu boleto hoy!')}</p>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <span class="material-symbols-outlined text-primary">timer</span>
+                                    <span class="text-white font-mono font-medium" id="hero-countdown-${sorteo.id_sorteo}">Cierra en: ${textoTiempoHero}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-4">
+                                <a href="SorteoClienteDetalles.php?id=${sorteo.id_sorteo}" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-all shadow-lg shadow-blue-900/20">
+                                    <span class="truncate">Participar Ahora</span>
+                                </a>
+                                <a href="SorteoClienteDetalles.php?id=${sorteo.id_sorteo}" class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-[#282d39] text-white text-base font-medium leading-normal hover:bg-[#343a49] transition-all border border-white/5">
+                                    <span class="truncate">Ver Detalles</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Función para renderizar el grid de sorteos
+function renderSorteosGrid(sorteos) {
+    console.log('renderSorteosGrid llamado con:', sorteos);
+    
+    const loadingEl = document.getElementById('sorteos-loading');
+    const gridEl = document.getElementById('sorteos-grid');
+    const emptyEl = document.getElementById('sorteos-empty');
+    
+    console.log('Elementos encontrados:', {
+        loading: !!loadingEl,
+        grid: !!gridEl,
+        empty: !!emptyEl
+    });
+    
+    if (loadingEl) {
+        loadingEl.style.display = 'none';
+    }
+    
+    if (!sorteos || sorteos.length === 0) {
+        console.log('No hay sorteos para renderizar');
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (gridEl) gridEl.style.display = 'none';
+        return;
+    }
+    
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (gridEl) {
+        console.log(`Renderizando ${sorteos.length} sorteos`);
+        gridEl.style.display = 'grid';
+        gridEl.innerHTML = '';
+        
+        sorteos.forEach((sorteo, index) => {
+            const imagenUrl = sorteo.imagen_url || 'https://via.placeholder.com/400x200?text=Sorteo';
+            const tiempoRestante = sorteo.tiempo_restante;
+            const diasRestantes = tiempoRestante.dias || 0;
+            const horasRestantes = tiempoRestante.horas || 0;
+            const minutosRestantes = tiempoRestante.minutos || 0;
+            
+            // Formatear tiempo restante
+            let textoTiempo, colorTiempo;
+            if (diasRestantes > 0) {
+                textoTiempo = `${diasRestantes}d ${horasRestantes}h ${minutosRestantes}m`;
+                colorTiempo = sorteo.esta_por_finalizar ? 'text-red-400' : 'text-orange-400';
+            } else {
+                textoTiempo = `${String(horasRestantes).padStart(2, '0')}h ${String(minutosRestantes).padStart(2, '0')}m`;
+                colorTiempo = 'text-red-500 animate-pulse';
+            }
+            
+            const porcentajeVendido = sorteo.porcentaje_vendido || 0;
+            const colorBarra = porcentajeVendido >= 90 ? 'bg-red-500' : 'bg-primary';
+            
+            // Badge según estado
+            let badge = '', badgeColor = '';
+            if (porcentajeVendido >= 90) {
+                badge = 'ÚLTIMOS BOLETOS';
+                badgeColor = 'bg-red-500/90';
+            } else if (porcentajeVendido >= 50) {
+                badge = 'POPULAR';
+                badgeColor = 'bg-primary/90';
+            } else {
+                badge = 'NUEVO';
+                badgeColor = 'bg-green-500/90';
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'group flex flex-col bg-card-dark rounded-xl overflow-hidden border border-[#282d39] hover:border-primary/50 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer raffle-card';
+            card.setAttribute('data-raffle-id', sorteo.id_sorteo);
+            card.onclick = () => window.location.href = `SorteoClienteDetalles.php?id=${sorteo.id_sorteo}`;
+            
+            card.innerHTML = `
+                <div class="relative h-48 bg-cover bg-center" style='background-image: url("${imagenUrl}");'>
+                    ${badge ? `<div class="absolute top-3 left-3 ${badgeColor} text-white text-xs font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">${badge}</div>` : ''}
+                    <div class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+                        $${parseFloat(sorteo.precio_boleto).toFixed(2)} / boleto
+                    </div>
+                </div>
+                <div class="flex flex-col p-5 gap-4 flex-1">
+                    <div>
+                        <h3 class="text-white text-lg font-bold mb-1 group-hover:text-primary transition-colors">${escapeHtml(sorteo.titulo)}</h3>
+                        <p class="text-[#9da6b9] text-sm line-clamp-2">${escapeHtml(sorteo.descripcion || 'Participa y gana este increíble premio.')}</p>
+                    </div>
+                    <div class="mt-auto flex flex-col gap-2">
+                        <div class="flex justify-between text-xs font-medium text-[#9da6b9]">
+                            <span>Boletos vendidos</span>
+                            <span class="text-white">${sorteo.boletos_vendidos} / ${sorteo.total_boletos}</span>
+                        </div>
+                        <div class="w-full bg-[#282d39] rounded-full h-2 overflow-hidden">
+                            <div class="${colorBarra} h-2 rounded-full" style="width: ${porcentajeVendido}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-[#282d39]">
+                        <div class="flex items-center gap-1.5 ${colorTiempo}">
+                            <span class="material-symbols-outlined text-[18px]">timer</span>
+                            <span class="text-sm font-medium tabular-nums" id="countdown-card-${sorteo.id_sorteo}" data-seconds="${tiempoRestante.total_segundos || 0}">${textoTiempo}</span>
+                        </div>
+                        <a href="SorteoClienteDetalles.php?id=${sorteo.id_sorteo}" onclick="event.stopPropagation();" class="text-primary text-sm font-bold hover:underline cursor-pointer z-10 relative">Ver Detalles</a>
+                    </div>
+                </div>
+            `;
+            
+            gridEl.appendChild(card);
+        });
+        
+        console.log('Sorteos renderizados exitosamente. Total de cards:', gridEl.children.length);
+    } else {
+        console.error('No se encontró el elemento sorteos-grid');
+    }
+}
+
+// Función para escapar HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Función para mostrar error
+function showError(message) {
+    const loadingEl = document.getElementById('sorteos-loading');
+    const gridEl = document.getElementById('sorteos-grid');
+    const emptyEl = document.getElementById('sorteos-empty');
+    
+    if (loadingEl) {
+        loadingEl.innerHTML = `<p class="text-red-400 text-lg">${escapeHtml(message)}</p>`;
+        loadingEl.style.display = 'block';
+    }
+    if (gridEl) gridEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'none';
+}
 
 // Función para convertir datos de BD a formato esperado por JavaScript
 function convertirSorteoParaJS(sorteo) {
@@ -542,33 +667,63 @@ function initListadoButtons() {
 
 // Función para inicializar búsqueda de sorteos
 function initSorteosSearch() {
-    const searchInputs = document.querySelectorAll('input[placeholder*="Buscar"]');
+    const searchInput = document.getElementById('search-sorteos-input');
+    if (!searchInput) return;
     
-    searchInputs.forEach(searchInput => {
-        let searchTimeout;
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
         
-        searchInput.addEventListener('input', function(e) {
-            clearTimeout(searchTimeout);
-            const query = e.target.value.trim().toLowerCase();
-            
-            searchTimeout = setTimeout(() => {
-                searchSorteos(query);
-            }, 300);
-        });
-        
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                clearTimeout(searchTimeout);
-                searchSorteos(e.target.value.trim().toLowerCase());
+        searchTimeout = setTimeout(() => {
+            if (query) {
+                // Buscar usando la API
+                searchSorteosAPI(query);
+            } else {
+                // Mostrar todos los sorteos
+                renderSorteosGrid(sorteosDataFromDB);
+                setTimeout(() => initRaffleCardTimers(), 100);
             }
-        });
+        }, 300);
     });
+    
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            if (query) {
+                searchSorteosAPI(query);
+            } else {
+                renderSorteosGrid(sorteosDataFromDB);
+                setTimeout(() => initRaffleCardTimers(), 100);
+            }
+        }
+    });
+}
+
+// Función para buscar sorteos usando la API
+async function searchSorteosAPI(query) {
+    try {
+        const response = await fetch(`api_sorteos.php?action=list_active&search=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            renderSorteosGrid(data.data);
+            setTimeout(() => initRaffleCardTimers(), 100);
+        }
+    } catch (error) {
+        console.error('Error al buscar sorteos:', error);
+    }
 }
 
 // Función para buscar sorteos
 function searchSorteos(query) {
-    const sorteoCards = document.querySelectorAll('.grid > div');
+    const gridEl = document.getElementById('sorteos-grid');
+    if (!gridEl) return;
+    
+    const sorteoCards = gridEl.querySelectorAll('.raffle-card');
     
     if (!query) {
         // Mostrar todos
@@ -709,18 +864,6 @@ function initViewWinnerButton() {
         });
     }
 }
-</script>
-
-<!-- Client Layout Script -->
-<script src="js/custom-alerts.js"></script>
-<script src="js/client-layout.js"></script>
-<script>
-// Inicializar layout del cliente
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.ClientLayout) {
-        ClientLayout.init('sorteos');
-    }
-});
 </script>
 
 </body></html>
