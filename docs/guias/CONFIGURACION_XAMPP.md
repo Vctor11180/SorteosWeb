@@ -45,7 +45,7 @@ New-Item -ItemType SymbolicLink -Path "C:\xampp\htdocs\SorteosWeb-main" -Target 
 1. En phpMyAdmin, selecciona la base de datos `sorteos_schema` que acabas de crear
 2. Ve a la pestaña **"Importar"** o **"Import"**
 3. Haz clic en **"Elegir archivo"** o **"Choose File"**
-4. Selecciona el archivo: `sorteos_schema.sql` (ubicado en la raíz del proyecto)
+4. Selecciona el archivo: `database/schema/sorteos_schema.sql` (ubicado en la carpeta database/schema del proyecto)
 5. Haz clic en **"Continuar"** o **"Go"** al final de la página
 6. Espera a que se complete la importación. Deberías ver un mensaje de éxito.
 
@@ -131,7 +131,7 @@ Luego accede a: `http://localhost/SorteosWeb-main/test_conexion.php`
 - **Solución**: Verifica que el servicio MySQL esté iniciado en el Panel de Control de XAMPP.
 
 ### Error: "Table doesn't exist"
-- **Solución**: Asegúrate de haber importado correctamente el archivo `sorteos_schema.sql` en phpMyAdmin.
+- **Solución**: Asegúrate de haber importado correctamente el archivo `database/schema/sorteos_schema.sql` en phpMyAdmin.
 
 ## Notas Importantes
 
@@ -150,7 +150,9 @@ SorteosWeb-main/
 │   │       └── database.php      (Configuración para cliente - usa PDO)
 │   └── administrador/
 │       └── config.php            (Configuración para administrador - usa mysqli)
-└── sorteos_schema.sql            (Esquema de la base de datos)
+└── database/
+    └── schema/
+        └── sorteos_schema.sql    (Esquema de la base de datos)
 ```
 
 ¡Listo! Tu aplicación debería estar conectada a la base de datos de XAMPP.

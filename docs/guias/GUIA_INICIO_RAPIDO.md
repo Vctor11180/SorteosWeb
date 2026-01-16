@@ -37,7 +37,7 @@ http://localhost/SorteosWeb-conLoDeJorge/SorteosWeb-main/php/test.php
 1. En phpMyAdmin, selecciona la base de datos `sorteos_schema`
 2. Ve a la pestaña **"Importar"**
 3. Haz clic en **"Elegir archivo"**
-4. Selecciona: `C:\xampp\htdocs\SorteosWeb-conLoDeJorge\SorteosWeb-main\sorteos_schema.sql`
+4. Selecciona: `C:\xampp\htdocs\SorteosWeb-conLoDeJorge\SorteosWeb-main\database\schema\sorteos_schema.sql`
 5. Haz clic en **"Continuar"** al final
 6. Espera el mensaje de éxito
 
