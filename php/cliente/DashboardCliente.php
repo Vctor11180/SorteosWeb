@@ -32,10 +32,147 @@ $usuarioEmail = $datosUsuario['email'];
 $usuarioSaldo = $datosUsuario['saldo'];
 $usuarioAvatar = $datosUsuario['avatar'];
 $tipoUsuario = $datosUsuario['tipoUsuario'];
+$usuarioId = $datosUsuario['id_usuario'];
 
 // Obtener sorteos activos desde la base de datos (máximo 4 para el dashboard)
 require_once __DIR__ . '/includes/sorteos-data.php';
 $sorteosActivos = obtenerSorteosActivos(4);
+
+// Obtener boletos activos del cliente para el dashboard
+require_once __DIR__ . '/config/database.php';
+$db = getDB();
+
+// Función para obtener boletos activos del cliente (limitado para el dashboard)
+function obtenerBoletosActivosDashboard($db, $usuarioId, $limite = 5) {
+    try {
+        // Obtener boletos del usuario que están en sorteos activos o finalizados recientemente
+        $stmt = $db->prepare("
+            SELECT 
+                b.id_boleto,
+                b.numero_boleto,
+                b.estado as estado_boleto,
+                b.fecha_reserva,
+                s.id_sorteo,
+                s.titulo as sorteo_titulo,
+                s.imagen_url as sorteo_imagen,
+                s.fecha_fin as sorteo_fecha_fin,
+                s.estado as sorteo_estado,
+                t.id_transaccion,
+                t.estado_pago,
+                t.fecha_creacion as transaccion_fecha,
+                g.id_boleto as es_ganador
+            FROM boletos b
+            INNER JOIN sorteos s ON b.id_sorteo = s.id_sorteo
+            LEFT JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
+            LEFT JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
+            LEFT JOIN ganadores g ON b.id_boleto = g.id_boleto AND s.id_sorteo = g.id_sorteo
+            WHERE b.id_usuario_actual = :usuario_id
+            AND b.estado IN ('Reservado', 'Vendido')
+            AND s.estado IN ('Activo', 'Finalizado')
+            ORDER BY t.fecha_creacion DESC, s.fecha_fin DESC, b.numero_boleto ASC
+            LIMIT :limite
+        ");
+        
+        $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+        $boletos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar boletos para formatear datos
+        $boletosProcesados = [];
+        foreach ($boletos as $boleto) {
+            // Determinar estado del boleto
+            $estadoDisplay = 'pending';
+            $estadoTexto = 'Pendiente';
+            $estadoColor = 'yellow';
+            
+            if ($boleto['estado_boleto'] === 'Vendido') {
+                if ($boleto['es_ganador']) {
+                    $estadoDisplay = 'winner';
+                    $estadoTexto = 'Ganador';
+                    $estadoColor = 'amber';
+                } else if ($boleto['estado_pago'] === 'Completado') {
+                    $estadoDisplay = 'approved';
+                    $estadoTexto = 'Aprobado';
+                    $estadoColor = 'green';
+                } else if ($boleto['estado_pago'] === 'Fallido') {
+                    $estadoDisplay = 'rejected';
+                    $estadoTexto = 'Rechazado';
+                    $estadoColor = 'red';
+                } else {
+                    $estadoDisplay = 'pending';
+                    $estadoTexto = 'Pendiente';
+                    $estadoColor = 'yellow';
+                }
+            } else if ($boleto['estado_boleto'] === 'Reservado') {
+                $estadoDisplay = 'pending';
+                $estadoTexto = 'Pendiente';
+                $estadoColor = 'yellow';
+            }
+            
+            // Formatear fecha del sorteo
+            $fechaSorteoDisplay = '';
+            if ($boleto['sorteo_fecha_fin']) {
+                $fechaSorteo = new DateTime($boleto['sorteo_fecha_fin']);
+                $fechaSorteoDisplay = $fechaSorteo->format('d M, Y');
+            }
+            
+            // URL de imagen del sorteo
+            $imagenSorteo = $boleto['sorteo_imagen'] ?? 'https://via.placeholder.com/150';
+            
+            $boletosProcesados[] = [
+                'id_boleto' => $boleto['id_boleto'],
+                'numero_boleto' => $boleto['numero_boleto'],
+                'numero_boleto_int' => intval($boleto['numero_boleto']),
+                'estado_display' => $estadoDisplay,
+                'estado_texto' => $estadoTexto,
+                'estado_color' => $estadoColor,
+                'id_sorteo' => $boleto['id_sorteo'],
+                'sorteo_titulo' => $boleto['sorteo_titulo'],
+                'sorteo_imagen' => $imagenSorteo,
+                'sorteo_fecha_fin' => $fechaSorteoDisplay,
+                'sorteo_estado' => $boleto['sorteo_estado'],
+                'es_ganador' => !empty($boleto['es_ganador'])
+            ];
+        }
+        
+        return $boletosProcesados;
+        
+    } catch (PDOException $e) {
+        error_log("Error al obtener boletos activos del dashboard: " . $e->getMessage());
+        return [];
+    } catch (Exception $e) {
+        error_log("Error general al obtener boletos activos del dashboard: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Obtener boletos activos para el dashboard (máximo 5)
+$boletosActivosDashboard = obtenerBoletosActivosDashboard($db, $usuarioId, 5);
+
+// Contar total de boletos activos para estadísticas
+function contarBoletosActivosTotal($db, $usuarioId) {
+    try {
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total
+            FROM boletos b
+            INNER JOIN sorteos s ON b.id_sorteo = s.id_sorteo
+            WHERE b.id_usuario_actual = :usuario_id
+            AND b.estado IN ('Reservado', 'Vendido')
+            AND s.estado IN ('Activo', 'Finalizado')
+        ");
+        
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return intval($resultado['total'] ?? 0);
+    } catch (PDOException $e) {
+        error_log("Error al contar boletos activos: " . $e->getMessage());
+        return 0;
+    }
+}
+
+$totalBoletosActivos = contarBoletosActivosTotal($db, $usuarioId);
 ?>
 <!DOCTYPE html>
 
@@ -300,11 +437,17 @@ $sorteosActivos = obtenerSorteosActivos(4);
 </div>
 </div>
 <div class="flex items-end gap-3 mt-1">
-<p id="active-tickets-count" class="text-3xl font-bold text-white">12</p>
+<p id="active-tickets-count" class="text-3xl font-bold text-white"><?php echo $totalBoletosActivos; ?></p>
+<?php if ($totalBoletosActivos > 0): ?>
 <span class="text-[#0bda62] text-sm font-medium mb-1.5 flex items-center">
 <span class="material-symbols-outlined text-[16px] mr-0.5">trending_up</span>
-                            <span id="new-tickets-count">+2 nuevos</span>
+                            <span id="new-tickets-count"><?php echo min(count($boletosActivosDashboard), $totalBoletosActivos); ?> activos</span>
                         </span>
+<?php else: ?>
+<span class="text-text-secondary text-sm font-medium mb-1.5 flex items-center">
+                            <span id="new-tickets-count">Sin boletos</span>
+                        </span>
+<?php endif; ?>
 </div>
 </div>
 <!-- Stat Card 2 -->
@@ -357,63 +500,79 @@ $sorteosActivos = obtenerSorteosActivos(4);
 </tr>
 </thead>
 <tbody class="divide-y divide-[#282d39]">
-<tr class="hover:bg-[#353b4b] transition-colors group">
+<?php if (empty($boletosActivosDashboard)): ?>
+<!-- Mensaje cuando no hay boletos activos -->
+<tr>
+<td colspan="5" class="px-6 py-12 text-center">
+<div class="flex flex-col items-center justify-center">
+<div class="size-16 rounded-full bg-[#282d39] flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-4xl text-text-secondary">confirmation_number</span>
+</div>
+<p class="text-white font-medium mb-2">No tienes boletos activos</p>
+<p class="text-text-secondary text-sm mb-4">Participa en sorteos activos para ver tus boletos aquí</p>
+<a href="ListadoSorteosActivos.php" class="text-sm font-semibold text-primary hover:text-blue-400 transition-colors">
+Ver Sorteos Disponibles →
+</a>
+</div>
+</td>
+</tr>
+<?php else: ?>
+<?php foreach ($boletosActivosDashboard as $boleto): 
+    $estadoTexto = $boleto['estado_texto'];
+    $estadoColor = $boleto['estado_color'];
+    $numeroBoleto = htmlspecialchars($boleto['numero_boleto']);
+    $sorteoTitulo = htmlspecialchars($boleto['sorteo_titulo']);
+    $sorteoImagen = htmlspecialchars($boleto['sorteo_imagen']);
+    $sorteoFechaFin = htmlspecialchars($boleto['sorteo_fecha_fin']);
+    $idBoleto = $boleto['id_boleto'];
+    $idSorteo = $boleto['id_sorteo'];
+    
+    // Clases CSS según el estado
+    $badgeClasses = [
+        'green' => 'bg-[#0bda62]/10 text-[#0bda62]',
+        'yellow' => 'bg-yellow-500/10 text-yellow-500',
+        'red' => 'bg-red-500/10 text-red-500',
+        'amber' => 'bg-amber-500/10 text-amber-500'
+    ];
+    $badgeClass = $badgeClasses[$estadoColor] ?? $badgeClasses['yellow'];
+    $dotClasses = [
+        'green' => 'bg-[#0bda62]',
+        'yellow' => 'bg-yellow-500 animate-pulse',
+        'red' => 'bg-red-500',
+        'amber' => 'bg-amber-500'
+    ];
+    $dotClass = $dotClasses[$estadoColor] ?? $dotClasses['yellow'];
+?>
+<!-- Boleto Activo: <?php echo $estadoTexto; ?> -->
+<tr class="boleto-activo-row hover:bg-[#353b4b] transition-colors group"
+    data-boleto-id="<?php echo $idBoleto; ?>"
+    data-sorteo-id="<?php echo $idSorteo; ?>"
+    data-numero-boleto="<?php echo $boleto['numero_boleto_int']; ?>"
+    data-sorteo-titulo="<?php echo $sorteoTitulo; ?>">
 <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
-<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a red sports car" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCTFiMgdFume5-naslxVCi8KHfMZVpSvRg87GKIxN8P5NHTjpdk2IB7ECCt2HiMVK_IMA_nXy4SLin9FJ0CcXZeNMvloEssb0zXm_rHMNbZgYQZPhjeA2bNQC0-krjpFfTN1vVrwvBBVqF1gq8DCmqqjPwaqdE50J8YJMh23dYUUHXzTJsrdACmdylGgV5gxI4Cqcamgny_15ceSBdqTySwyF3fQwBK8xNvqMJqyp2KIYnz3TjO5J_eXR5IuQvppRcNctHHiEC57Ac");'></div>
-                                            Tesla Model 3
-                                        </td>
-<td class="px-6 py-4 text-text-secondary font-mono">#009-221</td>
-<td class="px-6 py-4 text-text-secondary">15 Nov, 2023</td>
+<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="<?php echo $sorteoTitulo; ?>" style='background-image: url("<?php echo $sorteoImagen; ?>");' onerror="this.style.backgroundImage='url(\'https://via.placeholder.com/150\')'"></div>
+<?php echo $sorteoTitulo; ?>
+</td>
+<td class="px-6 py-4 text-text-secondary font-mono">#<?php echo $numeroBoleto; ?></td>
+<td class="px-6 py-4 text-text-secondary"><?php echo $sorteoFechaFin ?: 'N/A'; ?></td>
 <td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0bda62]/10 text-[#0bda62]">
-<span class="size-1.5 rounded-full bg-[#0bda62]"></span>
-                                                Aprobado
-                                            </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $badgeClass; ?>">
+<span class="size-1.5 rounded-full <?php echo $dotClass; ?>"></span>
+<?php echo $estadoTexto; ?>
+</span>
 </td>
 <td class="px-6 py-4 text-right relative">
-<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="009-221" data-ticket-name="Tesla Model 3">
+<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" 
+        data-ticket-id="<?php echo $numeroBoleto; ?>" 
+        data-ticket-name="<?php echo $sorteoTitulo; ?>"
+        data-boleto-id="<?php echo $idBoleto; ?>"
+        data-sorteo-id="<?php echo $idSorteo; ?>">
 <span class="material-symbols-outlined text-[20px]">more_vert</span>
 </button>
 </td>
 </tr>
-<tr class="hover:bg-[#353b4b] transition-colors group">
-<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
-<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a cash stack" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgDDeWRH6VtsICNOqlKVZC8xSDQ8Odnb_Wv-oCXVotBoTfBZjJXtkHsUizRGmeuElmXUhG_5uufBtjr-dAypG0MO-vLJLeAs76tU_qZ4wwUFZLs-SzFT-BNSKrfJKdnefpOjK9oruRH5fSPm0fX0d4MU-Xm0zpDmjoZsC0wVS4dyhq7IIk-lurlLmBvJyFWwFk6CPRVBEqFVXnoL1rIBHqIsrm2-Zrkyd6yn-oTLdKn7-uSAq6NWtr8T8o2nO_k_mdH-hpRZ7941U");'></div>
-                                            Gran Pozo Semanal
-                                        </td>
-<td class="px-6 py-4 text-text-secondary font-mono">#882-104</td>
-<td class="px-6 py-4 text-text-secondary">20 Nov, 2023</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500">
-<span class="size-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
-                                                Pendiente
-                                            </span>
-</td>
-<td class="px-6 py-4 text-right relative">
-<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="882-104" data-ticket-name="Gran Pozo Semanal">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
-<tr class="hover:bg-[#353b4b] transition-colors group">
-<td class="px-6 py-4 font-medium text-white flex items-center gap-3">
-<div class="size-8 rounded bg-gray-700 bg-cover bg-center" data-alt="Small thumbnail of a gaming console" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA4MZNrwdRTNrWI0pSF4khcf648iTnvoQMBoUYWQv-p-z0cI1r2t34pGp6kDjD30Q-F-QWkeLsvGaREQ3HzmI548zxTdpvnWuhxnVsrL67Yj4RjHRhyxvoe8D9f6yPsw0jDIFty1A13zO4TqgUblVziYlAayICV7VDs220DpcEOZcOGUObXHTCYM6sCgLoflCG7rK3rFAA3zU04L4KUZXqb0Rpn96oM3YZ_dFWfN9B9AWaSwiRKvQ54S4vHjj-qcbAMXPeDAmQnXaY");'></div>
-                                            PS5 Bundle
-                                        </td>
-<td class="px-6 py-4 text-text-secondary font-mono">#114-552</td>
-<td class="px-6 py-4 text-text-secondary">25 Nov, 2023</td>
-<td class="px-6 py-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0bda62]/10 text-[#0bda62]">
-<span class="size-1.5 rounded-full bg-[#0bda62]"></span>
-                                                Aprobado
-                                            </span>
-</td>
-<td class="px-6 py-4 text-right relative">
-<button class="ticket-menu-btn text-text-secondary hover:text-white transition-colors" data-ticket-id="114-552" data-ticket-name="PS5 Bundle">
-<span class="material-symbols-outlined text-[20px]">more_vert</span>
-</button>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
@@ -604,12 +763,12 @@ function loadClientData() {
         tipoUsuario: userSessionData.tipoUsuario,
         fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
         saldo: userSessionData.saldo,
-        boletosActivos: 12,
-        boletosNuevos: 2,
-        gananciasTotales: 1250.00,
-        crecimientoGanancias: '+15% mes',
-        puntosLealtad: 450,
-        nivelLealtad: 'Nivel Plata'
+        boletosActivos: <?php echo $totalBoletosActivos; ?>,
+        boletosNuevos: <?php echo min(count($boletosActivosDashboard), 3); ?>,
+        gananciasTotales: 1250.00, // Este valor puede calcularse desde la tabla de ganadores si es necesario
+        crecimientoGanancias: '+15% mes', // Este valor puede calcularse comparando periodos
+        puntosLealtad: 450, // Este valor puede venir de una tabla de puntos de lealtad
+        nivelLealtad: 'Nivel Plata' // Este valor puede calcularse desde los puntos
     };
 
     // Intentar obtener datos adicionales desde localStorage (pero mantener nombre y tipoUsuario de la sesión)
@@ -674,11 +833,13 @@ function updateDashboard(data) {
     const loyaltyPointsEl = document.getElementById('loyalty-points');
     const loyaltyLevelEl = document.getElementById('loyalty-level');
 
-    if (activeTicketsEl && data.boletosActivos !== undefined) {
+    // Los datos de boletos activos se cargan desde PHP directamente en el HTML
+    // Solo actualizar si los datos vienen de localStorage/sessionStorage
+    if (activeTicketsEl && data.boletosActivos !== undefined && !activeTicketsEl.textContent.trim()) {
         activeTicketsEl.textContent = data.boletosActivos;
     }
 
-    if (newTicketsEl && data.boletosNuevos !== undefined) {
+    if (newTicketsEl && data.boletosNuevos !== undefined && !newTicketsEl.textContent.trim()) {
         newTicketsEl.textContent = `+${data.boletosNuevos} nuevos`;
     }
 

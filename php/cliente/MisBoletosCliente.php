@@ -28,6 +28,144 @@ $usuarioEmail = $datosUsuario['email'];
 $usuarioSaldo = $datosUsuario['saldo'];
 $usuarioAvatar = $datosUsuario['avatar'];
 $tipoUsuario = $datosUsuario['tipoUsuario'];
+$usuarioId = $datosUsuario['id_usuario'];
+
+// Obtener boletos del cliente desde la base de datos
+require_once __DIR__ . '/config/database.php';
+$db = getDB();
+
+// Función para obtener todos los boletos del cliente con información completa
+function obtenerBoletosCliente($db, $usuarioId) {
+    try {
+        // Obtener todos los boletos del usuario con información del sorteo, transacción y si es ganador
+        $stmt = $db->prepare("
+            SELECT 
+                b.id_boleto,
+                b.numero_boleto,
+                b.estado as estado_boleto,
+                b.fecha_reserva,
+                s.id_sorteo,
+                s.titulo as sorteo_titulo,
+                s.imagen_url as sorteo_imagen,
+                s.fecha_fin as sorteo_fecha_fin,
+                s.estado as sorteo_estado,
+                t.id_transaccion,
+                t.estado_pago,
+                t.fecha_creacion as transaccion_fecha,
+                t.comprobante_url,
+                g.id_boleto as es_ganador,
+                g.premio_detalle,
+                g.entregado as premio_entregado,
+                g.fecha_anuncio as fecha_anuncio_ganador
+            FROM boletos b
+            INNER JOIN sorteos s ON b.id_sorteo = s.id_sorteo
+            LEFT JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
+            LEFT JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
+            LEFT JOIN ganadores g ON b.id_boleto = g.id_boleto AND s.id_sorteo = g.id_sorteo
+            WHERE b.id_usuario_actual = :usuario_id
+            AND b.estado IN ('Reservado', 'Vendido')
+            ORDER BY t.fecha_creacion DESC, s.fecha_fin DESC, b.numero_boleto ASC
+        ");
+        
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $boletos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar boletos para formatear datos
+        $boletosProcesados = [];
+        foreach ($boletos as $boleto) {
+            // Determinar estado del boleto
+            $estadoDisplay = 'pending'; // Por defecto pendiente
+            $estadoTexto = 'Validando Pago';
+            $estadoBadge = 'yellow';
+            
+            if ($boleto['estado_boleto'] === 'Vendido') {
+                if ($boleto['es_ganador']) {
+                    $estadoDisplay = 'winner';
+                    $estadoTexto = 'GANADOR';
+                    $estadoBadge = 'amber';
+                } else if ($boleto['estado_pago'] === 'Completado') {
+                    $estadoDisplay = 'approved';
+                    $estadoTexto = 'Aprobado';
+                    $estadoBadge = 'green';
+                } else if ($boleto['estado_pago'] === 'Fallido') {
+                    $estadoDisplay = 'rejected';
+                    $estadoTexto = 'Rechazado';
+                    $estadoBadge = 'red';
+                } else {
+                    $estadoDisplay = 'pending';
+                    $estadoTexto = 'Validando Pago';
+                    $estadoBadge = 'yellow';
+                }
+            } else if ($boleto['estado_boleto'] === 'Reservado') {
+                $estadoDisplay = 'pending';
+                $estadoTexto = 'Reservado';
+                $estadoBadge = 'yellow';
+            }
+            
+            // Formatear fecha
+            $fechaDisplay = 'Fecha no disponible';
+            if ($boleto['transaccion_fecha']) {
+                $fecha = new DateTime($boleto['transaccion_fecha']);
+                $fechaDisplay = $fecha->format('d M, Y');
+            } else if ($boleto['fecha_reserva']) {
+                $fecha = new DateTime($boleto['fecha_reserva']);
+                $fechaDisplay = $fecha->format('d M, Y');
+            }
+            
+            // Formatear fecha del sorteo
+            $fechaSorteoDisplay = '';
+            if ($boleto['sorteo_fecha_fin']) {
+                $fechaSorteo = new DateTime($boleto['sorteo_fecha_fin']);
+                $fechaSorteoDisplay = $fechaSorteo->format('d M, Y');
+            }
+            
+            // URL de imagen del sorteo (usar default si no hay)
+            $imagenSorteo = $boleto['sorteo_imagen'] ?? 'https://via.placeholder.com/150';
+            
+            $boletosProcesados[] = [
+                'id_boleto' => $boleto['id_boleto'],
+                'numero_boleto' => $boleto['numero_boleto'],
+                'numero_boleto_int' => intval($boleto['numero_boleto']),
+                'estado_display' => $estadoDisplay,
+                'estado_texto' => $estadoTexto,
+                'estado_badge' => $estadoBadge,
+                'id_sorteo' => $boleto['id_sorteo'],
+                'sorteo_titulo' => $boleto['sorteo_titulo'],
+                'sorteo_imagen' => $imagenSorteo,
+                'sorteo_fecha_fin' => $fechaSorteoDisplay,
+                'sorteo_estado' => $boleto['sorteo_estado'],
+                'id_transaccion' => $boleto['id_transaccion'],
+                'estado_pago' => $boleto['estado_pago'],
+                'transaccion_fecha' => $fechaDisplay,
+                'comprobante_url' => $boleto['comprobante_url'],
+                'es_ganador' => !empty($boleto['es_ganador']),
+                'premio_detalle' => $boleto['premio_detalle'],
+                'premio_entregado' => $boleto['premio_entregado'] ?? false,
+                'fecha_anuncio_ganador' => $boleto['fecha_anuncio_ganador']
+            ];
+        }
+        
+        return $boletosProcesados;
+        
+    } catch (PDOException $e) {
+        error_log("Error al obtener boletos del cliente: " . $e->getMessage());
+        return [];
+    } catch (Exception $e) {
+        error_log("Error general al obtener boletos del cliente: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Obtener los boletos del cliente
+$boletosCliente = obtenerBoletosCliente($db, $usuarioId);
+
+// Obtener lista de sorteos únicos para el filtro
+$sorteosUnicos = [];
+foreach ($boletosCliente as $boleto) {
+    if (!isset($sorteosUnicos[$boleto['id_sorteo']])) {
+        $sorteosUnicos[$boleto['id_sorteo']] = $boleto['sorteo_titulo'];
+    }
+}
 ?>
 <!DOCTYPE html>
 
@@ -193,11 +331,11 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <label class="flex flex-col gap-1.5 w-full">
 <span class="text-xs font-semibold uppercase text-text-secondary tracking-wider">Sorteo</span>
 <div class="relative">
-<select class="w-full h-11 pl-3 pr-10 bg-[#111318] border border-[#282d39] rounded-lg text-sm text-white focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none cursor-pointer">
+<select id="filter-sorteo" class="w-full h-11 pl-3 pr-10 bg-[#111318] border border-[#282d39] rounded-lg text-sm text-white focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none cursor-pointer">
 <option value="">Todos los sorteos</option>
-<option value="iphone">Gran Sorteo iPhone 15</option>
-<option value="car">Automóvil 2024</option>
-<option value="cash">Bono en Efectivo</option>
+<?php foreach ($sorteosUnicos as $idSorteo => $titulo): ?>
+<option value="<?php echo $idSorteo; ?>" data-sorteo-id="<?php echo $idSorteo; ?>"><?php echo htmlspecialchars($titulo); ?></option>
+<?php endforeach; ?>
 </select>
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-text-secondary">
 <span class="material-symbols-outlined">expand_more</span>
@@ -226,198 +364,153 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 </div>
 <!-- Tickets Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-<!-- Card 1: Winner -->
-<div class="group relative bg-card-dark rounded-xl border-2 border-amber-500/50 shadow-lg shadow-amber-500/10 overflow-hidden flex flex-col">
+<div id="boletos-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<?php if (empty($boletosCliente)): ?>
+<!-- Mensaje cuando no hay boletos -->
+<div class="col-span-full flex flex-col items-center justify-center py-16 px-4">
+<div class="size-24 rounded-full bg-card-dark flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-5xl text-text-secondary">confirmation_number</span>
+</div>
+<h3 class="text-2xl font-bold text-white mb-2">No tienes boletos aún</h3>
+<p class="text-text-secondary text-center max-w-md mb-6">Cuando compres boletos en algún sorteo, aparecerán aquí con su estado actualizado.</p>
+<a href="ListadoSorteosActivos.php" class="px-6 py-3 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors">
+Ver Sorteos Disponibles
+</a>
+</div>
+<?php else: ?>
+<?php foreach ($boletosCliente as $boleto): 
+    $isWinner = $boleto['es_ganador'];
+    $estadoDisplay = $boleto['estado_display'];
+    $estadoTexto = $boleto['estado_texto'];
+    $estadoBadge = $boleto['estado_badge'];
+    $numeroBoleto = $boleto['numero_boleto'];
+    $numeroBoletoInt = $boleto['numero_boleto_int'];
+    $sorteoTitulo = htmlspecialchars($boleto['sorteo_titulo']);
+    $sorteoImagen = htmlspecialchars($boleto['sorteo_imagen']);
+    $transaccionFecha = htmlspecialchars($boleto['transaccion_fecha']);
+    $sorteoFechaFin = htmlspecialchars($boleto['sorteo_fecha_fin']);
+    $comprobanteUrl = $boleto['comprobante_url'];
+    $idBoleto = $boleto['id_boleto'];
+    $idSorteo = $boleto['id_sorteo'];
+    $idTransaccion = $boleto['id_transaccion'];
+    
+    // Clases CSS según el estado
+    $borderClass = $isWinner ? 'border-2 border-amber-500/50 shadow-lg shadow-amber-500/10' : 'border border-[#282d39] hover:border-[#3b4254]';
+    $headerClass = $isWinner ? 'bg-gradient-to-r from-amber-500/10 to-transparent' : '';
+    $badgeColor = [
+        'green' => 'bg-green-500/10 text-green-400 border-green-500/20',
+        'yellow' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        'red' => 'bg-red-500/10 text-red-400 border-red-500/20',
+        'amber' => 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+    ];
+    $badgeClass = $badgeColor[$estadoBadge] ?? $badgeColor['yellow'];
+    $dotColor = [
+        'green' => 'bg-green-500',
+        'yellow' => 'bg-yellow-500 animate-pulse',
+        'red' => 'bg-red-500',
+        'amber' => 'bg-amber-500'
+    ];
+    $dotClass = $dotColor[$estadoBadge] ?? $dotColor['yellow'];
+?>
+<!-- Boleto: <?php echo $estadoTexto; ?> -->
+<div class="boleto-card group relative bg-card-dark rounded-xl <?php echo $borderClass; ?> overflow-hidden flex flex-col" 
+     data-boleto-id="<?php echo $idBoleto; ?>"
+     data-sorteo-id="<?php echo $idSorteo; ?>"
+     data-numero-boleto="<?php echo $numeroBoletoInt; ?>"
+     data-estado="<?php echo $estadoDisplay; ?>"
+     data-sorteo-nombre="<?php echo $sorteoTitulo; ?>">
+<?php if ($isWinner): ?>
 <div class="absolute top-0 right-0 bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg z-10 flex items-center gap-1">
 <span class="material-symbols-outlined text-sm">emoji_events</span> GANADOR
-                    </div>
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39] bg-gradient-to-r from-amber-500/10 to-transparent">
+</div>
+<?php endif; ?>
+<div class="p-5 flex items-start gap-4 border-b border-[#282d39] <?php echo $headerClass; ?>">
 <div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden">
-<img alt="Car Raffle Prize" class="w-full h-full object-cover" data-alt="Red sports car side view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArzq9r1TXy4_0Fjg6nrYz6ldHJWWYI1FcXyDnkNMYh0wLKkdnVRnaVpv_cFdZah7xLd6PlgicJWix4ju2Vlhduw8wJqZ90LDvApj8VGmQm8EZjKCuW7TBM15SF4CY0hAzri9TAvqGKraStMnOpQwAIzBGUZb-jxSff_7TC9QrP7O6LCjgRzugXhxCBWB5pexXg3NTNBlA5vEzPj6GfH3Oy2Ns38TQJ_tubPya33GYIGfT0ILVgL-2czux_KGShnhuwqYvGzaXzbfU"/>
+<img alt="<?php echo $sorteoTitulo; ?>" class="w-full h-full object-cover" src="<?php echo $sorteoImagen; ?>" onerror="this.src='https://via.placeholder.com/150'"/>
 </div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">Gran Sorteo Automóvil 2024</h3>
-<p class="text-xs text-text-secondary mt-1">Sorteado el: 15 Oct, 2023</p>
-</div>
-</div>
-<div class="p-5 flex flex-col gap-4 flex-1">
-<div class="flex justify-between items-center">
-<span class="text-sm font-medium text-text-secondary">Boleto #</span>
-<span class="font-mono text-2xl font-bold tracking-wider text-amber-500">77777</span>
-</div>
-<div class="mt-auto pt-4 flex gap-3">
-<button class="flex-1 bg-amber-500 hover:bg-amber-600 text-black font-bold h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
-<span class="material-symbols-outlined text-lg">celebration</span>
-                                Reclamar Premio
-                            </button>
-<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary">
-<span class="material-symbols-outlined">visibility</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Card 2: Approved -->
-<div class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden flex flex-col hover:border-[#3b4254] transition-colors">
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39]">
-<div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden">
-<img alt="Smartphone Prize" class="w-full h-full object-cover" data-alt="Modern smartphone showing home screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQvXPcM1Ldf-aXSI8gyokTpfgsNhOsI1lg6PqSR4bPs2MRdwnkctnAIqpU3O9VEBM2d8wv9ajMd7i23TplQC2a3M-vSRAA4HjK9q_uqNBE-Y7P4OEiCmkPX9KAlj0sfN_5cc8wrAoVuwsaSVUp2u9VnRkHrYh3JKb3LI1Q_sMGCa3GOC1Y7GPl1kyup_CHieZJSz1R41VNae_LlrQ9qTPW2CjZ2bmffb03ntY0aKv0qrsMO-PqUWslmMXZlGHFYRrL9pOMt5YRgZc"/>
-</div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">iPhone 15 Pro Max</h3>
-<p class="text-xs text-text-secondary mt-1">Compra: 20 Oct, 2023</p>
+<div class="flex flex-col flex-1">
+<h3 class="font-bold text-white line-clamp-1"><?php echo $sorteoTitulo; ?></h3>
+<p class="text-xs text-text-secondary mt-1">
+<?php if ($isWinner && $sorteoFechaFin): ?>
+Sorteado el: <?php echo $sorteoFechaFin; ?>
+<?php else: ?>
+Compra: <?php echo $transaccionFecha; ?>
+<?php endif; ?>
+</p>
+<?php if (!$isWinner): ?>
 <div class="mt-2 inline-flex">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-<span class="size-1.5 rounded-full bg-green-500"></span>
-                                    Aprobado
-                                </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $badgeClass; ?>">
+<span class="size-1.5 rounded-full <?php echo $dotClass; ?>"></span>
+<?php echo $estadoTexto; ?>
+</span>
 </div>
-</div>
-</div>
-<div class="p-5 flex flex-col gap-4 flex-1">
-<div class="flex justify-between items-center bg-[#111318] p-3 rounded-lg border border-dashed border-[#282d39]">
-<span class="text-sm font-medium text-text-secondary">Número de Boleto</span>
-<span class="font-mono text-xl font-bold text-white">19204</span>
-</div>
-<div class="mt-auto flex gap-3">
-<button class="flex-1 bg-[#282d39] border border-[#282d39] hover:border-primary hover:text-primary text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
-<span class="material-symbols-outlined text-lg">download</span>
-                                Comprobante
-                            </button>
-<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary">
-<span class="material-symbols-outlined">visibility</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Card 3: Pending -->
-<div class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden flex flex-col hover:border-[#3b4254] transition-colors">
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39]">
-<div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden">
-<img alt="Gift Box Prize" class="w-full h-full object-cover" data-alt="Wrapped gift box with red ribbon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCluC6AkX5FyVDrd5cANYFHXQZlrIWfaSXoMb73bzb6stNOf-nGoQls_4P_mF6y4yFHJhuCXz2SICFKM6nshdwptyBwLh-uXD3vpNJPC71mEe0Rlg92cOFwxBE0-UmK74Y6-7Dv1ewaEzYkn7sIOqp82pBZcMhqp-hekm5KrJg9YEH0FG8XRnWPBivMxDiop_6gUkARoje3LJv3qK7UkJnJKOOHaCyOnfL7badlxb0dv4D9A8itM4xrjplh8_U02UFQhao9CxqHhsY"/>
-</div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">Bono Navideño $50k</h3>
-<p class="text-xs text-text-secondary mt-1">Compra: Hoy, 10:30 AM</p>
-<div class="mt-2 inline-flex">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-<span class="size-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
-                                    Validando Pago
-                                </span>
-</div>
+<?php endif; ?>
 </div>
 </div>
 <div class="p-5 flex flex-col gap-4 flex-1">
+<?php if ($estadoDisplay === 'rejected'): ?>
+<div class="bg-red-900/10 p-3 rounded-lg border border-red-900/30">
+<p class="text-xs text-red-400 leading-relaxed">
+<strong>Motivo:</strong> El comprobante de pago no es legible o no corresponde al monto del sorteo.
+</p>
+</div>
+<?php elseif ($estadoDisplay === 'pending' && empty($comprobanteUrl)): ?>
 <div class="flex justify-between items-center bg-[#111318] p-3 rounded-lg border border-dashed border-[#282d39] opacity-75">
 <span class="text-sm font-medium text-text-secondary">Número de Boleto</span>
 <span class="font-mono text-xl font-bold text-white">---</span>
 </div>
 <div class="mt-auto flex gap-3">
 <div class="flex-1 h-10 flex items-center text-xs text-yellow-400 bg-yellow-900/10 rounded-lg px-3">
-                                Tu boleto se asignará al confirmar el pago.
-                             </div>
-<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary">
+Tu boleto se asignará al confirmar el pago.
+</div>
+<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary" title="Ayuda">
 <span class="material-symbols-outlined">help</span>
 </button>
 </div>
+<?php else: ?>
+<div class="flex justify-between items-center <?php echo $isWinner ? '' : 'bg-[#111318] p-3 rounded-lg border border-dashed border-[#282d39]'; ?>">
+<span class="text-sm font-medium text-text-secondary"><?php echo $isWinner ? 'Boleto #' : 'Número de Boleto'; ?></span>
+<span class="font-mono <?php echo $isWinner ? 'text-2xl font-bold tracking-wider text-amber-500' : 'text-xl font-bold text-white'; ?>"><?php echo $numeroBoleto; ?></span>
 </div>
-</div>
-<!-- Card 4: Rejected -->
-<div class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden flex flex-col opacity-75 hover:opacity-100 transition-opacity">
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39]">
-<div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden grayscale">
-<img alt="Headphones Prize" class="w-full h-full object-cover" data-alt="Black wireless headphones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDn5K32ks87zAiWlsAhufuEbmg-1i1jUa7R32YuclUJsLX0ziWKBNEInzT5y0Uxtbq2RAqOkAHUwh93tce466NqBPzV8sHhFQ_RxpgNrkUr5PExO-mSa4SM53QJGhjxT5Bucr0ujHMSQzCqib1KbRiKsnukzCaXcpmsCDTqS94DI0ad9l7EOVurnb1broKUFAp4a9i0nM9yUnZ7v0mximv6Kyte6WxXnfUhrDQBXRX2Nl70ZXw4mvQQTeH4a0ZJ-vzBE3qJPFruTjc"/>
-</div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">Rifa Express: Auriculares</h3>
-<p class="text-xs text-text-secondary mt-1">Compra: 10 Oct, 2023</p>
-<div class="mt-2 inline-flex">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-<span class="material-symbols-outlined text-[14px]">cancel</span>
-                                    Rechazado
-                                </span>
-</div>
-</div>
-</div>
-<div class="p-5 flex flex-col gap-4 flex-1">
-<div class="bg-red-900/10 p-3 rounded-lg border border-red-900/30">
-<p class="text-xs text-red-400 leading-relaxed">
-<strong>Motivo:</strong> El comprobante de pago no es legible o no corresponde al monto del sorteo.
-                            </p>
-</div>
-<div class="mt-auto flex gap-3">
-<button class="flex-1 bg-[#282d39] border border-[#282d39] hover:border-red-500 hover:text-red-500 text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
-                                Contactar Soporte
-                            </button>
-</div>
-</div>
-</div>
-<!-- Card 5: Approved -->
-<div class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden flex flex-col hover:border-[#3b4254] transition-colors">
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39]">
-<div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden">
-<img alt="Travel Prize" class="w-full h-full object-cover" data-alt="Beach with palm trees" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8QxsRdmmk4lqOuAeEVnvWi0ePeUjW8ibVEoarA70W6U-ULTS_UZeTDYa626Rr71382c3MflyvCEP08yud_ZhK-3fiCe-p8BKQ99teYOn7KAB-E45V1aO_ijuyXPYc3eTcTfxQi-ef_aV86_aGi5SF3DHVlfMeLamIZp2PI2oTvKqMQMA4TKS_D82zVhm3xj-cM7aeob-JhAsFci8jmnm4S536GlHTZxJC0GprSDa3URxuym-_tPCEkYU1wRJS6grTpS3MyjVBweo"/>
-</div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">Viaje Todo Incluido</h3>
-<p class="text-xs text-text-secondary mt-1">Compra: 05 Oct, 2023</p>
-<div class="mt-2 inline-flex">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-<span class="size-1.5 rounded-full bg-green-500"></span>
-                                    Aprobado
-                                </span>
-</div>
-</div>
-</div>
-<div class="p-5 flex flex-col gap-4 flex-1">
-<div class="flex justify-between items-center bg-[#111318] p-3 rounded-lg border border-dashed border-[#282d39]">
-<span class="text-sm font-medium text-text-secondary">Número de Boleto</span>
-<span class="font-mono text-xl font-bold text-white">45100</span>
-</div>
-<div class="mt-auto flex gap-3">
-<button class="flex-1 bg-[#282d39] border border-[#282d39] hover:border-primary hover:text-primary text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+<div class="mt-auto pt-4 flex gap-3">
+<?php if ($isWinner): ?>
+<button class="btn-reclamar flex-1 bg-amber-500 hover:bg-amber-600 text-black font-bold h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm" 
+        data-boleto-id="<?php echo $idBoleto; ?>"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+        data-numero-boleto="<?php echo $numeroBoleto; ?>">
+<span class="material-symbols-outlined text-lg">celebration</span>
+Reclamar Premio
+</button>
+<?php elseif ($estadoDisplay === 'approved' && $comprobanteUrl): ?>
+<button class="btn-comprobante flex-1 bg-[#282d39] border border-[#282d39] hover:border-primary hover:text-primary text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm"
+        data-comprobante-url="<?php echo htmlspecialchars($comprobanteUrl); ?>"
+        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>">
 <span class="material-symbols-outlined text-lg">download</span>
-                                Comprobante
-                            </button>
-<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary">
-<span class="material-symbols-outlined">visibility</span>
+Comprobante
+</button>
+<?php elseif ($estadoDisplay === 'rejected'): ?>
+<button class="btn-soporte flex-1 bg-[#282d39] border border-[#282d39] hover:border-red-500 hover:text-red-500 text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>">
+Contactar Soporte
+</button>
+<?php endif; ?>
+<button class="btn-ver-detalles size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary"
+        data-boleto-id="<?php echo $idBoleto; ?>"
+        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+        data-fecha="<?php echo $transaccionFecha; ?>"
+        data-estado-texto="<?php echo $estadoTexto; ?>"
+        title="Ver detalles">
+<span class="material-symbols-outlined"><?php echo $estadoDisplay === 'pending' && empty($comprobanteUrl) ? 'help' : 'visibility'; ?></span>
 </button>
 </div>
+<?php endif; ?>
 </div>
 </div>
-<!-- Card 6: Approved -->
-<div class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden flex flex-col hover:border-[#3b4254] transition-colors">
-<div class="p-5 flex items-start gap-4 border-b border-[#282d39]">
-<div class="size-16 rounded-lg bg-gray-800 shrink-0 overflow-hidden">
-<img alt="Electronics Prize" class="w-full h-full object-cover" data-alt="Circuit board pattern blue light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOwQrbXGVjOXIM-wlpfjA4igoTseC8YHhgFPBi77_mbl7YhI1BZUviBx948aMAMJUGRQZNtiAC8Yz_l4guEie4tTyp9hWQ5nBAzFi3c1s5sPNTFvo0IZa4N1Tk37soleogeUmHn6N9IrYJR8yo3LeamYE19Ovnuqkv7pSoUEF3CjBjHzWnek8_LcVad4U2ZfWyyTTlLK2gET4gZcAzpB8U5ZfvNzmsi15Ie--7BN6HIUlgB3ER5OIPfcOSXOrEYttexm3bZUbf9V4"/>
-</div>
-<div class="flex flex-col">
-<h3 class="font-bold text-white line-clamp-1">Kit Gamer Ultimate</h3>
-<p class="text-xs text-text-secondary mt-1">Compra: 01 Oct, 2023</p>
-<div class="mt-2 inline-flex">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
-<span class="size-1.5 rounded-full bg-green-500"></span>
-                                    Aprobado
-                                </span>
-</div>
-</div>
-</div>
-<div class="p-5 flex flex-col gap-4 flex-1">
-<div class="flex justify-between items-center bg-[#111318] p-3 rounded-lg border border-dashed border-[#282d39]">
-<span class="text-sm font-medium text-text-secondary">Número de Boleto</span>
-<span class="font-mono text-xl font-bold text-white">12932</span>
-</div>
-<div class="mt-auto flex gap-3">
-<button class="flex-1 bg-[#282d39] border border-[#282d39] hover:border-primary hover:text-primary text-gray-300 font-medium h-10 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
-<span class="material-symbols-outlined text-lg">download</span>
-                                Comprobante
-                            </button>
-<button class="size-10 rounded-lg border border-[#282d39] flex items-center justify-center hover:bg-[#353b4b] transition-colors text-text-secondary">
-<span class="material-symbols-outlined">visibility</span>
-</button>
-</div>
-</div>
-</div>
+<?php endforeach; ?>
+<?php endif; ?>
+<!-- End of dynamic tickets -->
 </div>
 <!-- Pagination -->
 <div class="flex items-center justify-center gap-2 pt-4">
@@ -512,7 +605,7 @@ function initBoletoSearch() {
 
 // Función para buscar boletos
 function searchBoletos(query) {
-    const boletoCards = document.querySelectorAll('.grid > div');
+    const boletoCards = document.querySelectorAll('.boleto-card');
     
     if (!query) {
         boletoCards.forEach(card => {
@@ -522,10 +615,11 @@ function searchBoletos(query) {
     }
     
     boletoCards.forEach(card => {
-        const boletoNumber = card.querySelector('.font-mono')?.textContent.toLowerCase() || '';
-        const sorteoName = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const boletoNumber = card.getAttribute('data-numero-boleto') || '';
+        const numeroBoletoText = card.querySelector('.font-mono')?.textContent.toLowerCase() || '';
+        const sorteoName = card.getAttribute('data-sorteo-nombre')?.toLowerCase() || card.querySelector('h3')?.textContent.toLowerCase() || '';
         
-        if (boletoNumber.includes(query) || sorteoName.includes(query)) {
+        if (boletoNumber.includes(query) || numeroBoletoText.includes(query) || sorteoName.includes(query)) {
             card.style.display = '';
         } else {
             card.style.display = 'none';
@@ -553,29 +647,28 @@ function initBoletoFilters() {
 
 // Función para filtrar boletos
 function filterBoletos() {
-    const sorteoFilter = document.querySelectorAll('select')[0]?.value || '';
+    const sorteoFilter = document.getElementById('filter-sorteo')?.value || '';
     const estadoFilter = document.querySelectorAll('select')[1]?.value || '';
     
-    const boletoCards = document.querySelectorAll('.grid > div');
+    const boletoCards = document.querySelectorAll('.boleto-card');
     
     boletoCards.forEach(card => {
         let show = true;
         
-        // Filtrar por sorteo
+        // Filtrar por sorteo (usar data-sorteo-id)
         if (sorteoFilter) {
-            const sorteoName = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            if (sorteoFilter === 'iphone' && !sorteoName.includes('iphone')) show = false;
-            if (sorteoFilter === 'car' && !sorteoName.includes('automóvil') && !sorteoName.includes('auto')) show = false;
-            if (sorteoFilter === 'cash' && !sorteoName.includes('efectivo') && !sorteoName.includes('bono')) show = false;
+            const sorteId = card.getAttribute('data-sorteo-id');
+            if (sorteId !== sorteoFilter) {
+                show = false;
+            }
         }
         
-        // Filtrar por estado
+        // Filtrar por estado (usar data-estado)
         if (estadoFilter && show) {
-            const estadoBadge = card.textContent.toLowerCase();
-            if (estadoFilter === 'winner' && !estadoBadge.includes('ganador')) show = false;
-            if (estadoFilter === 'approved' && !estadoBadge.includes('aprobado')) show = false;
-            if (estadoFilter === 'pending' && !estadoBadge.includes('validando') && !estadoBadge.includes('pendiente')) show = false;
-            if (estadoFilter === 'rejected' && !estadoBadge.includes('rechazado')) show = false;
+            const estadoCard = card.getAttribute('data-estado');
+            if (estadoCard !== estadoFilter) {
+                show = false;
+            }
         }
         
         card.style.display = show ? '' : 'none';

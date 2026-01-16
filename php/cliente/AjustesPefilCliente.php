@@ -36,7 +36,7 @@ if (!$datosUsuario) {
     exit;
 }
 
-error_log("AjustesPefilCliente - Datos obtenidos - ID: " . $datosUsuario['id_usuario'] . ", Nombre: " . $datosUsuario['nombre'] . ", Email: " . $datosUsuario['email']);
+error_log("AjustesPefilCliente - Datos obtenidos - ID: " . $datosUsuario['id_usuario'] . ", Nombre: " . $datosUsuario['nombre'] . ", Email: " . $datosUsuario['email'] . ", Teléfono: " . ($datosUsuario['telefono'] ?? 'NULL') . ", Avatar: " . ($datosUsuario['avatar'] ?? 'NULL'));
 
 // Verificar que los datos obtenidos correspondan al usuario de la sesión
 if ($datosUsuario['id_usuario'] != $_SESSION['usuario_id']) {
@@ -48,11 +48,135 @@ if ($datosUsuario['id_usuario'] != $_SESSION['usuario_id']) {
     exit;
 }
 
-$usuarioNombre = $datosUsuario['nombre'];
-$usuarioEmail = $datosUsuario['email'];
-$usuarioSaldo = $datosUsuario['saldo'];
-$usuarioAvatar = $datosUsuario['avatar'];
-$tipoUsuario = $datosUsuario['tipoUsuario'];
+// Asegurar que los datos vienen directamente de la base de datos
+$usuarioNombre = trim($datosUsuario['nombre'] ?? '');
+$usuarioEmail = trim($datosUsuario['email'] ?? '');
+$usuarioSaldo = floatval($datosUsuario['saldo'] ?? 0.00);
+$usuarioAvatar = trim($datosUsuario['avatar'] ?? '');
+$tipoUsuario = trim($datosUsuario['tipoUsuario'] ?? 'Usuario Premium');
+$usuarioTelefono = trim($datosUsuario['telefono'] ?? '');
+
+// Validar que tenemos los datos mínimos requeridos
+if (empty($usuarioNombre) || empty($usuarioEmail)) {
+    error_log("AjustesPefilCliente - ERROR: Datos incompletos - Nombre: '$usuarioNombre', Email: '$usuarioEmail'");
+    header('Location: InicioSesion.php');
+    exit;
+}
+
+error_log("AjustesPefilCliente - Variables preparadas - Nombre: '$usuarioNombre', Email: '$usuarioEmail', Teléfono: '$usuarioTelefono', Avatar: '$usuarioAvatar'");
+
+// Función para obtener estadísticas del historial del usuario
+function obtenerEstadisticasHistorial($usuarioId) {
+    try {
+        require_once __DIR__ . '/config/database.php';
+        $db = getDB();
+        
+        // 1. Total de sorteos en los que ha participado
+        $stmt = $db->prepare("
+            SELECT COUNT(DISTINCT b.id_sorteo) as total_sorteos
+            FROM boletos b
+            INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
+            INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
+            WHERE t.id_usuario = :usuario_id 
+            AND t.estado_pago = 'Completado'
+        ");
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $totalSorteos = $stmt->fetch(PDO::FETCH_ASSOC)['total_sorteos'] ?? 0;
+        
+        // 2. Total de boletos comprados
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total_boletos
+            FROM boletos b
+            INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
+            INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
+            WHERE t.id_usuario = :usuario_id 
+            AND t.estado_pago = 'Completado'
+        ");
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $totalBoletos = $stmt->fetch(PDO::FETCH_ASSOC)['total_boletos'] ?? 0;
+        
+        // 3. Sorteos ganados
+        $stmt = $db->prepare("
+            SELECT COUNT(DISTINCT id_sorteo) as sorteos_ganados
+            FROM ganadores
+            WHERE id_usuario = :usuario_id
+        ");
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $sorteosGanados = $stmt->fetch(PDO::FETCH_ASSOC)['sorteos_ganados'] ?? 0;
+        
+        // 4. Total invertido
+        $stmt = $db->prepare("
+            SELECT COALESCE(SUM(monto_total), 0) as total_invertido
+            FROM transacciones
+            WHERE id_usuario = :usuario_id 
+            AND estado_pago = 'Completado'
+        ");
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $totalInvertido = floatval($stmt->fetch(PDO::FETCH_ASSOC)['total_invertido'] ?? 0);
+        
+        return [
+            'total_sorteos' => intval($totalSorteos),
+            'total_boletos' => intval($totalBoletos),
+            'sorteos_ganados' => intval($sorteosGanados),
+            'total_invertido' => $totalInvertido
+        ];
+    } catch (PDOException $e) {
+        error_log("Error al obtener estadísticas del historial: " . $e->getMessage());
+        return [
+            'total_sorteos' => 0,
+            'total_boletos' => 0,
+            'sorteos_ganados' => 0,
+            'total_invertido' => 0.00
+        ];
+    }
+}
+
+// Función para obtener historial de sorteos del usuario
+function obtenerHistorialSorteos($usuarioId, $limite = 10) {
+    try {
+        require_once __DIR__ . '/config/database.php';
+        $db = getDB();
+        
+        $stmt = $db->prepare("
+            SELECT DISTINCT
+                s.id_sorteo,
+                s.titulo,
+                s.descripcion,
+                s.precio_boleto,
+                s.imagen_url,
+                s.estado as estado_sorteo,
+                s.fecha_inicio,
+                s.fecha_fin,
+                COUNT(DISTINCT b.id_boleto) as boletos_comprados,
+                SUM(s.precio_boleto) as total_pagado,
+                MAX(t.fecha_creacion) as fecha_ultima_compra,
+                (SELECT COUNT(*) FROM ganadores g WHERE g.id_sorteo = s.id_sorteo AND g.id_usuario = :usuario_id) > 0 as es_ganador
+            FROM sorteos s
+            INNER JOIN boletos b ON s.id_sorteo = b.id_sorteo
+            INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
+            INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
+            WHERE t.id_usuario = :usuario_id 
+            AND t.estado_pago = 'Completado'
+            GROUP BY s.id_sorteo, s.titulo, s.descripcion, s.precio_boleto, s.imagen_url, s.estado, s.fecha_inicio, s.fecha_fin
+            ORDER BY fecha_ultima_compra DESC
+            LIMIT :limite
+        ");
+        $stmt->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
+        $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error al obtener historial de sorteos: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Obtener estadísticas del historial
+$estadisticasHistorial = obtenerEstadisticasHistorial($datosUsuario['id_usuario']);
+
+// Obtener historial de sorteos
+$historialSorteos = obtenerHistorialSorteos($datosUsuario['id_usuario'], 20);
 ?>
 <!DOCTYPE html>
 
@@ -132,7 +256,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 <!-- User Mini Profile -->
 <div class="flex items-center gap-3 p-3 rounded-lg bg-card-dark mb-6 border border-[#282d39]">
-<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="User profile picture" style='background-image: url("<?php echo htmlspecialchars($usuarioAvatar ?: 'https://via.placeholder.com/150/282d39/9da6b9?text=Usuario'); ?>");'>
 </div>
 <div class="flex flex-col overflow-hidden">
 <h1 id="sidebar-user-name" class="text-white text-sm font-semibold truncate"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
@@ -197,7 +321,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <div class="bg-card-dark rounded-xl p-6 border border-[#282d39] min-h-[500px] flex flex-col">
 <!-- Profile Snippet -->
 <div class="flex items-center gap-4 mb-8 pb-6 border-b border-[#282d39]">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="User avatar small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBBrupAsp5FgxLWvA_4eDdbO6IBv60Wu2kUzWPNIeip67-oe7I9b2nzaS82HH1OLDR3kt3eIpanzRITFMLGrGYsXnYYc9VA7cfYcoXpQAV1ZQ-hf-DJpgeVpZ2V8DWaQFUHaeUoD_hKmPFlDXfF9XUj5aA9UwMFZqIMKCl-VjIMi1AeKlxdFIXwIkUzXtyq30ajvF07xm95jeC5M4OIFYr8wXRjuU9unKPkk0g_KAcx7iySUtEgz0MBnnruUiSrXMXHZKuiIMrFkg4");'></div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="User avatar small" style='background-image: url("<?php echo htmlspecialchars($usuarioAvatar ?: 'https://via.placeholder.com/150/282d39/9da6b9?text=Usuario'); ?>");'></div>
 <div class="flex flex-col">
 <h1 id="profile-sidebar-name" class="text-white text-base font-bold"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
 <p class="text-text-secondary text-xs"><?php echo htmlspecialchars($tipoUsuario); ?></p>
@@ -249,7 +373,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <!-- Avatar Upload -->
 <div class="flex flex-col sm:flex-row gap-6 mb-8 items-center sm:items-start">
 <div class="relative group cursor-pointer">
-<div id="avatar-perfil" class="bg-center bg-no-repeat bg-cover rounded-full w-24 h-24 border-2 border-primary/50 group-hover:border-primary transition-colors" data-alt="User avatar large" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGuIh6aso4QumOT9FeAmtvNPV87AjsM2Mu8MP96AGuwYqp-sR6G0-z1o0dmajilp9nVokPOW8OcZ50OiPdVJVFhGSggxdLroPiSuUVFsm1KGlsQ1pqDNO2OPEmcqfxRfZxgd_jKnCmN8EFW5qEUr_nxBXzcB4-yqkx2E7vgzFgt1cLqtYKt0PVdk9Wtoc7eV28RI8aVzcqwEnGYvEF5hGaqeqEv_b9jRwJIFEXYSwZJmZiojOfS1yuoS6kLExlnIKcWOsvA8nc6Hk");'></div>
+<div id="avatar-perfil" class="bg-center bg-no-repeat bg-cover rounded-full w-24 h-24 border-2 border-primary/50 group-hover:border-primary transition-colors" data-alt="User avatar large" style='background-image: url("<?php echo htmlspecialchars($usuarioAvatar ?: 'https://via.placeholder.com/150/282d39/9da6b9?text=Usuario'); ?>");'></div>
 <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
 <span class="material-symbols-outlined text-white">photo_camera</span>
 </div>
@@ -273,7 +397,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <label class="text-white text-sm font-medium">Nombre Completo</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">person</span>
-<input id="input-nombre" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu nombre" type="text" value="<?php echo htmlspecialchars($usuarioNombre); ?>"/>
+<input id="input-nombre" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu nombre" type="text" value="<?php echo htmlspecialchars($usuarioNombre); ?>" data-original-value="<?php echo htmlspecialchars($usuarioNombre); ?>"/>
 <span id="error-nombre" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -281,7 +405,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <label class="text-white text-sm font-medium">Correo Electrónico</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">mail</span>
-<input id="input-email" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="email@ejemplo.com" type="email" value="<?php echo htmlspecialchars($usuarioEmail); ?>"/>
+<input id="input-email" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="email@ejemplo.com" type="email" value="<?php echo htmlspecialchars($usuarioEmail); ?>" data-original-value="<?php echo htmlspecialchars($usuarioEmail); ?>"/>
 <span id="error-email" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -289,7 +413,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <label class="text-white text-sm font-medium">Teléfono</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">call</span>
-<input id="input-telefono" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="+1 234 567 890" type="tel" value="<?php echo htmlspecialchars($datosUsuario['telefono'] ?? ''); ?>"/>
+<input id="input-telefono" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="+1 234 567 890" type="tel" value="<?php echo htmlspecialchars($usuarioTelefono); ?>" data-original-value="<?php echo htmlspecialchars($usuarioTelefono); ?>"/>
 <span id="error-telefono" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -297,7 +421,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <label class="text-white text-sm font-medium">Dirección</label>
 <div class="relative">
 <span class="material-symbols-outlined absolute left-3 top-2.5 text-text-secondary text-[20px]">location_on</span>
-<input id="input-direccion" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu dirección completa" type="text" value="Calle Gran Vía 22, Madrid"/>
+<input id="input-direccion" class="w-full bg-[#111621] border border-[#282d39] text-white text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pl-10 py-2.5 placeholder-[#566074]" placeholder="Tu dirección completa (opcional)" type="text" value=""/>
 <span id="error-direccion" class="hidden text-red-400 text-xs mt-1"></span>
 </div>
 </div>
@@ -586,7 +710,7 @@ Limpiar
 <div class="flex items-center justify-between">
 <div>
 <p class="text-text-secondary text-xs mb-1">Total Sorteos</p>
-<p id="stat-total-sorteos" class="text-white text-2xl font-bold">0</p>
+<p id="stat-total-sorteos" class="text-white text-2xl font-bold"><?php echo $estadisticasHistorial['total_sorteos']; ?></p>
 </div>
 <span class="material-symbols-outlined text-primary text-3xl">local_activity</span>
 </div>
@@ -595,7 +719,7 @@ Limpiar
 <div class="flex items-center justify-between">
 <div>
 <p class="text-text-secondary text-xs mb-1">Boletos Comprados</p>
-<p id="stat-total-boletos" class="text-white text-2xl font-bold">0</p>
+<p id="stat-total-boletos" class="text-white text-2xl font-bold"><?php echo $estadisticasHistorial['total_boletos']; ?></p>
 </div>
 <span class="material-symbols-outlined text-green-500 text-3xl">confirmation_number</span>
 </div>
@@ -604,7 +728,7 @@ Limpiar
 <div class="flex items-center justify-between">
 <div>
 <p class="text-text-secondary text-xs mb-1">Sorteos Ganados</p>
-<p id="stat-sorteos-ganados" class="text-white text-2xl font-bold">0</p>
+<p id="stat-sorteos-ganados" class="text-white text-2xl font-bold"><?php echo $estadisticasHistorial['sorteos_ganados']; ?></p>
 </div>
 <span class="material-symbols-outlined text-yellow-500 text-3xl">emoji_events</span>
 </div>
@@ -613,7 +737,7 @@ Limpiar
 <div class="flex items-center justify-between">
 <div>
 <p class="text-text-secondary text-xs mb-1">Total Invertido</p>
-<p id="stat-total-invertido" class="text-white text-2xl font-bold">$0</p>
+<p id="stat-total-invertido" class="text-white text-2xl font-bold">$<?php echo number_format($estadisticasHistorial['total_invertido'], 2, '.', ','); ?></p>
 </div>
 <span class="material-symbols-outlined text-blue-500 text-3xl">attach_money</span>
 </div>
@@ -621,21 +745,98 @@ Limpiar
 </div>
 <!-- Lista de Historial -->
 <div id="historial-container" class="space-y-4">
-<!-- Los sorteos se cargarán aquí dinámicamente -->
-<div id="historial-loading" class="flex items-center justify-center py-12">
-<div class="flex flex-col items-center gap-3">
-<div class="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-<p class="text-text-secondary text-sm">Cargando historial...</p>
-</div>
-</div>
-<div id="historial-empty" class="hidden text-center py-12">
+<?php if (empty($historialSorteos)): ?>
+<!-- Mensaje cuando no hay historial -->
+<div id="historial-empty" class="text-center py-12">
 <span class="material-symbols-outlined text-text-secondary text-6xl mb-4">history</span>
 <p class="text-white font-medium mb-2">No hay historial de sorteos</p>
 <p class="text-text-secondary text-sm">Aún no has participado en ningún sorteo.</p>
+<a href="ListadoSorteosActivos.php" class="inline-block mt-4 text-sm font-semibold text-primary hover:text-blue-400 transition-colors">
+Ver Sorteos Disponibles →
+</a>
 </div>
+<?php else: ?>
+<!-- Lista de sorteos del historial -->
 <div id="historial-list" class="space-y-3">
-<!-- Los elementos del historial se agregarán aquí -->
+<?php foreach ($historialSorteos as $sorteo): 
+    $idSorteo = $sorteo['id_sorteo'];
+    $titulo = htmlspecialchars($sorteo['titulo']);
+    $imagenUrl = htmlspecialchars($sorteo['imagen_url'] ?: 'https://via.placeholder.com/300x200?text=Sorteo');
+    $estadoSorteo = $sorteo['estado_sorteo'];
+    $boletosComprados = intval($sorteo['boletos_comprados']);
+    $totalPagado = floatval($sorteo['total_pagado']);
+    $fechaUltimaCompra = $sorteo['fecha_ultima_compra'];
+    $esGanador = intval($sorteo['es_ganador']) > 0;
+    
+    // Formatear fecha
+    $fechaFormateada = date('d M, Y', strtotime($fechaUltimaCompra));
+    
+    // Clases y colores según el estado
+    $estadoClasses = [
+        'Activo' => 'bg-green-500/10 text-green-500',
+        'Finalizado' => 'bg-blue-500/10 text-blue-500',
+        'Pausado' => 'bg-yellow-500/10 text-yellow-500',
+        'Borrador' => 'bg-gray-500/10 text-gray-500'
+    ];
+    $estadoClass = $estadoClasses[$estadoSorteo] ?? 'bg-gray-500/10 text-gray-500';
+?>
+<!-- Item de Historial: <?php echo $titulo; ?> -->
+<div class="historial-item bg-[#151a23] rounded-lg p-4 border border-[#282d39] hover:border-primary/50 transition-colors"
+     data-sorteo-id="<?php echo $idSorteo; ?>"
+     data-titulo="<?php echo $titulo; ?>"
+     data-estado="<?php echo strtolower($estadoSorteo); ?>"
+     data-fecha="<?php echo date('Y-m-d', strtotime($fechaUltimaCompra)); ?>">
+<div class="flex flex-col sm:flex-row gap-4">
+<!-- Imagen del sorteo -->
+<div class="flex-shrink-0">
+<div class="w-full sm:w-24 h-24 rounded-lg bg-gray-700 bg-cover bg-center" style='background-image: url("<?php echo $imagenUrl; ?>");' onerror="this.style.backgroundImage='url(\'https://via.placeholder.com/300x200?text=Sorteo\')'"></div>
 </div>
+<!-- Información del sorteo -->
+<div class="flex-1 min-w-0">
+<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+<div class="flex-1 min-w-0">
+<h4 class="text-white font-semibold text-base mb-1 truncate"><?php echo $titulo; ?></h4>
+<div class="flex flex-wrap items-center gap-2 text-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $estadoClass; ?>">
+<?php echo $estadoSorteo; ?>
+</span>
+<?php if ($esGanador): ?>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500">
+<span class="material-symbols-outlined text-xs">emoji_events</span>
+Ganador
+</span>
+<?php endif; ?>
+</div>
+</div>
+<div class="flex-shrink-0 text-left sm:text-right">
+<p class="text-text-secondary text-xs mb-1">Fecha de compra</p>
+<p class="text-white text-sm font-medium"><?php echo $fechaFormateada; ?></p>
+</div>
+</div>
+<!-- Detalles de boletos y pago -->
+<div class="grid grid-cols-2 gap-4 pt-2 border-t border-[#282d39]">
+<div>
+<p class="text-text-secondary text-xs mb-1">Boletos comprados</p>
+<p class="text-white font-semibold"><?php echo $boletosComprados; ?> <?php echo $boletosComprados === 1 ? 'boleto' : 'boletos'; ?></p>
+</div>
+<div>
+<p class="text-text-secondary text-xs mb-1">Total pagado</p>
+<p class="text-white font-semibold">$<?php echo number_format($totalPagado, 2, '.', ','); ?></p>
+</div>
+</div>
+</div>
+<!-- Acciones -->
+<div class="flex-shrink-0 flex items-center gap-2">
+<a href="SorteoClienteDetalles.php?id=<?php echo $idSorteo; ?>" class="px-4 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+Ver Detalles
+</a>
+</div>
+</div>
+</div>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
 </div>
 <!-- Paginación -->
 <div id="historial-pagination" class="hidden mt-6 flex items-center justify-between border-t border-[#282d39] pt-4">
@@ -683,9 +884,44 @@ const userSessionData = {
     nombre: '<?php echo addslashes($usuarioNombre); ?>',
     tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
     email: '<?php echo addslashes($usuarioEmail); ?>',
+    telefono: '<?php echo addslashes($usuarioTelefono); ?>',
     saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
     avatar: '<?php echo addslashes($usuarioAvatar); ?>'
 };
+
+// LIMPIAR localStorage si tiene datos de otro usuario o datos incorrectos
+(function() {
+    'use strict';
+    
+    try {
+        // Verificar profileData
+        const profileDataStr = localStorage.getItem('profileData');
+        if (profileDataStr) {
+            const profileData = JSON.parse(profileDataStr);
+            
+            // Si el email no coincide con el del usuario actual, limpiar
+            if (profileData.email && profileData.email !== userSessionData.email) {
+                console.warn('AjustesPefilCliente - Detectado email diferente en profileData, limpiando...');
+                localStorage.removeItem('profileData');
+            }
+        }
+        
+        // Verificar clientData
+        const clientDataStr = localStorage.getItem('clientData');
+        if (clientDataStr) {
+            const clientData = JSON.parse(clientDataStr);
+            
+            // Si el ID no coincide o el email no coincide, limpiar
+            if ((clientData.id && clientData.id !== userSessionData.id) || 
+                (clientData.email && clientData.email !== userSessionData.email)) {
+                console.warn('AjustesPefilCliente - Detectados datos de otro usuario en clientData, limpiando...');
+                localStorage.removeItem('clientData');
+            }
+        }
+    } catch (e) {
+        console.error('AjustesPefilCliente - Error al limpiar localStorage:', e);
+    }
+})();
 
 // Limpiar localStorage ANTES de actualizar con los nuevos datos (para evitar datos de sesiones anteriores)
 console.log('AjustesPefilCliente - Limpiando localStorage y actualizando con datos del usuario:', userSessionData);

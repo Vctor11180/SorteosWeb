@@ -224,12 +224,12 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <div class="flex flex-col gap-6">
 <!-- Tab Navigation -->
 <div class="flex overflow-x-auto border-b border-[#282d39] pb-1 scrollbar-hide">
-<button class="px-6 py-3 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap">Descripción</button>
-<button class="px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Reglas de Juego</button>
-<button class="px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap">Premios Secundarios</button>
+<button id="tab-descripcion" class="tab-button px-6 py-3 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap" data-tab="descripcion">Descripción</button>
+<button id="tab-reglas" class="tab-button px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap" data-tab="reglas">Reglas de Juego</button>
+<button id="tab-premios" class="tab-button px-6 py-3 text-sm font-medium text-text-secondary hover:text-white whitespace-nowrap" data-tab="premios">Premios Secundarios</button>
 </div>
 <!-- Description Content -->
-<div class="prose prose-slate dark:prose-invert max-w-none">
+<div id="content-descripcion" class="tab-content prose prose-slate dark:prose-invert max-w-none">
 <h3 class="text-xl font-bold mb-3 text-white">Sobre este premio</h3>
 <p class="text-text-secondary leading-relaxed mb-4">
                             Experimenta la máxima potencia con el nuevo modelo deportivo 2024. Este vehículo no es solo un medio de transporte, es una declaración de estilo y rendimiento. Equipado con un motor V8 biturbo, interiores de cuero italiano cosido a mano y un sistema de sonido envolvente de última generación.
@@ -241,10 +241,9 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <div id="caracteristicas-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
 <!-- Las características se cargarán aquí dinámicamente desde la API -->
 </div>
-</div>
 <!-- FAQ Section -->
 <div class="mt-8">
-<h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Preguntas Frecuentes</h3>
+<h3 class="text-xl font-bold mb-4 text-white">Preguntas Frecuentes</h3>
 <div class="flex flex-col gap-3">
 <details class="group bg-card-dark rounded-xl border border-[#282d39] overflow-hidden">
 <summary class="flex justify-between items-center cursor-pointer p-4 font-medium text-white select-none">
@@ -273,6 +272,118 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
                                     Inmediatamente después de confirmar tu pago, recibirás un correo electrónico con tus números de boleto digitales y la factura de compra.
                                 </div>
 </details>
+</div>
+</div>
+</div>
+<!-- Reglas de Juego Content -->
+<div id="content-reglas" class="tab-content hidden prose prose-slate dark:prose-invert max-w-none">
+<h3 class="text-xl font-bold mb-3 text-white">Reglas del Sorteo</h3>
+<div class="space-y-4">
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6">
+<h4 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">rule</span>
+Condiciones Generales
+</h4>
+<ul class="space-y-3 text-text-secondary">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>El sorteo está abierto a participantes mayores de 18 años de edad.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>Cada boleto tiene un número único que determina tu participación en el sorteo.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>La compra de boletos está disponible hasta que se agoten o expire la fecha límite del sorteo.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>El sorteo se realizará mediante un sistema de selección aleatoria certificado y verificado.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-1">check_circle</span>
+<span>El ganador será anunciado públicamente en nuestras redes sociales y notificado por correo electrónico.</span>
+</li>
+</ul>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6">
+<h4 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+Proceso del Sorteo
+</h4>
+<ol class="space-y-3 text-text-secondary list-decimal list-inside">
+<li class="pl-2">Compra tus boletos antes de la fecha límite establecida.</li>
+<li class="pl-2">Una vez finalizado el plazo, se cerrará la venta de boletos.</li>
+<li class="pl-2">El sorteo se realizará en vivo mediante transmisión en nuestras redes sociales.</li>
+<li class="pl-2">Se utilizará un sistema de selección aleatoria certificado para elegir el boleto ganador.</li>
+<li class="pl-2">El ganador será contactado en un plazo máximo de 24 horas después del sorteo.</li>
+</ol>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6">
+<h4 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+Garantías y Validación
+</h4>
+<p class="text-text-secondary mb-4">
+El proceso del sorteo está completamente auditado y verificado. Utilizamos sistemas de selección aleatoria certificados y todos los resultados son transparentes y públicos.
+</p>
+<p class="text-text-secondary">
+En caso de cualquier disputa o pregunta sobre el proceso, puedes contactarnos a través de nuestro servicio de soporte.
+</p>
+</div>
+</div>
+</div>
+<!-- Premios Secundarios Content -->
+<div id="content-premios" class="tab-content hidden prose prose-slate dark:prose-invert max-w-none">
+<h3 class="text-xl font-bold mb-3 text-white">Premios Secundarios</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6 hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-yellow-500 text-3xl">emoji_events</span>
+<div>
+<h4 class="text-lg font-bold text-white">Segundo Lugar</h4>
+<p class="text-text-secondary text-sm">Premio en efectivo</p>
+</div>
+</div>
+<p class="text-text-secondary text-sm">El segundo lugar recibe un premio en efectivo equivalente al 10% del valor del premio principal.</p>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6 hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-blue-500 text-3xl">stars</span>
+<div>
+<h4 class="text-lg font-bold text-white">Tercer Lugar</h4>
+<p class="text-text-secondary text-sm">Premio en efectivo</p>
+</div>
+</div>
+<p class="text-text-secondary text-sm">El tercer lugar recibe un premio en efectivo equivalente al 5% del valor del premio principal.</p>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6 hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-green-500 text-3xl">redeem</span>
+<div>
+<h4 class="text-lg font-bold text-white">Puestos 4-10</h4>
+<p class="text-text-secondary text-sm">Boletos gratuitos</p>
+</div>
+</div>
+<p class="text-text-secondary text-sm">Los participantes en los puestos 4 al 10 recibirán boletos gratuitos para participar en el próximo sorteo.</p>
+</div>
+<div class="bg-card-dark rounded-xl border border-[#282d39] p-6 hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-3 mb-3">
+<span class="material-symbols-outlined text-purple-500 text-3xl">card_giftcard</span>
+<div>
+<h4 class="text-lg font-bold text-white">Premio de Consolación</h4>
+<p class="text-text-secondary text-sm">Descuentos especiales</p>
+</div>
+</div>
+<p class="text-text-secondary text-sm">Todos los participantes que no ganen recibirán un código de descuento del 20% para su próxima compra de boletos.</p>
+</div>
+</div>
+<div class="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+<p class="text-blue-400 text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">info</span>
+<strong>Nota:</strong> Los premios secundarios pueden variar según el sorteo. Consulta los detalles específicos en la descripción del sorteo.
+</p>
 </div>
 </div>
 </div>
@@ -423,6 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar funcionalidades de botones
     try {
         initSorteoDetailsButtons();
+        initTabs(); // Inicializar funcionalidad de tabs
     } catch (error) {
         console.warn('Error al inicializar botones:', error);
     }
@@ -936,6 +1048,54 @@ function saveCurrentSorteo() {
     
     localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
     return true;
+}
+
+// Función para inicializar la funcionalidad de tabs
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Función para cambiar de tab
+    function switchTab(tabName) {
+        // Remover clases activas de todos los botones
+        tabButtons.forEach(button => {
+            button.classList.remove('text-primary', 'border-primary', 'border-b-2', 'font-semibold');
+            button.classList.add('text-text-secondary', 'font-medium');
+        });
+        
+        // Ocultar todos los contenidos
+        tabContents.forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        // Activar el botón seleccionado
+        const activeButton = document.getElementById(`tab-${tabName}`);
+        if (activeButton) {
+            activeButton.classList.remove('text-text-secondary', 'font-medium');
+            activeButton.classList.add('text-primary', 'border-primary', 'border-b-2', 'font-semibold');
+        }
+        
+        // Mostrar el contenido correspondiente
+        const activeContent = document.getElementById(`content-${tabName}`);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+        }
+    }
+    
+    // Agregar event listeners a todos los botones de tabs
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            if (tabName) {
+                switchTab(tabName);
+            }
+        });
+    });
+    
+    // Asegurar que el tab "Descripción" esté activo por defecto
+    switchTab('descripcion');
+    
+    console.log('Tabs inicializados correctamente');
 }
 
 </script>

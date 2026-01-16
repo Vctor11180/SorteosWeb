@@ -15,56 +15,53 @@
 
     /**
      * Carga los datos del perfil guardados
+     * NOTA: Ya no sobrescribe los valores de PHP, solo usa localStorage como fallback
+     * si los campos están vacíos (no deberían estarlo porque vienen de PHP)
      */
     function loadSavedProfileData() {
         try {
-            // Cargar datos del perfil desde localStorage
-            const profileData = localStorage.getItem('profileData');
-            if (profileData) {
-                const data = JSON.parse(profileData);
-                
-                // Actualizar nombre si existe
-                if (data.nombre) {
-                    updateUserNameInAllPlaces(data.nombre);
-                    
-                    // Actualizar el input del nombre
-                    const nombreInput = document.getElementById('input-nombre');
-                    if (nombreInput) {
-                        nombreInput.value = data.nombre;
-                    }
-                }
-                
-                // Actualizar email si existe
-                if (data.email) {
-                    const emailInput = document.getElementById('input-email');
-                    if (emailInput) {
-                        emailInput.value = data.email;
-                    }
-                }
-                
-                // Actualizar teléfono si existe
-                if (data.telefono) {
-                    const telefonoInput = document.getElementById('input-telefono');
-                    if (telefonoInput) {
-                        telefonoInput.value = data.telefono;
-                    }
-                }
-                
-                // Actualizar dirección si existe
-                if (data.direccion) {
-                    const direccionInput = document.getElementById('input-direccion');
-                    if (direccionInput) {
-                        direccionInput.value = data.direccion;
-                    }
-                }
+            // NO cargar desde localStorage si los campos ya tienen valores de PHP
+            // Los valores de PHP tienen prioridad absoluta
+            
+            const nombreInput = document.getElementById('input-nombre');
+            const emailInput = document.getElementById('input-email');
+            const telefonoInput = document.getElementById('input-telefono');
+            const direccionInput = document.getElementById('input-direccion');
+            
+            // Solo usar localStorage como fallback si los campos están vacíos
+            // (esto no debería pasar porque PHP los llena, pero por seguridad)
+            
+            // Verificar si los campos tienen valores originales de PHP
+            const tieneValorNombre = nombreInput && (nombreInput.value || nombreInput.getAttribute('data-original-value'));
+            const tieneValorEmail = emailInput && (emailInput.value || emailInput.getAttribute('data-original-value'));
+            const tieneValorTelefono = telefonoInput && (telefonoInput.value || telefonoInput.getAttribute('data-original-value'));
+            
+            // Si los campos YA tienen valores (vienen de PHP), NO sobrescribirlos
+            if (tieneValorNombre && tieneValorEmail) {
+                console.log('AjustesPefilCliente - Los campos ya tienen valores de PHP, no se sobrescribirán con localStorage');
+                return; // Salir temprano, los datos de PHP tienen prioridad
             }
             
-            // También cargar desde clientData si existe
-            const clientData = localStorage.getItem('clientData');
-            if (clientData) {
-                const data = JSON.parse(clientData);
-                if (data.nombre) {
-                    updateUserNameInAllPlaces(data.nombre);
+            // Solo como fallback (no debería llegar aquí normalmente):
+            const profileData = localStorage.getItem('profileData');
+            if (profileData && !tieneValorNombre && !tieneValorEmail) {
+                const data = JSON.parse(profileData);
+                
+                // Solo actualizar si el campo está vacío
+                if (data.nombre && nombreInput && !nombreInput.value) {
+                    nombreInput.value = data.nombre;
+                }
+                
+                if (data.email && emailInput && !emailInput.value) {
+                    emailInput.value = data.email;
+                }
+                
+                if (data.telefono && telefonoInput && !telefonoInput.value) {
+                    telefonoInput.value = data.telefono;
+                }
+                
+                if (data.direccion && direccionInput && !direccionInput.value) {
+                    direccionInput.value = data.direccion;
                 }
             }
         } catch (error) {
@@ -387,44 +384,42 @@
     }
     
     /**
-     * Valida el teléfono
+     * Valida el teléfono (opcional)
      */
     function validateTelefono(telefono) {
-        if (!telefono || telefono.trim().length === 0) {
-            return { valid: false, message: 'El teléfono es requerido' };
-        }
-        
-        // Remover espacios, guiones y paréntesis para validación
-        const cleanPhone = telefono.replace(/[\s\-\(\)]/g, '');
-        
-        // Validar formato internacional (debe empezar con +)
-        if (!cleanPhone.startsWith('+')) {
-            return { valid: false, message: 'El teléfono debe incluir código de país (ej: +34)' };
-        }
-        
-        // Validar que después del + solo haya números
-        const phoneRegex = /^\+[0-9]{8,15}$/;
-        if (!phoneRegex.test(cleanPhone)) {
-            return { valid: false, message: 'El formato del teléfono no es válido. Debe ser: +[código país][número]' };
+        // El teléfono es opcional, pero si se proporciona debe cumplir requisitos
+        if (telefono && telefono.trim().length > 0) {
+            // Remover espacios, guiones y paréntesis para validación
+            const cleanPhone = telefono.replace(/[\s\-\(\)]/g, '');
+            
+            // Validar formato internacional (debe empezar con +)
+            if (!cleanPhone.startsWith('+')) {
+                return { valid: false, message: 'El teléfono debe incluir código de país (ej: +34)' };
+            }
+            
+            // Validar que después del + solo haya números
+            const phoneRegex = /^\+[0-9]{8,15}$/;
+            if (!phoneRegex.test(cleanPhone)) {
+                return { valid: false, message: 'El formato del teléfono no es válido. Debe ser: +[código país][número]' };
+            }
         }
         
         return { valid: true, message: '' };
     }
     
     /**
-     * Valida la dirección
+     * Valida la dirección (opcional - no se guarda en BD)
      */
     function validateDireccion(direccion) {
-        if (!direccion || direccion.trim().length === 0) {
-            return { valid: false, message: 'La dirección es requerida' };
-        }
-        
-        if (direccion.trim().length < 10) {
-            return { valid: false, message: 'La dirección debe tener al menos 10 caracteres' };
-        }
-        
-        if (direccion.trim().length > 200) {
-            return { valid: false, message: 'La dirección no puede exceder 200 caracteres' };
+        // La dirección es opcional, pero si se proporciona debe cumplir requisitos
+        if (direccion && direccion.trim().length > 0) {
+            if (direccion.trim().length < 10) {
+                return { valid: false, message: 'La dirección debe tener al menos 10 caracteres' };
+            }
+            
+            if (direccion.trim().length > 200) {
+                return { valid: false, message: 'La dirección no puede exceder 200 caracteres' };
+            }
         }
         
         return { valid: true, message: '' };
@@ -1006,15 +1001,16 @@
                 showFieldError('input-email', 'error-email', emailValidation.message);
                 hasErrors = true;
             } else {
-                // Verificar existencia del correo
-                setButtonLoading(true);
-                const emailExists = await verifyEmailExists(email);
-                setButtonLoading(false);
+                // Solo verificar existencia del correo si es diferente al email actual del usuario
+                const emailActual = window.userSessionData && window.userSessionData.email ? window.userSessionData.email.toLowerCase() : '';
+                const emailNuevo = email.toLowerCase();
                 
-                if (!emailExists.exists) {
-                    showFieldError('input-email', 'error-email', emailExists.message || 'El correo electrónico no existe o no es válido');
-                    hasErrors = true;
+                if (emailActual !== emailNuevo) {
+                    // El email es diferente, verificar que no esté en uso por otro usuario
+                    // Esta verificación se hará en el servidor también, pero validamos formato aquí
+                    clearFieldError('input-email', 'error-email');
                 } else {
+                    // Es el mismo email, no necesita validación adicional
                     clearFieldError('input-email', 'error-email');
                 }
             }
@@ -1097,10 +1093,44 @@
                 const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
                 clientData.nombre = nombre;
                 clientData.email = email;
+                if (telefono) {
+                    clientData.telefono = telefono;
+                }
                 localStorage.setItem('clientData', JSON.stringify(clientData));
+                sessionStorage.setItem('clientData', JSON.stringify(clientData));
+                
+                // Actualizar userSessionData global si existe
+                if (window.userSessionData) {
+                    window.userSessionData.nombre = nombre;
+                    window.userSessionData.email = email;
+                    if (telefono) {
+                        window.userSessionData.telefono = telefono;
+                    }
+                }
                 
                 // Actualizar el nombre en todos los lugares de la página
-                updateUserNameInAllPlaces(nombre);
+                if (typeof updateUserNameInAllPlaces === 'function') {
+                    updateUserNameInAllPlaces(nombre);
+                }
+                
+                // Actualizar el ClientLayout si existe
+                if (window.ClientLayout && typeof window.ClientLayout.updateClientData === 'function') {
+                    window.ClientLayout.updateClientData({
+                        nombre: nombre,
+                        email: email,
+                        telefono: telefono || ''
+                    });
+                }
+                
+                // Actualizar también los elementos de la página directamente
+                const profileSidebarName = document.getElementById('profile-sidebar-name');
+                if (profileSidebarName) {
+                    profileSidebarName.textContent = nombre;
+                }
+                const sidebarUserName = document.getElementById('sidebar-user-name');
+                if (sidebarUserName) {
+                    sidebarUserName.textContent = nombre;
+                }
                 
                 // Desactivar estado de carga
                 setButtonLoading(false);

@@ -28,6 +28,102 @@ $usuarioEmail = $datosUsuario['email'];
 $usuarioSaldo = $datosUsuario['saldo'];
 $usuarioAvatar = $datosUsuario['avatar'];
 $tipoUsuario = $datosUsuario['tipoUsuario'];
+$usuarioId = $datosUsuario['id_usuario'];
+
+// Obtener ganancias del cliente desde la base de datos
+require_once __DIR__ . '/config/database.php';
+$db = getDB();
+
+// Función para obtener todas las ganancias del cliente con información completa
+function obtenerGananciasCliente($db, $usuarioId) {
+    try {
+        // Obtener todas las ganancias del usuario con información del sorteo y boleto
+        $stmt = $db->prepare("
+            SELECT 
+                g.id_sorteo,
+                g.id_boleto,
+                g.premio_detalle,
+                g.fecha_anuncio,
+                g.entregado,
+                s.titulo as sorteo_titulo,
+                s.imagen_url as sorteo_imagen,
+                s.descripcion as sorteo_descripcion,
+                s.precio_boleto,
+                b.numero_boleto
+            FROM ganadores g
+            INNER JOIN sorteos s ON g.id_sorteo = s.id_sorteo
+            INNER JOIN boletos b ON g.id_boleto = b.id_boleto
+            WHERE g.id_usuario = :usuario_id
+            ORDER BY g.fecha_anuncio DESC
+        ");
+        
+        $stmt->execute([':usuario_id' => $usuarioId]);
+        $ganancias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Procesar ganancias para formatear datos
+        $gananciasProcesadas = [];
+        foreach ($ganancias as $ganancia) {
+            // Formatear fecha
+            $fechaAnuncio = new DateTime($ganancia['fecha_anuncio']);
+            $fechaDisplay = $fechaAnuncio->format('d M Y');
+            $fechaDisplayShort = $fechaAnuncio->format('d M, Y');
+            
+            // URL de imagen del sorteo (usar default si no hay)
+            $imagenSorteo = $ganancia['sorteo_imagen'] ?? 'https://via.placeholder.com/150';
+            
+            // Determinar descripción del premio
+            $premioDetalle = $ganancia['premio_detalle'] ?? 'Primer Premio';
+            
+            // Estado de entrega
+            $entregado = (bool)$ganancia['entregado'];
+            $estadoTexto = $entregado ? 'Entregado' : 'Pendiente de Contacto';
+            $estadoBadge = $entregado ? 'green' : 'yellow';
+            
+            $gananciasProcesadas[] = [
+                'id_sorteo' => $ganancia['id_sorteo'],
+                'id_boleto' => $ganancia['id_boleto'],
+                'numero_boleto' => $ganancia['numero_boleto'],
+                'sorteo_titulo' => $ganancia['sorteo_titulo'],
+                'sorteo_imagen' => $imagenSorteo,
+                'sorteo_descripcion' => $ganancia['sorteo_descripcion'],
+                'premio_detalle' => $premioDetalle,
+                'fecha_anuncio' => $ganancia['fecha_anuncio'],
+                'fecha_display' => $fechaDisplay,
+                'fecha_display_short' => $fechaDisplayShort,
+                'entregado' => $entregado,
+                'estado_texto' => $estadoTexto,
+                'estado_badge' => $estadoBadge,
+                'precio_boleto' => floatval($ganancia['precio_boleto'])
+            ];
+        }
+        
+        return $gananciasProcesadas;
+        
+    } catch (PDOException $e) {
+        error_log("Error al obtener ganancias del cliente: " . $e->getMessage());
+        return [];
+    } catch (Exception $e) {
+        error_log("Error general al obtener ganancias del cliente: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Obtener las ganancias del cliente
+$gananciasCliente = obtenerGananciasCliente($db, $usuarioId);
+
+// Calcular estadísticas
+$totalPremios = count($gananciasCliente);
+$premiosEntregados = count(array_filter($gananciasCliente, function($g) { return $g['entregado']; }));
+$premiosPendientes = $totalPremios - $premiosEntregados;
+
+// Calcular valor estimado (suma de precio_boleto de los sorteos ganados, multiplicado por un factor estimado)
+// Por ahora usamos un valor estimado basado en los precios de boletos
+$valorEstimado = 0;
+foreach ($gananciasCliente as $ganancia) {
+    // Estimación: precio del boleto * 100 (factor estimado)
+    // En producción, esto debería venir de una descripción de premio o tabla de premios
+    $valorEstimado += $ganancia['precio_boleto'] * 100;
+}
 ?>
 <!DOCTYPE html>
 
@@ -181,7 +277,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Total Premios</p>
 </div>
-<p class="text-white text-4xl font-black tracking-tight">3</p>
+<p class="text-white text-4xl font-black tracking-tight"><?php echo $totalPremios; ?></p>
 </div>
 </div>
 <!-- Stat Card 2 -->
@@ -197,7 +293,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Valor Estimado</p>
 </div>
-<p class="text-white text-4xl font-black tracking-tight">$2,500 <span class="text-lg font-normal text-[#9da6b9]">USD</span></p>
+<p class="text-white text-4xl font-black tracking-tight">$<?php echo number_format($valorEstimado, 0, '.', ','); ?> <span class="text-lg font-normal text-[#9da6b9]">USD</span></p>
 </div>
 </div>
 <!-- Stat Card 3 -->
@@ -213,7 +309,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Pendientes de Entrega</p>
 </div>
-<p class="text-yellow-400 text-4xl font-black tracking-tight">1</p>
+<p class="text-yellow-400 text-4xl font-black tracking-tight"><?php echo $premiosPendientes; ?></p>
 </div>
 </div>
 </div>
@@ -250,100 +346,101 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </tr>
 </thead>
 <tbody class="divide-y divide-[#282d39]">
-<!-- Row 1: Pending -->
-<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
+<?php if (empty($gananciasCliente)): ?>
+<!-- Mensaje cuando no hay ganancias -->
+<tr>
+<td colspan="4" class="px-6 py-16">
+<div class="flex flex-col items-center justify-center text-center">
+<div class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-5xl text-[#9da6b9]">sentiment_content</span>
+</div>
+<h3 class="text-white text-xl font-bold mb-2">Aún no tienes victorias</h3>
+<p class="text-[#9da6b9] max-w-md mb-6">Participa en nuestros sorteos activos para tener la oportunidad de ganar increíbles premios.</p>
+<a href="ListadoSorteosActivos.php" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors inline-block">
+Ver Sorteos Activos
+</a>
+</div>
+</td>
+</tr>
+<?php else: ?>
+<?php foreach ($gananciasCliente as $ganancia): 
+    $entregado = $ganancia['entregado'];
+    $estadoTexto = $ganancia['estado_texto'];
+    $estadoBadge = $ganancia['estado_badge'];
+    $sorteoTitulo = htmlspecialchars($ganancia['sorteo_titulo']);
+    $sorteoImagen = htmlspecialchars($ganancia['sorteo_imagen']);
+    $premioDetalle = htmlspecialchars($ganancia['premio_detalle']);
+    $fechaDisplay = htmlspecialchars($ganancia['fecha_display']);
+    $numeroBoleto = htmlspecialchars($ganancia['numero_boleto']);
+    $idSorteo = $ganancia['id_sorteo'];
+    $idBoleto = $ganancia['id_boleto'];
+    
+    // Clases CSS según el estado
+    $badgeClass = $entregado 
+        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400' 
+        : 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 text-yellow-400';
+    $badgeIcon = $entregado ? 'check_circle' : 'pending';
+?>
+<!-- Ganancia: <?php echo $estadoTexto; ?> -->
+<tr class="ganancia-row group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30"
+    data-ganancia-id="<?php echo $idSorteo . '-' . $idBoleto; ?>"
+    data-estado="<?php echo $entregado ? 'entregado' : 'pendiente'; ?>"
+    data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+    data-premio="<?php echo $premioDetalle; ?>">
 <td class="px-6 py-5">
 <div class="flex items-center gap-4">
 <div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-<img alt="iPhone 15 Pro Max" class="w-full h-full object-cover" data-alt="Smartphone displaying a colorful gradient screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAub5nUbnJPBs-01XDg3mJUvVygvkojxY5qfDu1PvaHe5_zHLuy-pUFXPz7Zowu8c1c_kfrsFYay5aJ39E3Y02oggRP02sy49d2Y4qN7aS8WH7Y1-Vfrw9_v1FJPhUuZ3xcInIE3gNe9B8UsiCCh4Z91havDmfNHFxkYOAbaXxQTLYQfy5SHG53OykA9WxsXhKAj7MghjO_jmv97kDehXoO2DgjyyJP2cP4iiVpiacMrMtXzonk3QkJXl80TGYxCBEtMKwDNZEfVB8"/>
+<img alt="<?php echo $sorteoTitulo; ?>" class="w-full h-full object-cover" src="<?php echo $sorteoImagen; ?>" onerror="this.src='https://via.placeholder.com/150'"/>
 </div>
 <div>
-<p class="text-white font-bold text-sm group-hover:text-white">Gran Sorteo iPhone 15</p>
-<p class="text-[#9da6b9] text-xs mt-1">iPhone 15 Pro Max - 256GB</p>
+<p class="text-white font-bold text-sm group-hover:text-white"><?php echo $sorteoTitulo; ?></p>
+<p class="text-[#9da6b9] text-xs mt-1"><?php echo $premioDetalle; ?></p>
 </div>
 </div>
 </td>
 <td class="px-6 py-5">
-<span class="text-white text-sm font-semibold">12 Oct 2023</span>
-<p class="text-[#566074] text-xs mt-1">Ticket #4921</p>
+<span class="text-white text-sm font-semibold"><?php echo $fechaDisplay; ?></span>
+<p class="text-[#566074] text-xs mt-1">Boleto #<?php echo $numeroBoleto; ?></p>
 </td>
 <td class="px-6 py-5">
-<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold shadow-lg shadow-yellow-500/10">
-<span class="material-symbols-outlined text-[16px]">pending</span>
-                                    Pendiente de Contacto
-                                </div>
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full <?php echo $badgeClass; ?> text-xs font-bold shadow-lg <?php echo $entregado ? 'shadow-green-500/10' : 'shadow-yellow-500/10'; ?>">
+<span class="material-symbols-outlined text-[16px]"><?php echo $badgeIcon; ?></span>
+<?php echo $estadoTexto; ?>
+</div>
 </td>
 <td class="px-6 py-5 text-right">
-<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white text-sm font-bold transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0">
+<?php if (!$entregado): ?>
+<button class="btn-reclamar inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white text-sm font-bold transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+        data-premio="<?php echo $premioDetalle; ?>"
+        data-fecha="<?php echo $fechaDisplay; ?>"
+        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+        data-id-sorteo="<?php echo $idSorteo; ?>"
+        data-id-boleto="<?php echo $idBoleto; ?>">
 <span class="mr-2">Reclamar</span>
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </button>
+<?php else: ?>
+<button class="btn-ver-detalles inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
+        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+        data-premio="<?php echo $premioDetalle; ?>"
+        data-fecha="<?php echo $fechaDisplay; ?>"
+        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+        data-id-sorteo="<?php echo $idSorteo; ?>"
+        data-id-boleto="<?php echo $idBoleto; ?>">
+Ver Detalles
+</button>
+<?php endif; ?>
 </td>
 </tr>
-<!-- Row 2: Delivered -->
-<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
-<td class="px-6 py-5">
-<div class="flex items-center gap-4">
-<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-<img alt="Cash Money Icon" class="w-full h-full object-cover" data-alt="Stack of dollar bills" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOnEsMJyCPwTsGwmiPDVgfIh5nwvOG_ensMiKv8aK-XkNDr9_lVIt9RXM8zJ2qx1wDN4Fng4nR6MdJzqe316A3HFOEQ_JfvCUcwJpAh9Bvd4_0Feti8gzuZXkcST7jsePWEVKj2nGCd24s_Y6PIzLjMx6HYFyIuHjCgOayZVKRr67ob4izJUMOxYLzl86y-PLpz88dGY6_dfyvCnirD9z1XxvC114rF0Thfrxeb_Q4vBSYk13WQoQi6WIUhv7wtp_ji4a4ZTvmSCs"/>
-</div>
-<div>
-<p class="text-white font-bold text-sm group-hover:text-white">Bono Efectivo Semanal</p>
-<p class="text-[#9da6b9] text-xs mt-1">$500 USD Transferencia</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-5">
-<span class="text-white text-sm font-semibold">05 Sep 2023</span>
-<p class="text-[#566074] text-xs mt-1">Ticket #8821</p>
-</td>
-<td class="px-6 py-5">
-<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-lg shadow-green-500/10">
-<span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                    Entregado
-                                </div>
-</td>
-<td class="px-6 py-5 text-right">
-<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                                    Ver Detalles
-                                </button>
-</td>
-</tr>
-<!-- Row 3: Delivered -->
-<tr class="group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30">
-<td class="px-6 py-5">
-<div class="flex items-center gap-4">
-<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-<img alt="Laptop Computer" class="w-full h-full object-cover" data-alt="Silver laptop computer open on a desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD--MpFx7gwrHP8KcJeEcxCdwf1X9rZfRXagGmnBNCuH0EqooxcFMYyj_tHwdoJ1VPZBwS9SlkaEXQ-QxF1ZvR_gJ8-0fHWuqxKv1kThZDnrxRUTjX0N9_VDZ4bQHVD9GJOaZzRFRYk1afHKrjhZXLvCYbbNznfMKGLQhBSEiV9zoQ_yVM3D9sZ6v7W5F0HwaOSTvsbk5N5HSvvYxUZusoQ5pc8AJ0-f-3fChxMcUx6vjaPFA9Ay7_-QhIpOh_XfMaj6MmQOxdMudw"/>
-</div>
-<div>
-<p class="text-white font-bold text-sm group-hover:text-white">Sorteo Laptop Gamer</p>
-<p class="text-[#9da6b9] text-xs mt-1">MacBook Pro 14"</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-5">
-<span class="text-white text-sm font-semibold">15 Ago 2023</span>
-<p class="text-[#566074] text-xs mt-1">Ticket #1029</p>
-</td>
-<td class="px-6 py-5">
-<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-lg shadow-green-500/10">
-<span class="material-symbols-outlined text-[16px]">check_circle</span>
-                                    Entregado
-                                </div>
-</td>
-<td class="px-6 py-5 text-right">
-<button class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                                    Ver Detalles
-                                </button>
-</td>
-</tr>
+<?php endforeach; ?>
+<?php endif; ?>
 </tbody>
 </table>
 </div>
 <!-- Pagination -->
 <div class="flex items-center justify-between px-6 py-5 border-t border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28] to-[#151a23]">
-<p class="text-sm text-[#9da6b9] font-medium">Mostrando 1-3 de 3 resultados</p>
+<p class="text-sm text-[#9da6b9] font-medium">Mostrando <?php echo $totalPremios > 0 ? '1' : '0'; ?>-<?php echo $totalPremios; ?> de <?php echo $totalPremios; ?> resultado<?php echo $totalPremios != 1 ? 's' : ''; ?></p>
 <div class="flex gap-2">
 <button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
 <span class="material-symbols-outlined text-lg">chevron_left</span>
@@ -355,7 +452,7 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 </div>
 </div>
 </div>
-<!-- Empty State (Hidden by default, structure provided for robustness) -->
+<!-- Empty State (Ya manejado en la tabla, mantener por compatibilidad) -->
 <div class="hidden flex flex-col items-center justify-center py-20 text-center">
 <div class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
 <span class="material-symbols-outlined text-5xl text-text-secondary">sentiment_content</span>
@@ -454,7 +551,7 @@ function initGananciasFilters() {
 
 // Función para filtrar ganancias
 function filterGanancias(filter) {
-    const tableRows = document.querySelectorAll('tbody tr');
+    const tableRows = document.querySelectorAll('.ganancia-row');
     
     if (filter === 'todos') {
         tableRows.forEach(row => {
@@ -464,16 +561,16 @@ function filterGanancias(filter) {
     }
     
     tableRows.forEach(row => {
-        const estadoBadge = row.querySelector('.inline-flex')?.textContent.toLowerCase() || '';
+        const estado = row.getAttribute('data-estado') || '';
         
         if (filter === 'pendientes') {
-            if (estadoBadge.includes('pendiente')) {
+            if (estado === 'pendiente') {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
             }
         } else if (filter === 'entregados') {
-            if (estadoBadge.includes('entregado')) {
+            if (estado === 'entregado') {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -546,13 +643,11 @@ function initGananciasActions() {
             const row = this.closest('tr');
             if (!row) return;
             
-            // Obtener el nombre del sorteo (primer párrafo en la primera columna)
-            const firstCol = row.querySelector('td:first-child');
-            const allParagraphs = firstCol ? Array.from(firstCol.querySelectorAll('p')) : [];
-            const sorteoName = allParagraphs[0]?.textContent?.trim() || 'Sorteo';
-            const premioName = allParagraphs[1]?.textContent?.trim() || allParagraphs[0]?.textContent?.trim() || 'Premio';
-            const fecha = row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
-            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent?.trim() || 'N/A';
+            // Obtener datos desde atributos data-
+            const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
+            const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
+            const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+            const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
             
             customConfirm(`¿Deseas reclamar el premio "${premioName}" del sorteo "${sorteoName}"?\n\nFecha ganada: ${fecha}\n${ticketNumber}\n\nSe te pedirá que proporciones información de contacto para coordinar la entrega.`, 'Reclamar Premio', 'help').then(confirmed => {
                 if (confirmed) {
@@ -580,13 +675,11 @@ function initGananciasActions() {
             const row = this.closest('tr');
             if (!row) return;
             
-            // Obtener el nombre del sorteo (primer párrafo en la primera columna)
-            const firstCol = row.querySelector('td:first-child');
-            const allParagraphs = firstCol ? Array.from(firstCol.querySelectorAll('p')) : [];
-            const sorteoName = allParagraphs[0]?.textContent?.trim() || 'Sorteo';
-            const premioName = allParagraphs[1]?.textContent?.trim() || allParagraphs[0]?.textContent?.trim() || 'Premio';
-            const fecha = row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
-            const ticketNumber = row.querySelector('td:nth-child(2) p')?.textContent?.trim() || 'N/A';
+            // Obtener datos desde atributos data-
+            const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
+            const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
+            const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+            const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
             const estadoBadge = row.querySelector('.inline-flex');
             const estado = estadoBadge ? estadoBadge.textContent.replace(/\s+/g, ' ').trim() : 'N/A';
             
