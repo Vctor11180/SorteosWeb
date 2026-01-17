@@ -83,11 +83,18 @@ function obtenerDatosUsuarioCompletos() {
         // Determinar tipo de usuario
         $tipoUsuario = ($usuario['nombre_rol'] === 'Administrador') ? 'Administrador' : 'Usuario Premium';
         
+        // Determinar URL del avatar (usar placeholder si no existe)
+        $avatarUrl = $usuario['avatar_url'] ?? null;
+        if (empty($avatarUrl) || $avatarUrl === 'default_avatar.png') {
+            // Usar un placeholder online en lugar de un archivo local
+            $avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg';
+        }
+        
         // Actualizar la sesión con los datos más recientes
         $_SESSION['usuario_nombre'] = $nombreCompleto;
         $_SESSION['usuario_email'] = $usuario['email'];
         $_SESSION['usuario_saldo'] = floatval($usuario['saldo_disponible']);
-        $_SESSION['usuario_avatar'] = $usuario['avatar_url'] ?? 'default_avatar.png';
+        $_SESSION['usuario_avatar'] = $avatarUrl;
         $_SESSION['usuario_rol'] = $usuario['nombre_rol'];
         $_SESSION['usuario_estado'] = $usuario['estado'];
         
@@ -103,7 +110,7 @@ function obtenerDatosUsuarioCompletos() {
             'telefono' => $usuario['telefono'],
             'fecha_nacimiento' => $usuario['fecha_nacimiento'],
             'saldo' => floatval($usuario['saldo_disponible']),
-            'avatar' => $usuario['avatar_url'] ?? 'default_avatar.png',
+            'avatar' => $avatarUrl,
             'estado' => $usuario['estado'],
             'rol' => $usuario['nombre_rol'],
             'tipoUsuario' => $tipoUsuario,
@@ -133,7 +140,7 @@ function obtenerDatosUsuarioParaJS() {
             'tipoUsuario' => 'Usuario Premium',
             'email' => '',
             'saldo' => 0.00,
-            'avatar' => 'default_avatar.png'
+            'avatar' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
         ];
     }
     
