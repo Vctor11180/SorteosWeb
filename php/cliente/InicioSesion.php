@@ -105,7 +105,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $_SESSION['usuario_id_rol'] = $usuario['id_rol'];
                     $_SESSION['usuario_estado'] = $usuario['estado'];
                     $_SESSION['usuario_saldo'] = floatval($usuario['saldo_disponible']);
-                    $_SESSION['usuario_avatar'] = $usuario['avatar_url'] ?? 'default_avatar.png';
+                    // Usar URL completa de placeholder si no hay avatar
+                    $avatarUrl = $usuario['avatar_url'] ?? null;
+                    if (empty($avatarUrl) || $avatarUrl === 'default_avatar.png') {
+                        $avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg';
+                    }
+                    $_SESSION['usuario_avatar'] = $avatarUrl;
                     $_SESSION['login_time'] = time();
                     $_SESSION['is_logged_in'] = true;
                     

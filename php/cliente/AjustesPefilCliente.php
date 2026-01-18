@@ -71,26 +71,26 @@ function obtenerEstadisticasHistorial($usuarioId) {
         require_once __DIR__ . '/config/database.php';
         $db = getDB();
         
-        // 1. Total de sorteos en los que ha participado
+        // 1. Total de sorteos en los que ha participado (incluyendo Pendiente y Completado)
         $stmt = $db->prepare("
             SELECT COUNT(DISTINCT b.id_sorteo) as total_sorteos
             FROM boletos b
             INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
             INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
             WHERE t.id_usuario = :usuario_id 
-            AND t.estado_pago = 'Completado'
+            AND t.estado_pago IN ('Pendiente', 'Completado')
         ");
         $stmt->execute([':usuario_id' => $usuarioId]);
         $totalSorteos = $stmt->fetch(PDO::FETCH_ASSOC)['total_sorteos'] ?? 0;
         
-        // 2. Total de boletos comprados
+        // 2. Total de boletos comprados (incluyendo Pendiente y Completado)
         $stmt = $db->prepare("
             SELECT COUNT(*) as total_boletos
             FROM boletos b
             INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
             INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
             WHERE t.id_usuario = :usuario_id 
-            AND t.estado_pago = 'Completado'
+            AND t.estado_pago IN ('Pendiente', 'Completado')
         ");
         $stmt->execute([':usuario_id' => $usuarioId]);
         $totalBoletos = $stmt->fetch(PDO::FETCH_ASSOC)['total_boletos'] ?? 0;
@@ -104,12 +104,12 @@ function obtenerEstadisticasHistorial($usuarioId) {
         $stmt->execute([':usuario_id' => $usuarioId]);
         $sorteosGanados = $stmt->fetch(PDO::FETCH_ASSOC)['sorteos_ganados'] ?? 0;
         
-        // 4. Total invertido
+        // 4. Total invertido (incluyendo Pendiente y Completado)
         $stmt = $db->prepare("
             SELECT COALESCE(SUM(monto_total), 0) as total_invertido
             FROM transacciones
             WHERE id_usuario = :usuario_id 
-            AND estado_pago = 'Completado'
+            AND estado_pago IN ('Pendiente', 'Completado')
         ");
         $stmt->execute([':usuario_id' => $usuarioId]);
         $totalInvertido = floatval($stmt->fetch(PDO::FETCH_ASSOC)['total_invertido'] ?? 0);
@@ -137,8 +137,10 @@ function obtenerHistorialSorteos($usuarioId, $limite = 10) {
         require_once __DIR__ . '/config/database.php';
         $db = getDB();
         
+        // Modificada para incluir transacciones 'Pendiente' y 'Completado'
+        // y usar monto_total de la transacción en lugar de SUM(precio_boleto)
         $stmt = $db->prepare("
-            SELECT DISTINCT
+            SELECT 
                 s.id_sorteo,
                 s.titulo,
                 s.descripcion,
@@ -148,15 +150,24 @@ function obtenerHistorialSorteos($usuarioId, $limite = 10) {
                 s.fecha_inicio,
                 s.fecha_fin,
                 COUNT(DISTINCT b.id_boleto) as boletos_comprados,
-                SUM(s.precio_boleto) as total_pagado,
+                (
+                    SELECT COALESCE(SUM(DISTINCT t2.monto_total), 0)
+                    FROM transacciones t2
+                    INNER JOIN detalle_transaccion_boletos dtb2 ON t2.id_transaccion = dtb2.id_transaccion
+                    INNER JOIN boletos b2 ON dtb2.id_boleto = b2.id_boleto
+                    WHERE t2.id_usuario = :usuario_id
+                    AND b2.id_sorteo = s.id_sorteo
+                    AND t2.estado_pago IN ('Pendiente', 'Completado')
+                ) as total_pagado,
                 MAX(t.fecha_creacion) as fecha_ultima_compra,
+                MAX(t.estado_pago) as estado_pago_transaccion,
                 (SELECT COUNT(*) FROM ganadores g WHERE g.id_sorteo = s.id_sorteo AND g.id_usuario = :usuario_id) > 0 as es_ganador
             FROM sorteos s
             INNER JOIN boletos b ON s.id_sorteo = b.id_sorteo
             INNER JOIN detalle_transaccion_boletos dtb ON b.id_boleto = dtb.id_boleto
             INNER JOIN transacciones t ON dtb.id_transaccion = t.id_transaccion
             WHERE t.id_usuario = :usuario_id 
-            AND t.estado_pago = 'Completado'
+            AND t.estado_pago IN ('Pendiente', 'Completado')
             GROUP BY s.id_sorteo, s.titulo, s.descripcion, s.precio_boleto, s.imagen_url, s.estado, s.fecha_inicio, s.fecha_fin
             ORDER BY fecha_ultima_compra DESC
             LIMIT :limite
@@ -165,7 +176,9 @@ function obtenerHistorialSorteos($usuarioId, $limite = 10) {
         $stmt->bindValue(':limite', $limite, PDO::PARAM_INT);
         $stmt->execute();
         
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $resultados;
     } catch (PDOException $e) {
         error_log("Error al obtener historial de sorteos: " . $e->getMessage());
         return [];
@@ -767,11 +780,12 @@ Ver Sorteos Disponibles →
     $totalPagado = floatval($sorteo['total_pagado']);
     $fechaUltimaCompra = $sorteo['fecha_ultima_compra'];
     $esGanador = intval($sorteo['es_ganador']) > 0;
+    $estadoPago = $sorteo['estado_pago_transaccion'] ?? 'Pendiente';
     
     // Formatear fecha
     $fechaFormateada = date('d M, Y', strtotime($fechaUltimaCompra));
     
-    // Clases y colores según el estado
+    // Clases y colores según el estado del sorteo
     $estadoClasses = [
         'Activo' => 'bg-green-500/10 text-green-500',
         'Finalizado' => 'bg-blue-500/10 text-blue-500',
@@ -779,12 +793,21 @@ Ver Sorteos Disponibles →
         'Borrador' => 'bg-gray-500/10 text-gray-500'
     ];
     $estadoClass = $estadoClasses[$estadoSorteo] ?? 'bg-gray-500/10 text-gray-500';
+    
+    // Clases y colores según el estado de pago
+    $estadoPagoClasses = [
+        'Completado' => 'bg-green-500/10 text-green-500',
+        'Pendiente' => 'bg-yellow-500/10 text-yellow-500',
+        'Fallido' => 'bg-red-500/10 text-red-500'
+    ];
+    $estadoPagoClass = $estadoPagoClasses[$estadoPago] ?? 'bg-gray-500/10 text-gray-500';
 ?>
 <!-- Item de Historial: <?php echo $titulo; ?> -->
 <div class="historial-item bg-[#151a23] rounded-lg p-4 border border-[#282d39] hover:border-primary/50 transition-colors"
      data-sorteo-id="<?php echo $idSorteo; ?>"
      data-titulo="<?php echo $titulo; ?>"
      data-estado="<?php echo strtolower($estadoSorteo); ?>"
+     data-estado-pago="<?php echo strtolower($estadoPago); ?>"
      data-fecha="<?php echo date('Y-m-d', strtotime($fechaUltimaCompra)); ?>">
 <div class="flex flex-col sm:flex-row gap-4">
 <!-- Imagen del sorteo -->
@@ -799,6 +822,16 @@ Ver Sorteos Disponibles →
 <div class="flex flex-wrap items-center gap-2 text-sm">
 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $estadoClass; ?>">
 <?php echo $estadoSorteo; ?>
+</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold <?php echo $estadoPagoClass; ?>">
+<?php if ($estadoPago === 'Completado'): ?>
+<span class="material-symbols-outlined text-xs">check_circle</span>
+<?php elseif ($estadoPago === 'Pendiente'): ?>
+<span class="material-symbols-outlined text-xs">schedule</span>
+<?php else: ?>
+<span class="material-symbols-outlined text-xs">error</span>
+<?php endif; ?>
+<?php echo $estadoPago; ?>
 </span>
 <?php if ($esGanador): ?>
 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500">

@@ -167,19 +167,19 @@ if (in_array('FinalizarPagoBoletos', $protectedPages) && (!isset($_SESSION['is_l
 <h3 class="text-xl font-bold text-white">Información de Contacto</h3>
 </div>
 <div class="flex flex-col gap-5">
-<label class="flex flex-col flex-1">
-<p class="text-white text-sm font-medium leading-normal pb-2">Nombre Completo</p>
-<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="Ej. Juan Pérez"/>
-</label>
-<div class="flex flex-col md:flex-row gap-5">
-<label class="flex flex-col flex-1">
-<p class="text-white text-sm font-medium leading-normal pb-2">Correo Electrónico</p>
-<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="ejemplo@email.com" type="email"/>
-</label>
-<label class="flex flex-col flex-1">
-<p class="text-white text-sm font-medium leading-normal pb-2">Teléfono</p>
-<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="+58 412 1234567" type="tel"/>
-</label>
+    <label class="flex flex-col flex-1">
+    <p class="text-white text-sm font-medium leading-normal pb-2">Nombre Completo</p>
+    <input id="input-nombre" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="Ej. Juan Pérez"/>
+    </label>
+    <div class="flex flex-col md:flex-row gap-5">
+    <label class="flex flex-col flex-1">
+    <p class="text-white text-sm font-medium leading-normal pb-2">Correo Electrónico</p>
+    <input id="input-email" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="ejemplo@email.com" type="email"/>
+    </label>
+    <label class="flex flex-col flex-1">
+    <p class="text-white text-sm font-medium leading-normal pb-2">Teléfono</p>
+    <input id="input-telefono" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-input-border bg-[#111318] focus:border-primary h-12 placeholder:text-text-secondary px-4 text-base font-normal leading-normal transition-all" placeholder="+58 412 1234567" type="tel"/>
+    </label>
 </div>
 </div>
 </div>
@@ -371,8 +371,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ClientLayout.init('sorteos');
     }
     
-    // Cargar información del sorteo y boletos seleccionados
-    loadPaymentData();
+    // Cargar información del sorteo y boletos seleccionados desde APIs
+    loadRealPaymentData();
     
     // Asegurar que el timer de reserva se inicialice (igual que DashboardCliente)
     setTimeout(function() {
@@ -383,42 +383,114 @@ document.addEventListener('DOMContentLoaded', function() {
     initPaymentPageFunctionality();
 });
 
-// Función para cargar los datos del sorteo y boletos desde localStorage
-function loadPaymentData() {
-    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-    const selectedTickets = JSON.parse(localStorage.getItem('selectedTickets')) || getDefaultTickets();
-    
+// Función para cargar los datos del sorteo y boletos desde APIs (REAL)
+async function loadRealPaymentData() {
+    try {
+        // Obtener ID del sorteo desde localStorage
+        const sorteoDataFromStorage = JSON.parse(localStorage.getItem('selectedSorteo') || '{}');
+        const idSorteo = sorteoDataFromStorage.id_sorteo || sorteoDataFromStorage.id;
+        
+        if (!idSorteo) {
+            customAlert('No hay sorteo seleccionado. Serás redirigido.', 'Sorteo No Encontrado', 'warning').then(() => {
+                window.location.href = 'ListadoSorteosActivos.php';
+            });
+            return;
+        }
+        
+        // 1. Cargar datos del sorteo desde API
+        const sorteoResponse = await fetch(`api_sorteos.php?action=get_details&id=${idSorteo}`);
+        
+        if (!sorteoResponse.ok) {
+            throw new Error(`Error HTTP al cargar sorteo: ${sorteoResponse.status}`);
+        }
+        
+        const sorteoText = await sorteoResponse.text();
+        let sorteoData;
+        
+        try {
+            sorteoData = JSON.parse(sorteoText);
+        } catch (parseError) {
+            console.error('Error al parsear JSON del sorteo:', parseError);
+            console.error('Respuesta recibida:', sorteoText.substring(0, 200));
+            throw new Error('Error en la respuesta del servidor (formato inválido)');
+        }
+        
+        if (!sorteoData.success || !sorteoData.data) {
+            throw new Error(sorteoData.error || 'No se pudieron cargar los datos del sorteo');
+        }
+        
+        const sorteo = sorteoData.data;
+        
+        // 2. Cargar boletos asignados desde API
+        const boletosResponse = await fetch(`api_boletos.php?action=get_my_assigned&id_sorteo=${idSorteo}`);
+        
+        if (!boletosResponse.ok) {
+            throw new Error(`Error HTTP al cargar boletos: ${boletosResponse.status}`);
+        }
+        
+        const boletosText = await boletosResponse.text();
+        let boletosData;
+        
+        try {
+            boletosData = JSON.parse(boletosText);
+        } catch (parseError) {
+            console.error('Error al parsear JSON de boletos:', parseError);
+            console.error('Respuesta recibida:', boletosText.substring(0, 200));
+            throw new Error('Error en la respuesta del servidor (formato inválido)');
+        }
+        
+        if (!boletosData.success || !boletosData.data) {
+            throw new Error(boletosData.error || 'No se pudieron cargar los boletos asignados');
+        }
+        
+        const assignedBoletos = boletosData.data.boletos || [];
+        
+        if (assignedBoletos.length === 0) {
+            customAlert('No tienes boletos asignados. Serás redirigido a la selección de boletos.', 'Sin Boletos', 'warning').then(() => {
+                window.location.href = 'SeleccionBoletos.php';
+            });
+            return;
+        }
+        
+        // 3. Actualizar UI con datos reales
+        updateUIWithRealData(sorteo, assignedBoletos);
+        
+        // 4. Guardar datos en window para usar en handleFinalizarCompra
+        window.currentSorteoData = sorteo;
+        window.currentAssignedBoletos = assignedBoletos;
+        window.currentTicketPrice = parseFloat(sorteo.precio_boleto || 0);
+        window.currentTicketCount = assignedBoletos.length;
+        
+        // 5. Actualizar timer si hay tiempo restante
+        if (assignedBoletos.length > 0 && assignedBoletos[0].tiempo_restante !== null) {
+            const tiempoRestante = assignedBoletos[0].tiempo_restante;
+            if (tiempoRestante > 0) {
+                startReservationTimerWithSeconds(tiempoRestante);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error al cargar datos de pago:', error);
+        customAlert('Error al cargar los datos: ' + error.message + '\n\nSerás redirigido a la página anterior.', 'Error de Carga', 'error').then(() => {
+            window.location.href = 'SeleccionBoletos.php';
+        });
+    }
+}
+
+// Función para actualizar UI con datos reales
+function updateUIWithRealData(sorteo, assignedBoletos) {
     // Actualizar nombre del sorteo
     const sorteoNameElement = document.getElementById('sorteo-name-text');
     if (sorteoNameElement) {
-        sorteoNameElement.textContent = sorteoData.titulo || 'Gran Sorteo Anual';
+        sorteoNameElement.textContent = sorteo.titulo || 'Gran Sorteo Anual';
     }
     
-    // Actualizar nombres del sorteo en los boletos
-    const sorteoName1 = document.getElementById('sorteo-name-1');
-    const sorteoName2 = document.getElementById('sorteo-name-2');
-    if (sorteoName1) sorteoName1.textContent = sorteoData.titulo || 'Sorteo Gran Premio';
-    if (sorteoName2) sorteoName2.textContent = sorteoData.titulo || 'Sorteo Gran Premio';
-    
-    // Actualizar precios de los boletos
-    const ticketPrice = sorteoData.precio || 50.00;
-    const ticketPrice1 = document.getElementById('ticket-price-1');
-    const ticketPrice2 = document.getElementById('ticket-price-2');
-    if (ticketPrice1) ticketPrice1.textContent = `$${ticketPrice.toFixed(2)}`;
-    if (ticketPrice2) ticketPrice2.textContent = `$${ticketPrice.toFixed(2)}`;
-    
-    // Actualizar números de boletos si están disponibles
-    if (selectedTickets.length >= 1) {
-        const ticket1 = document.querySelector('#tickets-container > div:first-child p.text-white');
-        if (ticket1) ticket1.textContent = `Boleto #${String(selectedTickets[0]).padStart(3, '0')}`;
-    }
-    if (selectedTickets.length >= 2) {
-        const ticket2 = document.querySelector('#tickets-container > div:last-child p.text-white');
-        if (ticket2) ticket2.textContent = `Boleto #${String(selectedTickets[1]).padStart(3, '0')}`;
-    }
+    // Renderizar boletos dinámicamente
+    renderRealTickets(sorteo, assignedBoletos);
     
     // Calcular y actualizar totales
-    const ticketCount = selectedTickets.length || 2; // Por defecto 2 boletos
+    const ticketPrice = parseFloat(sorteo.precio_boleto || 0);
+    const ticketCount = assignedBoletos.length;
     const subtotal = ticketPrice * ticketCount;
     const total = subtotal;
     
@@ -427,9 +499,41 @@ function loadPaymentData() {
     if (subtotalElement) subtotalElement.textContent = `$${subtotal.toFixed(2)}`;
     if (totalElement) totalElement.textContent = `$${total.toFixed(2)}`;
     
-    // Guardar el precio unitario para el timer
-    window.ticketPrice = ticketPrice;
-    window.ticketCount = ticketCount;
+    // Guardar IDs de boletos en localStorage para la transacción
+    const ticketIds = assignedBoletos.map(b => b.numero_boleto_int || parseInt(b.numero_boleto));
+    localStorage.setItem('selectedTickets', JSON.stringify(ticketIds));
+}
+
+// Función para renderizar boletos dinámicamente en el DOM
+function renderRealTickets(sorteo, assignedBoletos) {
+    const ticketsContainer = document.getElementById('tickets-container');
+    if (!ticketsContainer) return;
+    
+    if (assignedBoletos.length === 0) {
+        ticketsContainer.innerHTML = '<p class="text-text-secondary text-sm text-center">No hay boletos asignados</p>';
+        return;
+    }
+    
+    const ticketPrice = parseFloat(sorteo.precio_boleto || 0);
+    
+    // Crear HTML para cada boleto
+    ticketsContainer.innerHTML = assignedBoletos.map((boleto, index) => {
+        const numeroFormateado = String(boleto.numero_boleto_int || parseInt(boleto.numero_boleto)).padStart(4, '0');
+        return `
+            <div class="flex justify-between items-center p-3 rounded-lg bg-[#111318] border border-[#282d39]">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary/20 p-2 rounded text-primary">
+                        <span class="material-symbols-outlined text-lg">confirmation_number</span>
+                    </div>
+                    <div>
+                        <p class="text-white font-medium text-sm">Boleto #${numeroFormateado}</p>
+                        <p class="text-xs text-text-secondary">${sorteo.titulo || 'Sorteo'}</p>
+                    </div>
+                </div>
+                <p class="text-white font-bold text-sm">$${ticketPrice.toFixed(2)}</p>
+            </div>
+        `;
+    }).join('');
 }
 
 // Función para obtener datos por defecto del sorteo
@@ -451,6 +555,12 @@ const activeCountdownIntervals = new Map();
 
 // Timer de reserva (14:59 minutos) - EXACTO COMO DashboardCliente
 function startReservationTimer() {
+    // Por defecto, usar 14:59 si no hay tiempo específico
+    startReservationTimerWithSeconds(14 * 60 + 59);
+}
+
+// Función para iniciar timer con segundos específicos (para usar con datos reales)
+function startReservationTimerWithSeconds(initialSeconds) {
     const timerElement = document.getElementById('reservation-timer');
     const minutosElement = document.getElementById('timer-minutos');
     const segundosElement = document.getElementById('timer-segundos');
@@ -463,9 +573,9 @@ function startReservationTimer() {
         activeCountdownIntervals.delete('reservation-timer');
     }
     
-    // Tiempo inicial: 14 minutos y 59 segundos (variable local en closure, EXACTO COMO DashboardCliente)
-    let remainingSeconds = 14 * 60 + 59;
-    remainingSeconds = parseInt(remainingSeconds) || 0;
+    // Tiempo inicial desde parámetro (variable local en closure)
+    let remainingSeconds = parseInt(initialSeconds) || (14 * 60 + 59);
+    remainingSeconds = Math.max(0, remainingSeconds); // No permitir negativos
     
     // Función de actualización (EXACTO COMO DashboardCliente)
     function updateReservationTimer() {
@@ -524,9 +634,21 @@ function initComprobanteUpload() {
     
     if (!dropzone || !fileInput) return;
     
-    // Click en dropzone
-    dropzone.addEventListener('click', function() {
-        fileInput.click();
+    // Remover listeners anteriores si existen para evitar duplicados
+    const newDropzone = dropzone.cloneNode(true);
+    dropzone.parentNode.replaceChild(newDropzone, dropzone);
+    const updatedDropzone = newDropzone;
+    
+    // Click en dropzone (solo si no tiene el botón eliminar)
+    updatedDropzone.addEventListener('click', function(e) {
+        // Si el click es en el botón eliminar, no hacer nada aquí
+        if (e.target && e.target.id === 'remove-file-btn') {
+            return;
+        }
+        const currentFileInput = document.getElementById('dropzone-file');
+        if (currentFileInput) {
+            currentFileInput.click();
+        }
     });
     
     // Cambio de archivo
@@ -538,25 +660,47 @@ function initComprobanteUpload() {
     });
     
     // Drag and drop
-    dropzone.addEventListener('dragover', function(e) {
+    updatedDropzone.addEventListener('dragover', function(e) {
         e.preventDefault();
         this.classList.add('border-primary', 'bg-primary/5');
     });
     
-    dropzone.addEventListener('dragleave', function(e) {
+    updatedDropzone.addEventListener('dragleave', function(e) {
         e.preventDefault();
         this.classList.remove('border-primary', 'bg-primary/5');
     });
     
-    dropzone.addEventListener('drop', function(e) {
+    updatedDropzone.addEventListener('drop', function(e) {
         e.preventDefault();
         this.classList.remove('border-primary', 'bg-primary/5');
         
         const file = e.dataTransfer.files[0];
         if (file) {
+            // Actualizar el fileInput también cuando se arrastra
+            const currentFileInput = document.getElementById('dropzone-file');
+            if (currentFileInput) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                currentFileInput.files = dataTransfer.files;
+            }
             handleFileUpload(file);
         }
     });
+}
+
+// Variable global para guardar el archivo seleccionado
+let selectedComprobanteFile = null;
+
+// Función auxiliar para escapar HTML
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 // Función para manejar el archivo subido
@@ -575,37 +719,53 @@ function handleFileUpload(file) {
         return;
     }
     
+    // Guardar referencia global al archivo
+    selectedComprobanteFile = file;
+    
     // Mostrar preview o mensaje de éxito
     const dropzone = document.querySelector('.group.cursor-pointer');
+    const fileInput = document.getElementById('dropzone-file');
+    
     if (dropzone) {
+        // Guardar referencia al HTML original antes de cambiarlo
+        const originalHTML = dropzone.innerHTML;
+        
+        // Actualizar el fileInput para que mantenga el archivo
+        if (fileInput && (!fileInput.files || fileInput.files.length === 0)) {
+            // Si el input no tiene el archivo, intentar actualizarlo
+            try {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+            } catch (e) {
+                console.warn('No se pudo actualizar fileInput directamente:', e);
+                // Continuar de todas formas, usaremos la variable global
+            }
+        }
+        
         dropzone.innerHTML = `
             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                 <span class="material-symbols-outlined text-4xl text-green-500 mb-3">check_circle</span>
-                <p class="mb-2 text-sm text-white font-semibold">${file.name}</p>
+                <p class="mb-2 text-sm text-white font-semibold">${escapeHtml(file.name)}</p>
                 <p class="text-xs text-text-secondary">${(file.size / 1024).toFixed(2)} KB</p>
-                <button id="remove-file-btn" class="mt-3 text-xs text-red-400 hover:text-red-300 underline">Eliminar archivo</button>
+                <button id="remove-file-btn" type="button" class="mt-3 text-xs text-red-400 hover:text-red-300 underline cursor-pointer" onclick="resetComprobanteUpload(); return false;">Eliminar archivo</button>
             </div>
         `;
         
-        // Botón para eliminar archivo
-        const removeBtn = document.getElementById('remove-file-btn');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                resetComprobanteUpload();
-            });
-        }
-        
-        // Guardar información del archivo
+        // Guardar información del archivo en localStorage (backup)
         localStorage.setItem('comprobanteFileName', file.name);
         localStorage.setItem('comprobanteFileSize', file.size);
+        localStorage.setItem('comprobanteFileType', file.type);
     }
 }
 
-// Función para resetear el upload de comprobante
+// Función para resetear el upload de comprobante (disponible globalmente)
 function resetComprobanteUpload() {
     const dropzone = document.querySelector('.group.cursor-pointer');
     const fileInput = document.getElementById('dropzone-file');
+    
+    // Limpiar referencia global al archivo
+    selectedComprobanteFile = null;
     
     if (dropzone && fileInput) {
         dropzone.innerHTML = `
@@ -615,14 +775,22 @@ function resetComprobanteUpload() {
                 <p class="text-xs text-gray-500">PNG, JPG o PDF (MAX. 2MB)</p>
             </div>
         `;
+        
+        // Limpiar el input file
         fileInput.value = '';
+        
+        // Limpiar localStorage
         localStorage.removeItem('comprobanteFileName');
         localStorage.removeItem('comprobanteFileSize');
+        localStorage.removeItem('comprobanteFileType');
         
-        // Re-inicializar
+        // Re-inicializar los listeners del dropzone
         initComprobanteUpload();
     }
 }
+
+// Hacer la función disponible globalmente para onclick inline
+window.resetComprobanteUpload = resetComprobanteUpload;
 
 // Función para inicializar el botón "Finalizar Compra"
 function initFinalizarCompra() {
@@ -631,76 +799,211 @@ function initFinalizarCompra() {
     );
     
     if (finalizarBtn) {
-        finalizarBtn.addEventListener('click', function(e) {
+        finalizarBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            handleFinalizarCompra();
+            await handleFinalizarCompra();
         });
     }
 }
 
-// Función para manejar la finalización de la compra
-function handleFinalizarCompra() {
-    // Validar información de contacto
-    const nombreInput = document.querySelector('input[placeholder*="Juan"]');
-    const emailInput = document.querySelector('input[type="email"]');
-    const telefonoInput = document.querySelector('input[type="tel"]');
-    
-    const nombre = nombreInput?.value.trim();
-    const email = emailInput?.value.trim();
-    const telefono = telefonoInput?.value.trim();
-    
-    if (!nombre || !email || !telefono) {
-        customAlert('Por favor completa todos los campos de información de contacto.', 'Campos Incompletos', 'warning');
-        return;
-    }
-    
-    if (!email.includes('@')) {
-        customAlert('Por favor ingresa un correo electrónico válido.', 'Email Inválido', 'error');
-        return;
-    }
-    
-    // Validar comprobante
-    const comprobanteFileName = localStorage.getItem('comprobanteFileName');
-    if (!comprobanteFileName) {
-        customAlert('Por favor sube el comprobante de pago antes de finalizar la compra.', 'Comprobante Requerido', 'warning');
-        return;
-    }
-    
-    // Validar boletos
-    const selectedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-    if (selectedTickets.length === 0) {
-        customAlert('No hay boletos seleccionados. Por favor vuelve a la página anterior.', 'Boletos Requeridos', 'warning').then(() => {
-            window.location.href = 'SeleccionBoletos.php';
-        });
-        return;
-    }
-    
-    // Confirmar compra
-    const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || {};
-    const total = document.getElementById('total-amount')?.textContent || '$0.00';
-    
-    const confirmMessage = `¿Deseas finalizar la compra?\n\n` +
-                          `Boletos: ${selectedTickets.length}\n` +
-                          `Total: ${total}\n\n` +
-                          `Asegúrate de haber realizado la transferencia bancaria y subido el comprobante.`;
-    
-    customConfirm(confirmMessage, 'Finalizar Compra', 'help').then(confirmed => {
+// Función para manejar la finalización de la compra (IMPLEMENTACIÓN REAL)
+async function handleFinalizarCompra() {
+    try {
+        // Validar información de contacto
+        const nombreInput = document.getElementById('input-nombre');
+        const emailInput = document.getElementById('input-email');
+        const telefonoInput = document.getElementById('input-telefono');
+        
+        const nombre = nombreInput?.value.trim();
+        const email = emailInput?.value.trim();
+        const telefono = telefonoInput?.value.trim();
+        
+        if (!nombre || !email || !telefono) {
+            customAlert('Por favor completa todos los campos de información de contacto.', 'Campos Incompletos', 'warning');
+            return;
+        }
+        
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            customAlert('Por favor ingresa un correo electrónico válido.', 'Email Inválido', 'error');
+            return;
+        }
+        
+        // Validar comprobante - verificar tanto el fileInput como la variable global
+        const fileInput = document.getElementById('dropzone-file');
+        let comprobanteFile = null;
+        
+        // Intentar obtener el archivo del input
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            comprobanteFile = fileInput.files[0];
+        }
+        
+        // Si no está en el input, usar la variable global (archivo seleccionado previamente)
+        if (!comprobanteFile && selectedComprobanteFile) {
+            comprobanteFile = selectedComprobanteFile;
+        }
+        
+        // Si aún no hay archivo, verificar localStorage (backup)
+        if (!comprobanteFile) {
+            const fileName = localStorage.getItem('comprobanteFileName');
+            if (!fileName) {
+                customAlert('Por favor sube el comprobante de pago antes de finalizar la compra.', 'Comprobante Requerido', 'warning');
+                return;
+            }
+            // Si hay nombre en localStorage pero no archivo, el archivo se perdió
+            customAlert('El archivo del comprobante se perdió. Por favor vuelve a subirlo.', 'Archivo Perdido', 'warning').then(() => {
+                resetComprobanteUpload();
+            });
+            return;
+        }
+        
+        // Validar boletos
+        const selectedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
+        if (selectedTickets.length === 0) {
+            customAlert('No hay boletos seleccionados. Por favor vuelve a la página anterior.', 'Boletos Requeridos', 'warning').then(() => {
+                window.location.href = 'SeleccionBoletos.php';
+            });
+            return;
+        }
+        
+        // Validar datos del sorteo
+        const sorteoData = window.currentSorteoData || JSON.parse(localStorage.getItem('selectedSorteo') || '{}');
+        if (!sorteoData.id_sorteo && !sorteoData.id) {
+            customAlert('No hay sorteo seleccionado. Serás redirigido.', 'Sorteo No Encontrado', 'warning').then(() => {
+                window.location.href = 'ListadoSorteosActivos.php';
+            });
+            return;
+        }
+        
+        const idSorteo = sorteoData.id_sorteo || sorteoData.id;
+        const total = document.getElementById('total-amount')?.textContent || '$0.00';
+        const montoTotal = parseFloat(total.replace('$', '').replace(',', ''));
+        
+        // Confirmar compra
+        const confirmMessage = `¿Deseas finalizar la compra?\n\n` +
+                              `Boletos: ${selectedTickets.length}\n` +
+                              `Total: ${total}\n\n` +
+                              `Asegúrate de haber realizado la transferencia bancaria y subido el comprobante.`;
+        
+        const confirmed = await customConfirm(confirmMessage, 'Finalizar Compra', 'help');
         if (!confirmed) return;
         
-        // Simular procesamiento (aquí iría la llamada al servidor)
-        console.log('Procesando compra...', {
-            nombre,
-            email,
-            telefono,
-            boletos: selectedTickets,
-            comprobante: comprobanteFileName,
-            total
-        });
+        // Deshabilitar botón durante el proceso
+        const finalizarBtn = Array.from(document.querySelectorAll('button')).find(
+            btn => btn.textContent.includes('Finalizar Compra')
+        );
+        const originalBtnText = finalizarBtn?.innerHTML;
+        if (finalizarBtn) {
+            finalizarBtn.disabled = true;
+            finalizarBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span> Procesando...';
+        }
         
-        // Mostrar mensaje de éxito
-        customAlert('Tu compra está siendo verificada. Recibirás un correo de confirmación cuando tu pago sea aprobado.\n\nPuedes seguir el estado de tus boletos en la sección "Mis Boletos".', '¡Compra Procesada!', 'success').then(() => {
-        });
-    });
+        try {
+            // 1. SUBIR COMPROBANTE
+            const formData = new FormData();
+            formData.append('comprobante', comprobanteFile);
+            
+            const uploadResponse = await fetch('api_upload.php?action=upload_comprobante', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!uploadResponse.ok) {
+                throw new Error(`Error HTTP al subir comprobante: ${uploadResponse.status}`);
+            }
+            
+            const uploadText = await uploadResponse.text();
+            let uploadData;
+            
+            try {
+                uploadData = JSON.parse(uploadText);
+            } catch (parseError) {
+                console.error('Error al parsear JSON del upload:', parseError);
+                console.error('Respuesta recibida:', uploadText.substring(0, 200));
+                throw new Error('Error en la respuesta del servidor (formato inválido)');
+            }
+            
+            if (!uploadData.success || !uploadData.data) {
+                throw new Error(uploadData.error || 'Error al subir el comprobante');
+            }
+            
+            const comprobanteUrl = uploadData.data.file_path || uploadData.data.file_name;
+            
+            // 2. CREAR TRANSACCIÓN
+            const transactionData = {
+                id_sorteo: idSorteo,
+                numeros_boletos: selectedTickets, // Array de números de boletos (enteros)
+                metodo_pago: 'Transferencia',
+                referencia_pago: null,
+                comprobante_url: comprobanteUrl,
+                monto_total: montoTotal
+            };
+            
+            const transactionResponse = await fetch('api_transacciones.php?action=create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(transactionData)
+            });
+            
+            if (!transactionResponse.ok) {
+                throw new Error(`Error HTTP al crear transacción: ${transactionResponse.status}`);
+            }
+            
+            const transactionText = await transactionResponse.text();
+            let transactionResult;
+            
+            try {
+                transactionResult = JSON.parse(transactionText);
+            } catch (parseError) {
+                console.error('Error al parsear JSON de transacción:', parseError);
+                console.error('Respuesta recibida:', transactionText.substring(0, 200));
+                throw new Error('Error en la respuesta del servidor (formato inválido)');
+            }
+            
+            if (!transactionResult.success || !transactionResult.data) {
+                throw new Error(transactionResult.error || 'Error al crear la transacción');
+            }
+            
+            // 3. ÉXITO - Limpiar localStorage y redirigir
+            localStorage.removeItem('comprobanteFileName');
+            localStorage.removeItem('comprobanteFileSize');
+            
+            // Mostrar mensaje de éxito
+            await customAlert(
+                '¡Tu compra ha sido registrada exitosamente!\n\n' +
+                'Tu transacción está siendo revisada por el administrador.\n' +
+                'Recibirás un correo de confirmación cuando tu pago sea aprobado.\n\n' +
+                'Puedes seguir el estado de tus boletos en la sección "Mis Boletos".',
+                '¡Compra Exitosa!',
+                'success'
+            );
+            
+            // Redirigir a Mis Boletos
+            window.location.href = 'MisBoletosCliente.php';
+            
+        } catch (error) {
+            console.error('Error al procesar la compra:', error);
+            customAlert(
+                'Error al procesar la compra: ' + error.message + '\n\n' +
+                'Por favor, verifica tus datos e intenta nuevamente. Si el problema persiste, contacta al soporte.',
+                'Error en la Compra',
+                'error'
+            );
+        } finally {
+            // Restaurar botón
+            if (finalizarBtn && originalBtnText) {
+                finalizarBtn.disabled = false;
+                finalizarBtn.innerHTML = originalBtnText;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error general en handleFinalizarCompra:', error);
+        customAlert('Error inesperado: ' + error.message, 'Error', 'error');
+    }
 }
 
 // Función para copiar información bancaria

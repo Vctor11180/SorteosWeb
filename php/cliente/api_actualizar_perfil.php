@@ -60,9 +60,11 @@ try {
     $nombre = trim($input['nombre'] ?? '');
     $email = trim($input['email'] ?? '');
     $telefono = trim($input['telefono'] ?? '');
+    $fechaNacimiento = trim($input['fecha_nacimiento'] ?? '');
+    $avatarUrl = trim($input['avatar_url'] ?? '');
     // Nota: La dirección no se guarda en la BD porque no existe ese campo en la tabla usuarios
     
-    error_log("API actualizar perfil - Datos recibidos - Nombre: $nombre, Email: $email, Teléfono: $telefono");
+    error_log("API actualizar perfil - Datos recibidos - Nombre: $nombre, Email: $email, Teléfono: $telefono, Fecha Nacimiento: $fechaNacimiento");
     
     // Validaciones básicas
     if (empty($nombre)) {
@@ -109,6 +111,71 @@ try {
         exit;
     }
     
+    // Validar formato de teléfono si se proporciona
+    if (!empty($telefono)) {
+        // Validar que tenga formato válido (números, espacios, +, -, paréntesis)
+        // Ejemplos válidos: +58 412 1234567, (412) 123-4567, 412-1234567
+        $telefonoLimpio = preg_replace('/[\s\-\(\)\+]/', '', $telefono);
+        
+        // Debe tener al menos 7 dígitos y máximo 15 dígitos (estándar internacional)
+        if (!preg_match('/^[0-9]{7,15}$/', $telefonoLimpio)) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'El formato del teléfono no es válido. Debe contener entre 7 y 15 dígitos.'
+            ]);
+            exit;
+        }
+        
+        // Limpiar teléfono para guardar (sin espacios ni caracteres especiales, pero mantener + si está al inicio)
+        if (strpos($telefono, '+') === 0) {
+            $telefono = '+' . $telefonoLimpio;
+        } else {
+            $telefono = $telefonoLimpio;
+        }
+    }
+    
+    // Validar fecha de nacimiento si se proporciona
+    $fechaNacimientoFormateada = null;
+    if (!empty($fechaNacimiento)) {
+        // Intentar parsear fecha (acepta varios formatos: YYYY-MM-DD, DD/MM/YYYY, etc.)
+        $fechaTimestamp = strtotime($fechaNacimiento);
+        
+        if ($fechaTimestamp === false) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'El formato de la fecha de nacimiento no es válido. Use formato: YYYY-MM-DD'
+            ]);
+            exit;
+        }
+        
+        // Verificar que la fecha no sea futura
+        if ($fechaTimestamp > time()) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => 'La fecha de nacimiento no puede ser una fecha futura'
+            ]);
+            exit;
+        }
+        
+        // Verificar que la persona tenga al menos 13 años (ejemplo de validación)
+        $edadMinima = 13;
+        $fechaMaxima = strtotime("-{$edadMinima} years");
+        if ($fechaTimestamp > $fechaMaxima) {
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => "Debes tener al menos {$edadMinima} años para usar el servicio"
+            ]);
+            exit;
+        }
+        
+        // Formatear a YYYY-MM-DD para BD
+        $fechaNacimientoFormateada = date('Y-m-d', $fechaTimestamp);
+    }
+    
     // Separar nombre completo en partes
     $partesNombre = array_filter(explode(' ', $nombre), function($parte) {
         return trim($parte) !== '';
@@ -141,16 +208,45 @@ try {
     
     error_log("API actualizar perfil - Nombre separado - Primer: $primerNombre, Segundo: " . ($segundoNombre ?? 'null') . ", Paterno: $apellidoPaterno, Materno: $apellidoMaterno");
     
+    // Construir query de UPDATE dinámicamente según los campos que se quieran actualizar
+    $camposUpdate = [
+        'primer_nombre' => ':primer_nombre',
+        'segundo_nombre' => ':segundo_nombre',
+        'apellido_paterno' => ':apellido_paterno',
+        'apellido_materno' => ':apellido_materno',
+        'email' => ':email',
+        'telefono' => ':telefono'
+    ];
+    
+    // Agregar fecha_nacimiento si se proporciona
+    if ($fechaNacimientoFormateada !== null) {
+        $camposUpdate['fecha_nacimiento'] = ':fecha_nacimiento';
+    }
+    
+    // Agregar avatar_url si se proporciona
+    if (!empty($avatarUrl)) {
+        // Validar que la URL sea válida (ruta local o URL externa)
+        if (filter_var($avatarUrl, FILTER_VALIDATE_URL) || 
+            (strpos($avatarUrl, 'uploads/avatars/') !== false) ||
+            (strpos($avatarUrl, 'http') === 0)) {
+            $camposUpdate['avatar_url'] = ':avatar_url';
+        } else {
+            error_log("API actualizar perfil - Avatar URL inválida: $avatarUrl");
+            // No fallar, simplemente no actualizar el avatar
+        }
+    }
+    
+    // Construir SET clause
+    $setClauses = [];
+    foreach ($camposUpdate as $campo => $placeholder) {
+        $setClauses[] = "$campo = $placeholder";
+    }
+    $setClause = implode(', ', $setClauses);
+    
     // Actualizar datos del usuario en la base de datos
     $stmt = $db->prepare("
         UPDATE usuarios 
-        SET 
-            primer_nombre = :primer_nombre,
-            segundo_nombre = :segundo_nombre,
-            apellido_paterno = :apellido_paterno,
-            apellido_materno = :apellido_materno,
-            email = :email,
-            telefono = :telefono
+        SET $setClause
         WHERE id_usuario = :usuario_id
     ");
     
@@ -163,6 +259,17 @@ try {
         ':telefono' => !empty($telefono) ? $telefono : null,
         ':usuario_id' => $usuarioId
     ];
+    
+    // Agregar parámetros opcionales
+    if ($fechaNacimientoFormateada !== null) {
+        $params[':fecha_nacimiento'] = $fechaNacimientoFormateada;
+    }
+    
+    if (!empty($avatarUrl) && isset($camposUpdate['avatar_url'])) {
+        $params[':avatar_url'] = $avatarUrl;
+        // Actualizar sesión con nuevo avatar
+        $_SESSION['usuario_avatar'] = $avatarUrl;
+    }
     
     error_log("API actualizar perfil - Parámetros del UPDATE: " . print_r($params, true));
     
@@ -206,15 +313,25 @@ try {
     $_SESSION['usuario_nombre'] = $nombreCompleto;
     $_SESSION['usuario_email'] = $email;
     
-    // Retornar éxito
+    // Retornar éxito con todos los datos actualizados
+    $dataRetorno = [
+        'nombre' => $nombreCompleto,
+        'email' => $email,
+        'telefono' => $telefono
+    ];
+    
+    if ($fechaNacimientoFormateada !== null) {
+        $dataRetorno['fecha_nacimiento'] = $fechaNacimientoFormateada;
+    }
+    
+    if (!empty($avatarUrl) && isset($camposUpdate['avatar_url'])) {
+        $dataRetorno['avatar_url'] = $avatarUrl;
+    }
+    
     echo json_encode([
         'success' => true,
         'message' => 'Perfil actualizado exitosamente',
-        'data' => [
-            'nombre' => $nombreCompleto,
-            'email' => $email,
-            'telefono' => $telefono
-        ]
+        'data' => $dataRetorno
     ]);
     
 } catch (PDOException $e) {

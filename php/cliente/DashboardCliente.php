@@ -753,11 +753,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('dashboard');
     }
+    
+    // Cargar datos del cliente (datos básicos desde PHP + estadísticas desde API)
+    loadClientData();
 });
 
-// Función para cargar datos del cliente
+// Función para cargar datos del cliente (OPCIÓN HÍBRIDA)
 function loadClientData() {
-    // Usar datos de la sesión PHP como base
+    // 1. Usar datos de la sesión PHP como base (datos críticos)
     let clientData = {
         nombre: userSessionData.nombre,
         tipoUsuario: userSessionData.tipoUsuario,
@@ -765,40 +768,18 @@ function loadClientData() {
         saldo: userSessionData.saldo,
         boletosActivos: <?php echo $totalBoletosActivos; ?>,
         boletosNuevos: <?php echo min(count($boletosActivosDashboard), 3); ?>,
-        gananciasTotales: 1250.00, // Este valor puede calcularse desde la tabla de ganadores si es necesario
-        crecimientoGanancias: '+15% mes', // Este valor puede calcularse comparando periodos
-        puntosLealtad: 450, // Este valor puede venir de una tabla de puntos de lealtad
-        nivelLealtad: 'Nivel Plata' // Este valor puede calcularse desde los puntos
+        // Valores temporales hasta que se carguen desde la API
+        gananciasTotales: 0,
+        crecimientoGanancias: '0% mes',
+        puntosLealtad: 0,
+        nivelLealtad: 'Nivel Inicial'
     };
 
-    // Intentar obtener datos adicionales desde localStorage (pero mantener nombre y tipoUsuario de la sesión)
-    const storedData = localStorage.getItem('clientData');
-    if (storedData) {
-        try {
-            const parsedData = JSON.parse(storedData);
-            // Mantener nombre y tipoUsuario de la sesión, pero usar otros datos de localStorage si existen
-            clientData = { 
-                ...clientData, 
-                ...parsedData,
-                nombre: userSessionData.nombre, // Forzar nombre de sesión
-                tipoUsuario: userSessionData.tipoUsuario // Forzar tipoUsuario de sesión
-            };
-        } catch (e) {
-            console.error('Error al parsear datos del cliente:', e);
-        }
-    }
+    // 2. Actualizar con datos del servidor (API) para estadísticas complejas
+    fetchClientDataFromServer(clientData);
     
-    // Guardar datos actualizados en localStorage
-    localStorage.setItem('clientData', JSON.stringify(clientData));
-
-    // Guardar también en sessionStorage
-    sessionStorage.setItem('clientData', JSON.stringify(clientData));
-    
-    // Actualizar elementos del DOM con los datos del cliente
+    // 3. Actualizar elementos del DOM con datos iniciales (mientras carga la API)
     updateDashboard(clientData);
-
-    // También puedes hacer una petición al servidor para obtener datos actualizados
-    // fetchClientDataFromServer();
 }
 
 // Función para actualizar el dashboard con los datos del cliente
@@ -825,7 +806,7 @@ function updateDashboard(data) {
         userBalanceEl.textContent = `$${data.saldo.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
-    // Actualizar estadísticas
+    // Actualizar estadísticas (siempre actualizar con datos de la API o base)
     const activeTicketsEl = document.getElementById('active-tickets-count');
     const newTicketsEl = document.getElementById('new-tickets-count');
     const totalEarningsEl = document.getElementById('total-earnings');
@@ -833,52 +814,159 @@ function updateDashboard(data) {
     const loyaltyPointsEl = document.getElementById('loyalty-points');
     const loyaltyLevelEl = document.getElementById('loyalty-level');
 
-    // Los datos de boletos activos se cargan desde PHP directamente en el HTML
-    // Solo actualizar si los datos vienen de localStorage/sessionStorage
-    if (activeTicketsEl && data.boletosActivos !== undefined && !activeTicketsEl.textContent.trim()) {
+    // Boletos activos (actualizar siempre que haya datos)
+    if (activeTicketsEl && data.boletosActivos !== undefined) {
         activeTicketsEl.textContent = data.boletosActivos;
     }
 
-    if (newTicketsEl && data.boletosNuevos !== undefined && !newTicketsEl.textContent.trim()) {
-        newTicketsEl.textContent = `+${data.boletosNuevos} nuevos`;
+    // Boletos nuevos (actualizar siempre que haya datos)
+    if (newTicketsEl && data.boletosNuevos !== undefined) {
+        if (data.boletosNuevos > 0) {
+            newTicketsEl.textContent = `+${data.boletosNuevos} nuevos`;
+        } else {
+            newTicketsEl.textContent = 'Sin nuevos';
+        }
     }
 
+    // Ganancias totales (actualizar siempre que haya datos de la API)
     if (totalEarningsEl && data.gananciasTotales !== undefined) {
         totalEarningsEl.textContent = `$${data.gananciasTotales.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
+    // Crecimiento de ganancias (actualizar siempre que haya datos de la API)
     if (earningsGrowthEl && data.crecimientoGanancias) {
         earningsGrowthEl.textContent = data.crecimientoGanancias;
+        
+        // Cambiar color según si es positivo o negativo
+        const esPositivo = data.crecimientoGanancias.includes('+');
+        earningsGrowthEl.className = esPositivo 
+            ? 'text-green-400 text-sm font-semibold' 
+            : 'text-red-400 text-sm font-semibold';
     }
 
+    // Puntos de lealtad (actualizar siempre que haya datos de la API)
     if (loyaltyPointsEl && data.puntosLealtad !== undefined) {
         loyaltyPointsEl.textContent = `${data.puntosLealtad} pts`;
     }
 
+    // Nivel de lealtad (actualizar siempre que haya datos de la API)
     if (loyaltyLevelEl && data.nivelLealtad) {
         loyaltyLevelEl.textContent = data.nivelLealtad;
+        
+        // Cambiar color según el nivel
+        if (data.nivelLealtad.includes('Oro')) {
+            loyaltyLevelEl.className = 'text-yellow-400 text-sm font-bold';
+        } else if (data.nivelLealtad.includes('Plata')) {
+            loyaltyLevelEl.className = 'text-gray-400 text-sm font-bold';
+        } else if (data.nivelLealtad.includes('Bronce')) {
+            loyaltyLevelEl.className = 'text-orange-600 text-sm font-bold';
+        } else {
+            loyaltyLevelEl.className = 'text-text-secondary text-sm font-medium';
+        }
     }
 }
 
-// Función para obtener datos del servidor (opcional)
-async function fetchClientDataFromServer() {
+// Función para obtener datos del servidor desde la API (IMPLEMENTACIÓN REAL)
+async function fetchClientDataFromServer(baseClientData) {
     try {
-        // Aquí puedes hacer una petición fetch a tu API
-        // const response = await fetch('/api/cliente/dashboard', {
-        //     method: 'GET',
-        //     headers: {
-        //         'Authorization': 'Bearer ' + getToken(),
-        //         'Content-Type': 'application/json'
-        //     }
-        // });
-        // const data = await response.json();
-        // updateDashboard(data);
+        // Mostrar estado de carga (opcional)
+        showLoadingState();
         
-        // Por ahora, solo cargamos desde localStorage/sessionStorage
-        console.log('Cargando datos del cliente desde almacenamiento local');
+        // Llamar a la API del dashboard
+        const response = await fetch('api_dashboard.php?action=get_stats');
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        let result;
+        
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Error al parsear JSON del dashboard:', parseError);
+            console.error('Respuesta recibida:', text.substring(0, 200));
+            throw new Error('Error en la respuesta del servidor (formato inválido)');
+        }
+        
+        if (!result.success || !result.data) {
+            throw new Error(result.error || 'Error al obtener estadísticas del dashboard');
+        }
+        
+        const stats = result.data;
+        
+        // Construir objeto de datos completo combinando datos base y estadísticas de la API
+        const clientData = {
+            nombre: baseClientData.nombre || userSessionData.nombre,
+            tipoUsuario: baseClientData.tipoUsuario || userSessionData.tipoUsuario,
+            fotoPerfil: baseClientData.fotoPerfil || userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg',
+            // Datos desde PHP (ya calculados)
+            saldo: stats.saldo_disponible || baseClientData.saldo || userSessionData.saldo,
+            boletosActivos: stats.boletos_activos || baseClientData.boletosActivos || 0,
+            boletosNuevos: stats.boletos_nuevos || baseClientData.boletosNuevos || 0,
+            // Datos desde API (estadísticas complejas)
+            gananciasTotales: stats.ganancias_totales || 0,
+            crecimientoGanancias: stats.crecimiento_ganancias || '0% mes',
+            puntosLealtad: stats.puntos_lealtad || 0,
+            nivelLealtad: stats.nivel_lealtad || 'Nivel Inicial',
+            // Datos adicionales (opcionales)
+            transaccionesPendientes: stats.transacciones_pendientes || 0,
+            sorteosParticipando: stats.sorteos_participando || 0
+        };
+        
+        // Guardar datos actualizados en localStorage/sessionStorage
+        saveClientData(clientData);
+        
+        // Actualizar elementos del DOM con los datos reales
+        updateDashboard(clientData);
+        
+        // Ocultar estado de carga
+        hideLoadingState();
+        
     } catch (error) {
-        console.error('Error al cargar datos del cliente:', error);
+        console.error('Error al cargar datos del dashboard desde el servidor:', error);
+        
+        // Ocultar estado de carga
+        hideLoadingState();
+        
+        // Intentar usar datos de localStorage como fallback
+        const storedData = localStorage.getItem('clientData');
+        if (storedData) {
+            try {
+                const parsedData = JSON.parse(storedData);
+                // Mantener nombre y tipoUsuario de la sesión
+                const fallbackData = {
+                    ...parsedData,
+                    nombre: userSessionData.nombre,
+                    tipoUsuario: userSessionData.tipoUsuario
+                };
+                updateDashboard(fallbackData);
+            } catch (e) {
+                console.error('Error al usar datos de localStorage como fallback:', e);
+            }
+        }
+        
+        // No mostrar error al usuario para no interrumpir la experiencia
+        // El dashboard seguirá funcionando con datos básicos de PHP
     }
+}
+
+// Función para mostrar estado de carga (opcional)
+function showLoadingState() {
+    // Puedes agregar spinners o indicadores de carga aquí si lo deseas
+    const loadingElements = document.querySelectorAll('[data-dashboard-loading]');
+    loadingElements.forEach(el => {
+        if (el) el.style.opacity = '0.6';
+    });
+}
+
+// Función para ocultar estado de carga
+function hideLoadingState() {
+    const loadingElements = document.querySelectorAll('[data-dashboard-loading]');
+    loadingElements.forEach(el => {
+        if (el) el.style.opacity = '1';
+    });
 }
 
 // Función para guardar datos del cliente (útil después de actualizaciones)

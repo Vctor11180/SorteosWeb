@@ -160,43 +160,16 @@
                 return;
             }
 
-            // Leer el archivo y actualizar el avatar
+            // Mostrar preview inmediato (mientras se sube)
             const reader = new FileReader();
             reader.onload = function(event) {
-                const imageUrl = event.target.result;
-                updateAvatar(imageUrl);
-                
-                // Guardar en localStorage para persistencia
-                try {
-                    const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
-                    clientData.fotoPerfil = imageUrl;
-                    localStorage.setItem('clientData', JSON.stringify(clientData));
-                    
-                    // Actualizar también en el layout si existe
-                    if (window.ClientLayout) {
-                        window.ClientLayout.updateClientData({ fotoPerfil: imageUrl });
-                    }
-                } catch (error) {
-                    console.error('Error al guardar la imagen en localStorage:', error);
-                }
-
-                // Mostrar mensaje de éxito
-                if (typeof customToast === 'function') {
-                    customToast('Foto de perfil actualizada exitosamente', 'success', 3000);
-                } else if (typeof customAlert === 'function') {
-                    customAlert('Foto de perfil actualizada exitosamente', 'Éxito', 'success');
-                }
+                const previewUrl = event.target.result;
+                updateAvatar(previewUrl); // Preview inmediato
             };
-
-            reader.onerror = function() {
-                if (typeof customAlert === 'function') {
-                    customAlert('Error al leer el archivo. Por favor intenta de nuevo.', 'Error', 'error');
-                } else {
-                    alert('Error al leer el archivo');
-                }
-            };
-
             reader.readAsDataURL(file);
+            
+            // SUBIR ARCHIVO AL SERVIDOR (IMPLEMENTACIÓN REAL)
+            uploadAvatarToServer(file);
             
             // Limpiar el input para permitir seleccionar el mismo archivo de nuevo
             fileInput.value = '';
@@ -266,31 +239,210 @@
     }
 
     /**
-     * Elimina el avatar y restaura la imagen por defecto
+     * Sube el avatar al servidor
      */
-    function deleteAvatar() {
-        // Usar la imagen por defecto
-        updateAvatar(DEFAULT_AVATAR);
-
-        // Actualizar en localStorage
-        try {
-            const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
-            clientData.fotoPerfil = DEFAULT_AVATAR;
-            localStorage.setItem('clientData', JSON.stringify(clientData));
-            
-            // Actualizar también en el layout si existe
-            if (window.ClientLayout) {
-                window.ClientLayout.updateClientData({ fotoPerfil: DEFAULT_AVATAR });
-            }
-        } catch (error) {
-            console.error('Error al actualizar localStorage:', error);
+    async function uploadAvatarToServer(file) {
+        // Variables para manejo del botón (necesario en finally)
+        const uploadBtn = document.getElementById('btn-subir-avatar');
+        let originalBtnText = '';
+        if (uploadBtn) {
+            originalBtnText = uploadBtn.textContent || 'Subir Foto';
         }
+        
+        try {
+            // Deshabilitar botón mientras se sube
+            if (uploadBtn) {
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Subiendo...';
+            }
+            
+            // Preparar FormData para subir el archivo
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            // Subir archivo a la API
+            const response = await fetch('api_upload.php?action=upload_avatar', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+            }
+            
+            const text = await response.text();
+            let result;
+            
+            try {
+                result = JSON.parse(text);
+            } catch (parseError) {
+                console.error('Error al parsear JSON del upload:', parseError);
+                console.error('Respuesta recibida:', text.substring(0, 200));
+                throw new Error('Error en la respuesta del servidor (formato inválido)');
+            }
+            
+            if (!result.success || !result.data) {
+                throw new Error(result.error || 'Error al subir el avatar');
+            }
+            
+            const avatarUrl = result.data.file_path || result.data.file_url;
+            
+            // Actualizar avatar_url en el perfil (llamada adicional para actualizar BD)
+            // Aunque api_upload.php ya actualiza avatar_url, aseguramos consistencia
+            await updateProfileAvatarUrl(avatarUrl);
+            
+            // Actualizar avatar en el DOM con la URL del servidor
+            updateAvatar(avatarUrl);
+            
+            // Guardar en localStorage
+            try {
+                const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
+                clientData.fotoPerfil = avatarUrl;
+                localStorage.setItem('clientData', JSON.stringify(clientData));
+                
+                // Actualizar también en el layout si existe
+                if (window.ClientLayout) {
+                    window.ClientLayout.updateClientData({ fotoPerfil: avatarUrl });
+                }
+            } catch (error) {
+                console.error('Error al guardar en localStorage:', error);
+            }
+            
+            // Mostrar mensaje de éxito
+            if (typeof customToast === 'function') {
+                customToast('Foto de perfil actualizada exitosamente', 'success', 3000);
+            } else if (typeof customAlert === 'function') {
+                customAlert('Foto de perfil actualizada exitosamente', 'Éxito', 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error al subir avatar:', error);
+            
+            // Mostrar mensaje de error
+            if (typeof customAlert === 'function') {
+                customAlert('Error al subir la foto de perfil: ' + error.message + '\n\nEl cambio solo se aplicó localmente.', 'Error al Subir', 'error');
+            } else {
+                alert('Error al subir la foto de perfil: ' + error.message);
+            }
+            
+            // Restaurar avatar anterior si falla
+            // (podríamos obtener el avatar actual desde BD, pero por ahora dejamos el preview)
+            
+        } finally {
+            // Restaurar botón
+            const uploadBtn = document.getElementById('btn-subir-avatar');
+            if (uploadBtn && originalBtnText) {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = originalBtnText;
+            }
+        }
+    }
+    
+    /**
+     * Actualiza solo el avatar_url en el perfil del usuario
+     */
+    async function updateProfileAvatarUrl(avatarUrl) {
+        try {
+            const response = await fetch('api_actualizar_perfil.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nombre: document.querySelector('#input-nombre')?.value || '',
+                    email: document.querySelector('#input-email')?.value || '',
+                    telefono: document.querySelector('#input-telefono')?.value || '',
+                    avatar_url: avatarUrl
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                console.warn('Advertencia: No se pudo actualizar avatar_url en el perfil:', result.message);
+                // No fallar, el archivo ya se subió
+            }
+            
+        } catch (error) {
+            console.error('Error al actualizar avatar_url en perfil:', error);
+            // No fallar, el archivo ya se subió
+        }
+    }
 
-        // Mostrar mensaje de éxito
-        if (typeof customToast === 'function') {
-            customToast('Foto de perfil eliminada exitosamente', 'success', 3000);
-        } else if (typeof customAlert === 'function') {
-            customAlert('Foto de perfil eliminada exitosamente', 'Éxito', 'success');
+    /**
+     * Elimina el avatar y restaura la imagen por defecto (IMPLEMENTACIÓN REAL)
+     * NOTA: La confirmación ya se maneja en initAvatarDelete(), esta función solo ejecuta la eliminación
+     */
+    async function deleteAvatar() {
+        try {
+            
+            // Actualizar en el servidor (usar URL vacía o null para restaurar por defecto)
+            const defaultAvatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg';
+            
+            // Actualizar perfil con URL por defecto
+            const nombre = document.querySelector('#input-nombre')?.value || '';
+            const email = document.querySelector('#input-email')?.value || '';
+            const telefono = document.querySelector('#input-telefono')?.value || '';
+            
+            const response = await fetch('api_actualizar_perfil.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    email: email,
+                    telefono: telefono,
+                    avatar_url: defaultAvatarUrl
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Error al eliminar el avatar');
+            }
+            
+            // Usar la imagen por defecto en el DOM
+            updateAvatar(defaultAvatarUrl);
+
+            // Actualizar en localStorage
+            try {
+                const clientData = JSON.parse(localStorage.getItem('clientData') || '{}');
+                clientData.fotoPerfil = defaultAvatarUrl;
+                localStorage.setItem('clientData', JSON.stringify(clientData));
+                
+                // Actualizar también en el layout si existe
+                if (window.ClientLayout) {
+                    window.ClientLayout.updateClientData({ fotoPerfil: defaultAvatarUrl });
+                }
+            } catch (error) {
+                console.error('Error al actualizar localStorage:', error);
+            }
+
+            // Mostrar mensaje de éxito
+            if (typeof customToast === 'function') {
+                customToast('Foto de perfil eliminada exitosamente', 'success', 3000);
+            } else if (typeof customAlert === 'function') {
+                customAlert('Foto de perfil eliminada exitosamente', 'Éxito', 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error al eliminar avatar:', error);
+            
+            if (typeof customAlert === 'function') {
+                customAlert('Error al eliminar la foto de perfil: ' + error.message, 'Error', 'error');
+            } else {
+                alert('Error al eliminar la foto de perfil: ' + error.message);
+            }
         }
     }
 
@@ -2781,76 +2933,103 @@
         }
         
         /**
-         * Carga el historial de sorteos desde localStorage o genera datos de ejemplo
+         * Carga el historial de sorteos desde el DOM (datos reales renderizados por PHP)
          */
         function loadHistorialData() {
             try {
-                // Intentar cargar desde localStorage
-                const savedHistorial = localStorage.getItem('historialSorteos');
-                if (savedHistorial) {
-                    historialState.sorteos = JSON.parse(savedHistorial);
-                } else {
-                    // Generar datos de ejemplo
-                    historialState.sorteos = generateSampleHistorialData();
-                    localStorage.setItem('historialSorteos', JSON.stringify(historialState.sorteos));
+                // Extraer datos de los elementos .historial-item que ya están en el DOM
+                const historialItems = elementos.list.querySelectorAll('.historial-item');
+                
+                if (historialItems.length === 0) {
+                    // No hay historial, dejar vacío
+                    historialState.sorteos = [];
+                    applyFilters();
+                    return;
                 }
+                
+                historialState.sorteos = Array.from(historialItems).map(item => {
+                    // Extraer datos de los atributos data-*
+                    const idSorteo = item.getAttribute('data-sorteo-id');
+                    const titulo = item.getAttribute('data-titulo') || '';
+                    const estado = item.getAttribute('data-estado') || 'finalizado';
+                    const estadoPago = item.getAttribute('data-estado-pago') || 'pendiente';
+                    const fechaStr = item.getAttribute('data-fecha') || '';
+                    
+                    // Extraer imagen del background-image
+                    const imagenDiv = item.querySelector('div[style*="background-image"]');
+                    let imagenUrl = '';
+                    if (imagenDiv) {
+                        const style = imagenDiv.getAttribute('style') || '';
+                        const match = style.match(/url\(["']?([^"']+)["']?\)/);
+                        if (match) {
+                            imagenUrl = match[1];
+                        }
+                    }
+                    
+                    // Extraer boletos comprados del texto
+                    const boletosText = item.querySelector('p.text-white.font-semibold')?.textContent || '0';
+                    const boletosMatch = boletosText.match(/(\d+)/);
+                    const boletosComprados = boletosMatch ? parseInt(boletosMatch[1]) : 0;
+                    
+                    // Extraer total pagado
+                    const totalText = item.querySelectorAll('p.text-white.font-semibold')[1]?.textContent || '$0';
+                    const totalMatch = totalText.replace(/[^0-9.]/g, '');
+                    const totalPagado = parseFloat(totalMatch) || 0;
+                    
+                    // Calcular precio por boleto
+                    const precioBoleto = boletosComprados > 0 ? totalPagado / boletosComprados : 0;
+                    
+                    // Verificar si es ganador (buscar badge de ganador)
+                    const esGanador = item.querySelector('span:has(span.material-symbols-outlined)')?.textContent.includes('Ganador') || false;
+                    
+                    // Extraer fecha de compra
+                    const fechaCompraText = item.querySelector('p.text-white.text-sm.font-medium')?.textContent || '';
+                    let fechaCompra = new Date();
+                    if (fechaStr) {
+                        fechaCompra = new Date(fechaStr);
+                    } else if (fechaCompraText) {
+                        // Intentar parsear fecha en formato "d M, Y" (ej: "15 Jan, 2024")
+                        const fechaParsed = new Date(fechaCompraText);
+                        if (!isNaN(fechaParsed.getTime())) {
+                            fechaCompra = fechaParsed;
+                        }
+                    }
+                    
+                    return {
+                        id: idSorteo,
+                        id_sorteo: idSorteo,
+                        nombre: titulo,
+                        titulo: titulo,
+                        imagen_url: imagenUrl,
+                        estado: estado.toLowerCase(),
+                        estado_sorteo: estado,
+                        estado_pago: estadoPago.toLowerCase(),
+                        estado_pago_transaccion: estadoPago,
+                        boletosComprados: boletosComprados,
+                        boletos_comprados: boletosComprados,
+                        precioBoleto: precioBoleto,
+                        precio_boleto: precioBoleto,
+                        totalInvertido: totalPagado,
+                        total_pagado: totalPagado,
+                        esGanador: esGanador,
+                        fechaCompra: fechaCompra.toISOString(),
+                        fecha_ultima_compra: fechaCompra.toISOString(),
+                        fechaFin: fechaCompra.toISOString() // Para compatibilidad con filtros
+                    };
+                });
+                
+                // Ordenar por fecha más reciente primero (ya viene ordenado del servidor, pero por si acaso)
+                historialState.sorteos.sort((a, b) => new Date(b.fechaCompra) - new Date(a.fechaCompra));
+                
+                console.log('Historial cargado desde DOM:', historialState.sorteos.length, 'sorteos');
+                
             } catch (error) {
-                console.error('Error al cargar historial:', error);
-                historialState.sorteos = generateSampleHistorialData();
+                console.error('Error al cargar historial desde DOM:', error);
+                historialState.sorteos = [];
             }
             
             // Aplicar filtros iniciales
             applyFilters();
-        }
-        
-        /**
-         * Genera datos de ejemplo para el historial
-         */
-        function generateSampleHistorialData() {
-            const estados = ['activo', 'finalizado', 'cancelado'];
-            const nombres = [
-                'Sorteo Navideño 2024',
-                'Gran Sorteo de Verano',
-                'Sorteo Aniversario',
-                'Sorteo de Fin de Año',
-                'Sorteo Especial Primavera',
-                'Sorteo Mega Millones',
-                'Sorteo Semanal',
-                'Sorteo del Día de la Madre',
-                'Sorteo de San Valentín',
-                'Sorteo de Cumpleaños'
-            ];
-            
-            const sorteos = [];
-            const fechaActual = new Date();
-            
-            for (let i = 0; i < 25; i++) {
-                const fechaSorteo = new Date(fechaActual);
-                fechaSorteo.setDate(fechaSorteo.getDate() - Math.floor(Math.random() * 365));
-                
-                const estado = estados[Math.floor(Math.random() * estados.length)];
-                const boletosComprados = Math.floor(Math.random() * 50) + 1;
-                const precioBoleto = Math.floor(Math.random() * 50) + 10;
-                const totalInvertido = boletosComprados * precioBoleto;
-                const esGanador = Math.random() > 0.7 && estado === 'finalizado';
-                
-                sorteos.push({
-                    id: i + 1,
-                    nombre: nombres[Math.floor(Math.random() * nombres.length)] + ' #' + (i + 1),
-                    fechaInicio: new Date(fechaSorteo.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    fechaFin: fechaSorteo.toISOString(),
-                    estado: estado,
-                    boletosComprados: boletosComprados,
-                    precioBoleto: precioBoleto,
-                    totalInvertido: totalInvertido,
-                    esGanador: esGanador,
-                    premio: esGanador ? Math.floor(Math.random() * 10000) + 1000 : 0,
-                    numeroGanador: esGanador ? Math.floor(Math.random() * 10000) + 1 : null
-                });
-            }
-            
-            // Ordenar por fecha más reciente primero
-            return sorteos.sort((a, b) => new Date(b.fechaFin) - new Date(a.fechaFin));
         }
         
         /**
@@ -2862,16 +3041,18 @@
             // Filtro de búsqueda
             if (historialState.filters.search.trim()) {
                 const searchTerm = historialState.filters.search.toLowerCase();
-                filtered = filtered.filter(sorteo => 
-                    sorteo.nombre.toLowerCase().includes(searchTerm)
-                );
+                filtered = filtered.filter(sorteo => {
+                    const nombre = (sorteo.nombre || sorteo.titulo || '').toLowerCase();
+                    return nombre.includes(searchTerm);
+                });
             }
             
             // Filtro de estado
             if (historialState.filters.estado !== 'todos') {
-                filtered = filtered.filter(sorteo => 
-                    sorteo.estado === historialState.filters.estado
-                );
+                filtered = filtered.filter(sorteo => {
+                    const estadoSorteo = (sorteo.estado || sorteo.estado_sorteo || '').toLowerCase();
+                    return estadoSorteo === historialState.filters.estado.toLowerCase();
+                });
             }
             
             // Filtro de fecha
@@ -2892,7 +3073,7 @@
                 }
                 
                 filtered = filtered.filter(sorteo => {
-                    const fechaSorteo = new Date(sorteo.fechaFin);
+                    const fechaSorteo = new Date(sorteo.fechaCompra || sorteo.fecha_ultima_compra || sorteo.fechaFin);
                     return fechaSorteo >= fechaLimite;
                 });
             }
@@ -2910,15 +3091,40 @@
          */
         function renderHistorial() {
             // Ocultar loading y empty por defecto
-            elementos.loading.classList.add('hidden');
-            elementos.empty.classList.add('hidden');
-            elementos.list.innerHTML = '';
+            if (elementos.loading) elementos.loading.classList.add('hidden');
+            if (elementos.empty) elementos.empty.classList.add('hidden');
             
             const totalItems = historialState.filteredSorteos.length;
             
+            // Verificar si hay filtros activos
+            const hayFiltros = historialState.filters.search.trim() || 
+                               historialState.filters.estado !== 'todos' || 
+                               historialState.filters.fecha !== 'todos';
+            
+            // Si no hay filtros y hay datos originales, mantener el HTML original
+            if (!hayFiltros && historialState.sorteos.length > 0) {
+                // Mostrar todos los elementos originales
+                const originalItems = elementos.list.querySelectorAll('.historial-item');
+                originalItems.forEach(item => {
+                    item.style.display = '';
+                });
+                
+                // Ocultar paginación si no es necesaria
+                if (historialState.sorteos.length <= historialState.itemsPerPage) {
+                    if (elementos.pagination) elementos.pagination.classList.add('hidden');
+                } else {
+                    if (elementos.pagination) elementos.pagination.classList.remove('hidden');
+                    updatePagination();
+                }
+                return;
+            }
+            
+            // Si hay filtros o no hay datos, renderizar dinámicamente
+            elementos.list.innerHTML = '';
+            
             if (totalItems === 0) {
-                elementos.empty.classList.remove('hidden');
-                elementos.pagination.classList.add('hidden');
+                if (elementos.empty) elementos.empty.classList.remove('hidden');
+                if (elementos.pagination) elementos.pagination.classList.add('hidden');
                 return;
             }
             
@@ -2933,83 +3139,89 @@
                 elementos.list.appendChild(card);
             });
             
-            elementos.pagination.classList.remove('hidden');
+            if (elementos.pagination) elementos.pagination.classList.remove('hidden');
         }
         
         /**
-         * Crea una tarjeta de sorteo para el historial
+         * Crea una tarjeta de sorteo para el historial (usando datos reales)
          */
         function createSorteoCard(sorteo) {
             const card = document.createElement('div');
-            card.className = 'bg-[#151a23] rounded-lg p-5 border border-[#282d39] hover:border-primary/50 transition-all';
+            card.className = 'historial-item bg-[#151a23] rounded-lg p-4 border border-[#282d39] hover:border-primary/50 transition-colors';
+            card.setAttribute('data-sorteo-id', sorteo.id || sorteo.id_sorteo || '');
+            card.setAttribute('data-titulo', sorteo.nombre || sorteo.titulo || '');
+            card.setAttribute('data-estado', (sorteo.estado || sorteo.estado_sorteo || '').toLowerCase());
             
-            const fechaFin = new Date(sorteo.fechaFin);
-            const fechaFormateada = fechaFin.toLocaleDateString('es-ES', {
+            const fechaCompra = new Date(sorteo.fechaCompra || sorteo.fecha_ultima_compra || sorteo.fechaFin);
+            const fechaFormateada = fechaCompra.toLocaleDateString('es-ES', {
                 year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric'
             });
             
+            const estadoSorteo = (sorteo.estado || sorteo.estado_sorteo || 'finalizado').toLowerCase();
             const estadoConfig = {
                 'activo': { color: 'text-green-500', bg: 'bg-green-500/10', label: 'Activo', icon: 'schedule' },
                 'finalizado': { color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Finalizado', icon: 'check_circle' },
+                'pausado': { color: 'text-yellow-500', bg: 'bg-yellow-500/10', label: 'Pausado', icon: 'pause_circle' },
                 'cancelado': { color: 'text-red-500', bg: 'bg-red-500/10', label: 'Cancelado', icon: 'cancel' }
             };
             
-            const estado = estadoConfig[sorteo.estado] || estadoConfig.finalizado;
+            const estado = estadoConfig[estadoSorteo] || estadoConfig.finalizado;
+            
+            const boletosComprados = sorteo.boletosComprados || sorteo.boletos_comprados || 0;
+            const precioBoleto = sorteo.precioBoleto || sorteo.precio_boleto || 0;
+            const totalPagado = sorteo.totalInvertido || sorteo.total_pagado || 0;
+            const imagenUrl = sorteo.imagen_url || 'https://via.placeholder.com/300x200?text=Sorteo';
+            const esGanador = sorteo.esGanador || false;
+            const idSorteo = sorteo.id || sorteo.id_sorteo || '';
             
             card.innerHTML = `
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div class="flex-1">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex-1">
-                                <h4 class="text-white font-bold text-lg mb-1">${sorteo.nombre}</h4>
-                                <p class="text-text-secondary text-sm flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[16px]">calendar_today</span>
-                                    ${fechaFormateada}
-                                </p>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-medium ${estado.color} ${estado.bg} flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">${estado.icon}</span>
-                                ${estado.label}
-                            </span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                            <div>
-                                <p class="text-text-secondary text-xs mb-1">Boletos</p>
-                                <p class="text-white font-semibold">${sorteo.boletosComprados}</p>
-                            </div>
-                            <div>
-                                <p class="text-text-secondary text-xs mb-1">Precio/Boleto</p>
-                                <p class="text-white font-semibold">$${sorteo.precioBoleto}</p>
-                            </div>
-                            <div>
-                                <p class="text-text-secondary text-xs mb-1">Total Invertido</p>
-                                <p class="text-white font-semibold">$${sorteo.totalInvertido.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p class="text-text-secondary text-xs mb-1">Estado</p>
-                                <p class="text-white font-semibold">${estado.label}</p>
-                            </div>
-                        </div>
-                        ${sorteo.esGanador ? `
-                        <div class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="material-symbols-outlined text-yellow-500">emoji_events</span>
-                                <p class="text-yellow-500 font-bold">¡Felicidades! Has ganado este sorteo</p>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-text-secondary text-xs">Número Ganador</p>
-                                    <p class="text-white font-bold text-lg">#${sorteo.numeroGanador}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-text-secondary text-xs">Premio</p>
-                                    <p class="text-yellow-500 font-bold text-lg">$${sorteo.premio.toLocaleString()}</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <!-- Imagen del sorteo -->
+                    <div class="flex-shrink-0">
+                        <div class="w-full sm:w-24 h-24 rounded-lg bg-gray-700 bg-cover bg-center" style="background-image: url('${imagenUrl}');" onerror="this.style.backgroundImage='url(\\'https://via.placeholder.com/300x200?text=Sorteo\\')'"></div>
+                    </div>
+                    <!-- Información del sorteo -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-white font-semibold text-base mb-1 truncate">${sorteo.nombre || sorteo.titulo || 'Sorteo'}</h4>
+                                <div class="flex flex-wrap items-center gap-2 text-sm">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${estado.color} ${estado.bg}">
+                                        ${estado.label}
+                                    </span>
+                                    ${esGanador ? `
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-500">
+                                        <span class="material-symbols-outlined text-xs">emoji_events</span>
+                                        Ganador
+                                    </span>
+                                    ` : ''}
                                 </div>
                             </div>
+                            <div class="flex-shrink-0 text-left sm:text-right">
+                                <p class="text-text-secondary text-xs mb-1">Fecha de compra</p>
+                                <p class="text-white text-sm font-medium">${fechaFormateada}</p>
+                            </div>
                         </div>
-                        ` : ''}
+                        <!-- Detalles de boletos y pago -->
+                        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-[#282d39]">
+                            <div>
+                                <p class="text-text-secondary text-xs mb-1">Boletos comprados</p>
+                                <p class="text-white font-semibold">${boletosComprados} ${boletosComprados === 1 ? 'boleto' : 'boletos'}</p>
+                            </div>
+                            <div>
+                                <p class="text-text-secondary text-xs mb-1">Total pagado</p>
+                                <p class="text-white font-semibold">$${totalPagado.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Acciones -->
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <a href="SorteoClienteDetalles.php?id=${idSorteo}" class="px-4 py-2 bg-primary hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Ver Detalles
+                        </a>
                     </div>
                 </div>
             `;
@@ -3018,20 +3230,33 @@
         }
         
         /**
-         * Actualiza las estadísticas
+         * Actualiza las estadísticas (solo si hay filtros aplicados, sino usa las del servidor)
          */
         function updateStats() {
             const sorteos = historialState.filteredSorteos;
             
-            const totalSorteos = sorteos.length;
-            const totalBoletos = sorteos.reduce((sum, s) => sum + s.boletosComprados, 0);
-            const sorteosGanados = sorteos.filter(s => s.esGanador).length;
-            const totalInvertido = sorteos.reduce((sum, s) => sum + s.totalInvertido, 0);
+            // Solo actualizar si hay filtros activos, sino mantener las estadísticas del servidor
+            const hayFiltros = historialState.filters.search.trim() || 
+                               historialState.filters.estado !== 'todos' || 
+                               historialState.filters.fecha !== 'todos';
             
-            if (elementos.stats.total) elementos.stats.total.textContent = totalSorteos;
-            if (elementos.stats.boletos) elementos.stats.boletos.textContent = totalBoletos;
-            if (elementos.stats.ganados) elementos.stats.ganados.textContent = sorteosGanados;
-            if (elementos.stats.invertido) elementos.stats.invertido.textContent = '$' + totalInvertido.toLocaleString();
+            if (hayFiltros) {
+                const totalSorteos = sorteos.length;
+                const totalBoletos = sorteos.reduce((sum, s) => sum + (s.boletosComprados || s.boletos_comprados || 0), 0);
+                const sorteosGanados = sorteos.filter(s => s.esGanador).length;
+                const totalInvertido = sorteos.reduce((sum, s) => sum + (s.totalInvertido || s.total_pagado || 0), 0);
+                
+                if (elementos.stats.total) elementos.stats.total.textContent = totalSorteos;
+                if (elementos.stats.boletos) elementos.stats.boletos.textContent = totalBoletos;
+                if (elementos.stats.ganados) elementos.stats.ganados.textContent = sorteosGanados;
+                if (elementos.stats.invertido) {
+                    elementos.stats.invertido.textContent = '$' + totalInvertido.toLocaleString('es-ES', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    });
+                }
+            }
+            // Si no hay filtros, las estadísticas del servidor ya están correctas en el HTML
         }
         
         /**

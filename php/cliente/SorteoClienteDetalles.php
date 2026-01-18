@@ -440,19 +440,9 @@ En caso de cualquier disputa o pregunta sobre el proceso, puedes contactarnos a 
 </div>
 <!-- Price & Action -->
 <div class="pt-6 border-t border-[#282d39]">
-<div class="flex items-baseline justify-between mb-4">
+<div class="flex items-baseline justify-between mb-6">
 <span class="text-text-secondary text-sm">Precio por boleto</span>
 <span id="precio-boleto" class="text-3xl font-black text-white">$50.00 <span class="text-sm font-normal text-text-secondary">MXN</span></span>
-</div>
-<!-- Ticket Selector -->
-<div class="flex items-center justify-between bg-[#111318] rounded-lg p-1 mb-4 border border-[#282d39]">
-<button class="size-10 flex items-center justify-center rounded-md hover:bg-[#353b4b] text-white transition-colors">
-<span class="material-symbols-outlined">remove</span>
-</button>
-<input class="w-12 bg-transparent text-center border-none focus:ring-0 text-white font-bold" max="100" min="1" type="number" value="1"/>
-<button class="size-10 flex items-center justify-center rounded-md hover:bg-[#353b4b] text-white transition-colors">
-<span class="material-symbols-outlined">add</span>
-</button>
 </div>
 <a href="SeleccionBoletos.php" id="btn-seleccionar" onclick="return saveCurrentSorteo()" class="w-full bg-primary hover:bg-blue-600 text-white font-bold text-lg py-4 px-6 rounded-xl shadow-lg shadow-primary/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
 <span>Seleccionar Boletos</span>
@@ -460,6 +450,9 @@ En caso de cualquier disputa o pregunta sobre el proceso, puedes contactarnos a 
 </a>
 <p class="text-center mt-4 text-xs text-text-secondary flex items-center justify-center gap-1">
 <span class="material-symbols-outlined text-[14px]">lock</span> Pago 100% Seguro
+                            </p>
+<p class="text-center mt-2 text-xs text-text-secondary">
+<span class="material-symbols-outlined text-[14px] align-middle">info</span> Selecciona la cantidad de boletos en la siguiente página
                             </p>
 </div>
 </div>
@@ -680,9 +673,8 @@ function renderSorteoDetails(sorteo) {
         descParagraphs[0].textContent = descripcion;
     }
     
-    // Actualizar precio por boleto en el selector de cantidad
+    // Guardar precio por boleto para uso en otras páginas
     window.currentTicketPrice = parseFloat(sorteo.precio_boleto) || 0;
-    updateTotalPrice();
     
     // Renderizar características dinámicamente
     console.log('Características recibidas de la API:', sorteo.caracteristicas);
@@ -949,56 +941,6 @@ window.saveSorteoData = function(sorteoData) {
 
 // Función para inicializar funcionalidades de botones en detalles del sorteo
 function initSorteoDetailsButtons() {
-    // Botones de cantidad (+ y -)
-    const quantityInput = document.querySelector('input[type="number"]');
-    const decreaseBtn = Array.from(document.querySelectorAll('button')).find(btn => 
-        btn.querySelector('.material-symbols-outlined')?.textContent === 'remove'
-    );
-    const increaseBtn = Array.from(document.querySelectorAll('button')).find(btn => 
-        btn.querySelector('.material-symbols-outlined')?.textContent === 'add'
-    );
-    
-    if (quantityInput && decreaseBtn && increaseBtn) {
-        // Botón disminuir cantidad
-        decreaseBtn.addEventListener('click', function() {
-            let currentValue = parseInt(quantityInput.value) || 1;
-            if (currentValue > 1) {
-                currentValue--;
-                quantityInput.value = currentValue;
-                updateTotalPrice();
-            }
-        });
-        
-        // Botón aumentar cantidad
-        increaseBtn.addEventListener('click', function() {
-            let currentValue = parseInt(quantityInput.value) || 1;
-            const maxValue = parseInt(quantityInput.max) || 100;
-            if (currentValue < maxValue) {
-                currentValue++;
-                quantityInput.value = currentValue;
-                updateTotalPrice();
-            }
-        });
-        
-        // Validar input manual
-        quantityInput.addEventListener('change', function() {
-            let value = parseInt(this.value) || 1;
-            const min = parseInt(this.min) || 1;
-            const max = parseInt(this.max) || 100;
-            
-            if (value < min) value = min;
-            if (value > max) value = max;
-            
-            this.value = value;
-            updateTotalPrice();
-        });
-        
-        // Actualizar precio total cuando cambia la cantidad
-        quantityInput.addEventListener('input', function() {
-            updateTotalPrice();
-        });
-    }
-    
     // Botón "Seleccionar Boletos"
     const selectBtn = document.getElementById('btn-seleccionar');
     if (selectBtn) {
@@ -1011,41 +953,9 @@ function initSorteoDetailsButtons() {
     }
 }
 
-// Función para actualizar el precio total en la página de detalles
-function updateTotalPrice() {
-    const quantityInput = document.querySelector('input[type="number"]');
-    
-    if (quantityInput) {
-        const quantity = parseInt(quantityInput.value) || 1;
-        // Usar el precio del sorteo cargado desde la API (almacenado en window.currentTicketPrice)
-        const precioUnitario = window.currentTicketPrice || 0;
-        const total = precioUnitario * quantity;
-        
-        // Guardar cantidad en localStorage
-        const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-        sorteoData.cantidadBoletos = quantity;
-        sorteoData.totalPrecio = total;
-        localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
-        
-        // Actualizar el texto del botón si existe un elemento para mostrar el total
-        const btnSeleccionar = document.getElementById('btn-seleccionar');
-        if (btnSeleccionar && total > 0) {
-            // Mantener el texto original pero podemos agregar el total si es necesario
-            // btnSeleccionar.querySelector('span:first-child').textContent = `Seleccionar Boletos ($${total.toFixed(2)})`;
-        }
-    }
-}
-
 // Función para guardar el sorteo actual antes de ir a SeleccionBoletos
 function saveCurrentSorteo() {
     const sorteoData = JSON.parse(localStorage.getItem('selectedSorteo')) || getDefaultSorteoData();
-    
-    // Guardar cantidad de boletos seleccionada
-    const quantityInput = document.querySelector('input[type="number"]');
-    if (quantityInput) {
-        sorteoData.cantidadBoletos = parseInt(quantityInput.value) || 1;
-    }
-    
     localStorage.setItem('selectedSorteo', JSON.stringify(sorteoData));
     return true;
 }

@@ -266,6 +266,31 @@ Selecciona la cantidad de boletos que deseas comprar. Los números se asignarán
 </div>
 </div>
 
+<!-- Sección de Boletos Asignados (se muestra después de asignar) -->
+<div id="assigned-tickets-section" class="mb-8" style="display: none;">
+<div class="bg-gradient-to-br from-emerald-500/10 via-primary/5 to-emerald-500/10 rounded-2xl border-2 border-emerald-500/30 p-6 md:p-8 shadow-xl">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-emerald-400 text-3xl">check_circle</span>
+<h2 class="text-2xl md:text-3xl font-bold text-white">¡Boletos Asignados Exitosamente!</h2>
+</div>
+<p class="text-text-secondary mb-6">Estos son los boletos que se te han asignado aleatoriamente:</p>
+<div id="assigned-tickets-display" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+<!-- Los boletos asignados se mostrarán aquí -->
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-emerald-500/20">
+<div>
+<p class="text-sm text-text-secondary mb-1">Total a pagar</p>
+<p id="assigned-total-price" class="text-3xl font-bold text-white">$0.00</p>
+</div>
+<div class="flex items-center gap-3 text-red-400 bg-red-500/10 px-4 py-2 rounded-lg border border-red-500/20">
+<span class="material-symbols-outlined text-[20px] animate-pulse">timer</span>
+<span class="text-sm font-semibold">Tiempo restante:</span>
+<span id="assigned-reservation-timer" class="font-mono font-bold text-lg">14:59</span>
+</div>
+</div>
+</div>
+</div>
+
 <!-- Selector de Cantidad de Boletos -->
 <div class="sticky top-20 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6 bg-[#111318] border-y border-[#282d39] shadow-lg mb-8">
 <div class="max-w-4xl mx-auto">
@@ -273,6 +298,20 @@ Selecciona la cantidad de boletos que deseas comprar. Los números se asignarán
 <div class="text-center mb-6">
 <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Selecciona tu cantidad</h2>
 <p class="text-text-secondary">Los boletos se asignarán automáticamente de forma aleatoria</p>
+</div>
+<!-- Mensaje de estado (boletos ya asignados) -->
+<div id="existing-tickets-alert" class="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg" style="display: none;">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-400">info</span>
+<div class="flex-1">
+<p class="text-sm text-white font-semibold">Ya tienes boletos asignados</p>
+<p id="existing-tickets-info" class="text-xs text-text-secondary">Puedes asignar más boletos hasta completar 10 en total</p>
+</div>
+</div>
+</div>
+<!-- Mensaje de validación -->
+<div id="validation-message" class="mb-4 p-4 rounded-lg" style="display: none;">
+<p id="validation-text" class="text-sm"></p>
 </div>
 <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
 <!-- Selector de Cantidad -->
@@ -374,9 +413,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Variable global para almacenar el ID del sorteo
+// ============================================
+// VARIABLES GLOBALES CONSOLIDADAS
+// ============================================
 let currentSorteoId = null;
 let currentSorteoData = null;
+let assignedTickets = [];
+const activeCountdownIntervals = new Map();
 
 // Función para cargar los datos del sorteo desde la API
 async function loadSorteoData() {
@@ -495,8 +538,6 @@ async function loadTicketStats() {
 // NUEVAS FUNCIONES PARA ASIGNACIÓN AUTOMÁTICA
 // ============================================
 
-// Variable global para almacenar boletos asignados
-let assignedTickets = [];
 
 // Inicializar funcionalidad de asignación automática
 function initTicketAssignment() {
@@ -559,6 +600,7 @@ function initTicketAssignment() {
         if (value > 10) value = 10;
         this.value = value;
         updateButtonsState();
+        hideValidationMessage(); // Ocultar mensaje al cambiar cantidad
     });
     
     cantidadInput.addEventListener('change', function() {
@@ -567,6 +609,7 @@ function initTicketAssignment() {
         if (value > 10) value = 10;
         this.value = value;
         updateButtonsState();
+        hideValidationMessage(); // Ocultar mensaje al cambiar cantidad
     });
     
     updateButtonsState();
@@ -612,21 +655,13 @@ async function handleAssignTickets() {
     
     if (!cantidadInput) {
         console.error('Error: No se encontró el input de cantidad');
-        if (typeof customAlert === 'function') {
-            customAlert('Error: No se encontró el campo de cantidad. Por favor, recarga la página.', 'Error', 'error');
-        } else {
-            alert('Error: No se encontró el campo de cantidad. Por favor, recarga la página.');
-        }
+        showError('Error: No se encontró el campo de cantidad. Por favor, recarga la página.');
         return;
     }
     
     if (!currentSorteoId) {
         console.error('Error: No hay ID de sorteo disponible');
-        if (typeof customAlert === 'function') {
-            customAlert('Error: No se encontró información del sorteo. Por favor, selecciona un sorteo primero.', 'Error', 'error');
-        } else {
-            alert('Error: No se encontró información del sorteo. Por favor, selecciona un sorteo primero.');
-        }
+        showError('Error: No se encontró información del sorteo. Por favor, selecciona un sorteo primero.');
         return;
     }
     
@@ -634,12 +669,14 @@ async function handleAssignTickets() {
     console.log('Cantidad a asignar:', cantidad);
     
     if (cantidad < 1 || cantidad > 10) {
-        if (typeof customAlert === 'function') {
-            customAlert('La cantidad debe estar entre 1 y 10 boletos.', 'Cantidad Inválida', 'warning');
-        } else {
-            alert('La cantidad debe estar entre 1 y 10 boletos.');
-        }
+        showValidationMessage('La cantidad debe estar entre 1 y 10 boletos.', 'warning');
         return;
+    }
+    
+    // Validación previa de disponibilidad
+    const disponible = await checkAvailabilityBeforeAssign(cantidad);
+    if (!disponible) {
+        return; // El mensaje ya se mostró en checkAvailabilityBeforeAssign
     }
     
     // Deshabilitar botón mientras se procesa
@@ -708,6 +745,12 @@ async function handleAssignTickets() {
                 startReservationTimerWithSeconds(data.data.tiempo_expiracion);
             }
             
+            // Ocultar mensaje de validación si existe
+            hideValidationMessage();
+            
+            // Actualizar información de boletos existentes
+            await updateExistingTicketsInfo();
+            
             if (typeof customAlert === 'function') {
                 customAlert(`¡${cantidad} boleto(s) asignado(s) exitosamente!`, 'Boletos Asignados', 'success');
             } else {
@@ -733,21 +776,55 @@ async function handleAssignTickets() {
     }
 }
 
-// Mostrar boletos asignados en la UI (solo en el footer sticky)
+// Mostrar boletos asignados en la UI (sección destacada y footer sticky)
 function displayAssignedTickets(data) {
-    const stickyFooter = document.getElementById('sticky-footer');
-    const selectedContainer = document.querySelector('#selected-tickets-container');
-    const totalPagar = document.getElementById('total-pagar');
-    
     const boletos = data.boletos_asignados || [];
     const numeros = data.numeros_boletos || [];
     
     if (boletos.length === 0) {
+        // Ocultar sección destacada
+        const assignedSection = document.getElementById('assigned-tickets-section');
+        if (assignedSection) assignedSection.style.display = 'none';
+        
+        // Ocultar footer sticky
+        const stickyFooter = document.getElementById('sticky-footer');
         if (stickyFooter) stickyFooter.style.display = 'none';
         return;
     }
     
-    // Mostrar footer sticky
+    // Mostrar sección destacada
+    const assignedSection = document.getElementById('assigned-tickets-section');
+    const assignedDisplay = document.getElementById('assigned-tickets-display');
+    const assignedTotalPrice = document.getElementById('assigned-total-price');
+    
+    if (assignedSection) {
+        assignedSection.style.display = 'block';
+        // Scroll suave a la sección
+        setTimeout(() => {
+            assignedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+    
+    // Mostrar boletos en la sección destacada
+    if (assignedDisplay) {
+        assignedDisplay.innerHTML = numeros.map(num => 
+            `<div class="bg-primary/20 border-2 border-primary/40 rounded-xl p-4 text-center transform hover:scale-105 transition-transform">
+                <p class="text-xs text-text-secondary mb-1">Boleto</p>
+                <p class="text-2xl font-black text-primary">#${num}</p>
+            </div>`
+        ).join('');
+    }
+    
+    // Actualizar precio total en la sección destacada
+    if (assignedTotalPrice) {
+        assignedTotalPrice.textContent = `$${data.precio_total.toFixed(2)}`;
+    }
+    
+    // Mostrar footer sticky también
+    const stickyFooter = document.getElementById('sticky-footer');
+    const selectedContainer = document.querySelector('#selected-tickets-container');
+    const totalPagar = document.getElementById('total-pagar');
+    
     if (stickyFooter) {
         stickyFooter.style.display = 'flex';
     }
@@ -767,6 +844,9 @@ function displayAssignedTickets(data) {
     // Guardar en localStorage para FinalizarPagoBoletos.php
     localStorage.setItem('selectedTickets', JSON.stringify(boletos));
     localStorage.setItem('assignedTicketsData', JSON.stringify(data));
+    
+    // Actualizar información de boletos existentes
+    updateExistingTicketsInfo();
 }
 
 // Verificar boletos ya asignados del usuario
@@ -801,273 +881,17 @@ async function checkMyAssignedTickets() {
                 startReservationTimerWithSeconds(reservaActiva.tiempo_restante);
             }
         }
+        
+        // Actualizar información de boletos existentes
+        await updateExistingTicketsInfo();
     } catch (error) {
         console.error('Error al verificar boletos asignados:', error);
     }
 }
 
 // ============================================
-// FUNCIONES OBSOLETAS (MANTENIDAS POR COMPATIBILIDAD)
+// FUNCIONES DE UTILIDAD
 // ============================================
-
-// Función para renderizar los boletos dinámicamente (OBSOLETA - ya no se usa)
-function renderTickets(boletosData) {
-    const gridEl = document.getElementById('tickets-grid');
-    const loadingEl = document.getElementById('tickets-loading');
-    
-    if (!gridEl) {
-        console.error('Contenedor de boletos no encontrado');
-        return;
-    }
-    
-    // Ocultar mensaje de carga
-    if (loadingEl) {
-        loadingEl.style.display = 'none';
-    }
-    
-    // Limpiar el grid
-    gridEl.innerHTML = '';
-    
-    if (!boletosData) {
-        console.error('No hay datos de boletos para renderizar');
-        gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">No se recibieron datos de boletos.</p></div>';
-        return;
-    }
-    
-    const { total_boletos, disponibles, reservados, vendidos } = boletosData;
-    
-    if (!total_boletos || total_boletos <= 0) {
-        console.error('Total de boletos inválido:', total_boletos);
-        gridEl.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-text-secondary text-lg">No hay boletos disponibles para este sorteo.</p></div>';
-        return;
-    }
-    
-    // Crear un mapa de todos los boletos
-    const allTickets = new Map();
-    
-    // Agregar boletos disponibles
-    disponibles.forEach(boleto => {
-        allTickets.set(parseInt(boleto.numero_boleto), {
-            ...boleto,
-            estado: 'Disponible'
-        });
-    });
-    
-    // Agregar boletos reservados
-    reservados.forEach(boleto => {
-        allTickets.set(parseInt(boleto.numero_boleto), {
-            ...boleto,
-            estado: 'Reservado'
-        });
-    });
-    
-    // Agregar boletos vendidos
-    vendidos.forEach(boleto => {
-        allTickets.set(parseInt(boleto.numero_boleto), {
-            ...boleto,
-            estado: 'Vendido'
-        });
-    });
-    
-    // Generar todos los boletos del 1 al total_boletos
-    for (let i = 1; i <= total_boletos; i++) {
-        const numeroBoleto = String(i).padStart(4, '0');
-        const boleto = allTickets.get(i);
-        
-        const button = document.createElement('button');
-        button.className = 'h-12 rounded-lg transition-all duration-200 flex items-center justify-center relative';
-        button.dataset.numeroBoleto = numeroBoleto;
-        button.dataset.numeroBoletoInt = i;
-        
-        const span = document.createElement('span');
-        span.className = 'font-mono font-bold';
-        span.textContent = numeroBoleto;
-        button.appendChild(span);
-        
-        // Aplicar estilos según el estado
-        if (!boleto || boleto.estado === 'Disponible') {
-            button.className += ' group border border-emerald-500/30 bg-card-dark hover:bg-emerald-500/10 hover:border-emerald-500';
-            span.className += ' text-emerald-400 group-hover:scale-110 transition-transform';
-            button.disabled = false;
-            button.dataset.estado = 'disponible';
-            button.addEventListener('click', () => toggleTicketSelection(i, button));
-        } else if (boleto.estado === 'Reservado') {
-            // Verificar si está reservado por el usuario actual (esto se verificará después)
-            button.className += ' border border-yellow-700/30 bg-yellow-900/10 opacity-80';
-            span.className += ' text-yellow-600 relative z-10';
-            button.dataset.estado = 'reservado';
-            const lockIcon = document.createElement('span');
-            lockIcon.className = 'material-symbols-outlined text-yellow-600 text-lg absolute opacity-20';
-            lockIcon.textContent = 'lock';
-            button.appendChild(lockIcon);
-            button.disabled = true;
-        } else if (boleto.estado === 'Vendido') {
-            button.className += ' border border-red-900/30 bg-red-900/10 opacity-60';
-            span.className += ' text-red-700 decoration-red-500/50 line-through';
-            button.dataset.estado = 'vendido';
-            button.disabled = true;
-        }
-        
-        gridEl.appendChild(button);
-    }
-    
-    console.log(`✅ Renderizados ${total_boletos} boletos: ${disponibles.length} disponibles, ${reservados.length} reservados, ${vendidos.length} vendidos`);
-    
-    // Reinicializar la funcionalidad de selección
-    initTicketSelection();
-    
-    // Restaurar boletos previamente seleccionados
-    const savedTickets = JSON.parse(localStorage.getItem('selectedTickets') || '[]');
-    if (savedTickets.length > 0) {
-        savedTickets.forEach(num => {
-            const button = document.querySelector(`button[data-numero-boleto-int="${num}"]`);
-            if (button && !button.disabled) {
-                toggleTicketSelection(num, button);
-            }
-        });
-    }
-}
-
-// Función para verificar reservas activas del usuario
-async function checkUserReservations() {
-    if (!currentSorteoId) return;
-    
-    try {
-        const response = await fetch(`api_boletos.php?action=check_reservation&id_sorteo=${currentSorteoId}`);
-        const text = await response.text();
-        const data = JSON.parse(text);
-        
-        if (data.success && data.data && data.data.reservas_activas && data.data.reservas_activas.length > 0) {
-            // Marcar boletos reservados por el usuario como seleccionados
-            data.data.reservas_activas.forEach(reserva => {
-                const numeroBoleto = parseInt(reserva.numero_boleto);
-                selectedTickets.add(numeroBoleto);
-                
-                const button = document.querySelector(`button[data-numero-boleto-int="${numeroBoleto}"]`);
-                if (button && !button.disabled) {
-                    markTicketAsSelected(button);
-                }
-            });
-            
-            updateSelectedTicketsDisplay();
-            updateTotalPrice();
-            
-            // Actualizar el timer de reserva basado en la reserva más antigua
-            const oldestReservation = data.data.reservas_activas.reduce((oldest, current) => {
-                const oldestTime = new Date(oldest.fecha_reserva).getTime();
-                const currentTime = new Date(current.fecha_reserva).getTime();
-                return currentTime < oldestTime ? current : oldest;
-            });
-            
-            const reservationTime = new Date(oldestReservation.fecha_reserva).getTime();
-            const now = new Date().getTime();
-            const elapsed = Math.floor((now - reservationTime) / 1000);
-            const remaining = 900 - elapsed; // 15 minutos = 900 segundos
-            
-            if (remaining > 0) {
-                // Reiniciar el timer con el tiempo restante
-                startReservationTimerWithSeconds(remaining);
-            }
-        }
-    } catch (error) {
-        console.error('Error al verificar reservas:', error);
-    }
-}
-
-// Función para alternar selección de boleto
-function toggleTicketSelection(numeroBoleto, button) {
-    if (!button || button.disabled) return;
-    
-    if (selectedTickets.has(numeroBoleto)) {
-        selectedTickets.delete(numeroBoleto);
-        markTicketAsAvailable(button);
-    } else {
-        if (selectedTickets.size >= maxTickets) {
-            customAlert(`Solo puedes seleccionar hasta ${maxTickets} boletos a la vez.`, 'Límite alcanzado', 'warning');
-            return;
-        }
-        selectedTickets.add(numeroBoleto);
-        markTicketAsSelected(button);
-        
-        // Reservar el boleto automáticamente en el servidor
-        reserveTicketOnServer(numeroBoleto);
-    }
-    
-    updateSelectedTicketsDisplay();
-    updateTotalPrice();
-    
-    // Guardar en localStorage
-    const ticketsArray = Array.from(selectedTickets).sort((a, b) => a - b);
-    localStorage.setItem('selectedTickets', JSON.stringify(ticketsArray));
-}
-
-// Función para reservar un boleto en el servidor
-async function reserveTicketOnServer(numeroBoleto) {
-    if (!currentSorteoId) return;
-    
-    try {
-        const response = await fetch('api_boletos.php?action=reserve', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id_sorteo: currentSorteoId,
-                numeros_boletos: [numeroBoleto]
-            })
-        });
-        
-        const text = await response.text();
-        const data = JSON.parse(text);
-        
-        if (!data.success) {
-            console.error('Error al reservar boleto:', data.error);
-            // Remover del Set local si falló la reserva
-            selectedTickets.delete(numeroBoleto);
-            updateSelectedTicketsDisplay();
-            updateTotalPrice();
-            customAlert(`Error al reservar el boleto ${String(numeroBoleto).padStart(4, '0')}: ${data.error}`, 'Error de Reserva', 'error');
-        }
-    } catch (error) {
-        console.error('Error al reservar boleto:', error);
-    }
-}
-
-// Función para iniciar timer de reserva con segundos específicos
-function startReservationTimerWithSeconds(seconds) {
-    const timerElement = document.getElementById('reservation-timer');
-    if (!timerElement) return;
-    
-    if (activeCountdownIntervals.has('reservation-timer')) {
-        clearInterval(activeCountdownIntervals.get('reservation-timer'));
-        activeCountdownIntervals.delete('reservation-timer');
-    }
-    
-    let remainingSeconds = Math.max(0, seconds);
-    
-    function updateReservationTimer() {
-        if (remainingSeconds <= 0) {
-            timerElement.textContent = '00:00';
-            if (activeCountdownIntervals.has('reservation-timer')) {
-                clearInterval(activeCountdownIntervals.get('reservation-timer'));
-                activeCountdownIntervals.delete('reservation-timer');
-            }
-            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
-            window.location.href = 'ListadoSorteosActivos.php';
-            return;
-        }
-        
-        const minutes = Math.floor(remainingSeconds / 60);
-        const secs = remainingSeconds % 60;
-        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        
-        remainingSeconds--;
-    }
-    
-    updateReservationTimer();
-    const intervalId = setInterval(updateReservationTimer, 1000);
-    activeCountdownIntervals.set('reservation-timer', intervalId);
-}
 
 // Función para mostrar errores
 function showError(message) {
@@ -1079,19 +903,155 @@ function showError(message) {
     }
 }
 
-// Función para obtener datos por defecto
-function getDefaultSorteoData() {
-    return {
-        id: 'default',
-        titulo: 'Gran Sorteo Anual',
-        subtitulo: 'Automóvil 0km - Modelo 2024',
-        precio: 50.00,
-        tiempoRestante: { dias: 3, horas: 12, minutos: 45 }
-    };
+// Función para mostrar mensajes de validación
+function showValidationMessage(message, type = 'info') {
+    const validationEl = document.getElementById('validation-message');
+    const validationText = document.getElementById('validation-text');
+    
+    if (!validationEl || !validationText) return;
+    
+    validationEl.style.display = 'block';
+    validationText.textContent = message;
+    
+    // Aplicar estilos según el tipo
+    validationEl.className = 'mb-4 p-4 rounded-lg';
+    if (type === 'error') {
+        validationEl.classList.add('bg-red-500/10', 'border', 'border-red-500/30', 'text-red-400');
+    } else if (type === 'warning') {
+        validationEl.classList.add('bg-yellow-500/10', 'border', 'border-yellow-500/30', 'text-yellow-400');
+    } else {
+        validationEl.classList.add('bg-blue-500/10', 'border', 'border-blue-500/30', 'text-blue-400');
+    }
 }
 
-// Almacenar intervalos activos para poder limpiarlos si es necesario
-const activeCountdownIntervals = new Map();
+function hideValidationMessage() {
+    const validationEl = document.getElementById('validation-message');
+    if (validationEl) {
+        validationEl.style.display = 'none';
+    }
+}
+
+// Función para verificar disponibilidad antes de asignar
+async function checkAvailabilityBeforeAssign(cantidad) {
+    if (!currentSorteoId) return false;
+    
+    try {
+        const response = await fetch(`api_boletos.php?action=check_availability&id_sorteo=${currentSorteoId}&cantidad=${cantidad}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (!data.success) {
+            showValidationMessage(data.error || 'Error al verificar disponibilidad', 'error');
+            return false;
+        }
+        
+        if (!data.data.disponible) {
+            showValidationMessage(data.data.mensaje || 'No hay suficientes boletos disponibles', 'warning');
+            return false;
+        }
+        
+        hideValidationMessage();
+        return true;
+    } catch (error) {
+        console.error('Error al verificar disponibilidad:', error);
+        showValidationMessage('Error al verificar disponibilidad. Intenta de nuevo.', 'error');
+        return false;
+    }
+}
+
+// Función para actualizar información de boletos existentes
+async function updateExistingTicketsInfo() {
+    if (!currentSorteoId) return;
+    
+    try {
+        const response = await fetch(`api_boletos.php?action=get_my_assigned&id_sorteo=${currentSorteoId}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (data.success && data.data && data.data.boletos && data.data.boletos.length > 0) {
+            const boletos = data.data.boletos;
+            const totalAsignados = boletos.length;
+            const disponibles = 10 - totalAsignados;
+            
+            const alertEl = document.getElementById('existing-tickets-alert');
+            const infoEl = document.getElementById('existing-tickets-info');
+            
+            if (alertEl && infoEl) {
+                alertEl.style.display = 'block';
+                infoEl.textContent = `Tienes ${totalAsignados} boleto(s) asignado(s). Puedes asignar hasta ${disponibles} más.`;
+            }
+            
+            // Actualizar máximo del input
+            const cantidadInput = document.getElementById('cantidad-boletos');
+            if (cantidadInput) {
+                cantidadInput.max = disponibles;
+                if (parseInt(cantidadInput.value) > disponibles) {
+                    cantidadInput.value = disponibles;
+                }
+            }
+        } else {
+            const alertEl = document.getElementById('existing-tickets-alert');
+            if (alertEl) {
+                alertEl.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error al obtener boletos existentes:', error);
+    }
+}
+
+// ============================================
+// CÓDIGO OBSOLETO ELIMINADO
+// Todas las funciones de selección manual han sido eliminadas
+// ya que el sistema ahora usa asignación aleatoria automática
+// ============================================
+
+// Función para iniciar timer de reserva con segundos específicos
+function startReservationTimerWithSeconds(seconds) {
+    const timerElement = document.getElementById('reservation-timer');
+    const assignedTimerElement = document.getElementById('assigned-reservation-timer');
+    
+    const updateTimer = (element) => {
+        if (!element) return;
+        
+        if (activeCountdownIntervals.has('reservation-timer')) {
+            clearInterval(activeCountdownIntervals.get('reservation-timer'));
+            activeCountdownIntervals.delete('reservation-timer');
+        }
+        
+        let remainingSeconds = Math.max(0, seconds);
+        
+        function updateReservationTimer() {
+            if (remainingSeconds <= 0) {
+                element.textContent = '00:00';
+                if (activeCountdownIntervals.has('reservation-timer')) {
+                    clearInterval(activeCountdownIntervals.get('reservation-timer'));
+                    activeCountdownIntervals.delete('reservation-timer');
+                }
+                if (typeof customAlert === 'function') {
+                    customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
+                }
+                window.location.href = 'ListadoSorteosActivos.php';
+                return;
+            }
+            
+            const minutes = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            element.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            remainingSeconds--;
+        }
+        
+        updateReservationTimer();
+        const intervalId = setInterval(updateReservationTimer, 1000);
+        activeCountdownIntervals.set('reservation-timer', intervalId);
+    };
+    
+    if (timerElement) updateTimer(timerElement);
+    if (assignedTimerElement) updateTimer(assignedTimerElement);
+}
+
+
 
 // Función para inicializar el contador regresivo del sorteo (EXACTO COMO DashboardCliente)
 function initSorteoCountdown(tiempo) {
@@ -1168,338 +1128,6 @@ function updateTimer(tiempo) {
     }
 }
 
-// Timer de reserva (14:59 minutos) - EXACTO COMO DashboardCliente
-function startReservationTimer() {
-    const timerElement = document.getElementById('reservation-timer');
-    if (!timerElement) return;
-    
-    // Si ya existe un intervalo para este elemento, limpiarlo primero
-    if (activeCountdownIntervals.has('reservation-timer')) {
-        clearInterval(activeCountdownIntervals.get('reservation-timer'));
-        activeCountdownIntervals.delete('reservation-timer');
-    }
-    
-    // Tiempo inicial: 14 minutos y 59 segundos (variable local en closure, EXACTO COMO DashboardCliente)
-    let remainingSeconds = 14 * 60 + 59;
-    remainingSeconds = parseInt(remainingSeconds) || 0;
-    
-    // Función de actualización (EXACTO COMO DashboardCliente)
-    function updateReservationTimer() {
-        if (remainingSeconds <= 0) {
-            timerElement.textContent = '00:00';
-            // Limpiar el intervalo cuando llegue a cero
-            if (activeCountdownIntervals.has('reservation-timer')) {
-                clearInterval(activeCountdownIntervals.get('reservation-timer'));
-                activeCountdownIntervals.delete('reservation-timer');
-            }
-            // Aquí se podría liberar los boletos o mostrar un mensaje
-            customAlert('El tiempo de reserva ha expirado. Los boletos han sido liberados.', 'Tiempo Expirado', 'warning');
-            window.location.href = 'ListadoSorteosActivos.php';
-            return;
-        }
-        
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
-        timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        
-        remainingSeconds--;
-    }
-    
-    // Actualizar inmediatamente (EXACTO COMO DashboardCliente)
-    updateReservationTimer();
-    
-    // Iniciar intervalo que se actualiza cada segundo (EXACTO COMO DashboardCliente)
-    const intervalId = setInterval(updateReservationTimer, 1000);
-    activeCountdownIntervals.set('reservation-timer', intervalId);
-}
-
-// Función para actualizar el precio total basado en boletos seleccionados
-function updateTotalPrice() {
-    const totalElement = document.getElementById('total-pagar');
-    if (totalElement && window.currentTicketPrice) {
-        const selectedCount = selectedTickets.size;
-        const total = window.currentTicketPrice * selectedCount;
-        totalElement.textContent = `$${total.toFixed(2)}`;
-    }
-}
-
-// Variables globales para la selección de boletos
-let selectedTickets = new Set(); // Usar Set para evitar duplicados
-const maxTickets = 100; // Límite máximo de boletos
-
-// Función para inicializar la funcionalidad de selección de boletos
-function initTicketSelection() {
-    // Los event listeners ya se agregan en renderTickets() cuando se crean los botones dinámicamente
-    // Esta función solo se mantiene para compatibilidad con código existente
-    console.log('Inicialización de selección de boletos completada');
-}
-
-// Función para marcar un boleto como seleccionado
-function markTicketAsSelected(button) {
-    button.classList.remove('border-emerald-500/30', 'bg-card-dark', 'bg-[#1a202c]', 'hover:bg-emerald-500/10', 'hover:border-emerald-500');
-    button.classList.add('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
-    button.dataset.estado = 'seleccionado';
-    
-    const span = button.querySelector('span');
-    if (span) {
-        span.classList.remove('text-emerald-400');
-        span.classList.add('text-white', 'z-10');
-    }
-    
-    // Agregar checkmark si no existe
-    if (!button.querySelector('.checkmark-icon')) {
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark-icon absolute -top-1 -right-1 material-symbols-outlined text-[10px] text-white bg-black/20 rounded-bl p-0.5';
-        checkmark.textContent = 'check';
-        button.appendChild(checkmark);
-    }
-    
-    // Agregar overlay si no existe
-    if (!button.querySelector('.ticket-overlay')) {
-        const overlay = document.createElement('div');
-        overlay.className = 'ticket-overlay absolute inset-0 bg-white/10';
-        button.appendChild(overlay);
-    }
-    
-    // Aplicar filtro actual si no es "all"
-    if (currentFilter !== 'all') {
-        applyFilter(currentFilter);
-    }
-}
-
-// Función para marcar un boleto como disponible
-function markTicketAsAvailable(button) {
-    button.classList.remove('border-primary', 'bg-primary', 'shadow-[0_0_15px_rgba(36,99,235,0.4)]', 'relative', 'overflow-hidden');
-    button.classList.add('border-emerald-500/30', 'bg-card-dark', 'hover:bg-emerald-500/10', 'hover:border-emerald-500', 'group');
-    button.dataset.estado = 'disponible';
-    
-    const span = button.querySelector('span');
-    if (span) {
-        span.classList.remove('text-white', 'z-10');
-        span.classList.add('text-emerald-400', 'group-hover:scale-110', 'transition-transform');
-    }
-    
-    // Remover checkmark y overlay
-    const checkmark = button.querySelector('.checkmark-icon');
-    const overlay = button.querySelector('.ticket-overlay');
-    if (checkmark) checkmark.remove();
-    if (overlay) overlay.remove();
-    
-    // Aplicar filtro actual si no es "all"
-    if (currentFilter !== 'all') {
-        applyFilter(currentFilter);
-    }
-}
-
-// Función para actualizar la visualización de boletos seleccionados
-function updateSelectedTicketsDisplay() {
-    const container = document.getElementById('selected-tickets-container');
-    if (!container) return;
-    
-    if (selectedTickets.size === 0) {
-        container.innerHTML = '<span class="text-xs text-text-secondary">No hay boletos seleccionados</span>';
-        return;
-    }
-    
-    // Ordenar los boletos y mostrar solo los primeros 5, si hay más mostrar "+X más"
-    const sortedTickets = Array.from(selectedTickets).sort((a, b) => a - b);
-    const displayTickets = sortedTickets.slice(0, 5);
-    const remaining = sortedTickets.length - 5;
-    
-    container.innerHTML = displayTickets.map(num => 
-        `<span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20">#${String(num).padStart(3, '0')}</span>`
-    ).join('');
-    
-    if (remaining > 0) {
-        const moreBadge = document.createElement('span');
-        moreBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-primary/10 text-primary border border-primary/20';
-        moreBadge.textContent = `+${remaining} más`;
-        container.appendChild(moreBadge);
-    }
-}
-
-// Variable global para el filtro activo
-let currentFilter = 'all';
-
-// Función para inicializar la búsqueda de boletos
-function initTicketSearch() {
-    const searchInput = document.getElementById('ticket-search-input');
-    if (!searchInput) return;
-    
-    let searchTimeout;
-    
-    searchInput.addEventListener('input', function(e) {
-        clearTimeout(searchTimeout);
-        const query = e.target.value.trim();
-        
-        searchTimeout = setTimeout(() => {
-            searchTickets(query);
-        }, 300);
-    });
-    
-    // Buscar con Enter
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            clearTimeout(searchTimeout);
-            searchTickets(e.target.value.trim());
-        }
-    });
-    
-    // Inicializar botones de filtro
-    initFilterButtons();
-}
-
-// Función para inicializar los botones de filtro
-function initFilterButtons() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.dataset.filter;
-            
-            // Actualizar estado activo visual
-            filterButtons.forEach(btn => {
-                btn.classList.remove('active', 'bg-primary/20', 'text-white', 'border-primary');
-                btn.classList.add('bg-card-dark', 'text-text-secondary');
-            });
-            
-            this.classList.add('active', 'bg-primary/20', 'text-white', 'border-primary');
-            this.classList.remove('bg-card-dark', 'text-text-secondary');
-            
-            // Limpiar búsqueda
-            const searchInput = document.getElementById('ticket-search-input');
-            if (searchInput) {
-                searchInput.value = '';
-            }
-            
-            // Aplicar filtro
-            currentFilter = filter;
-            applyFilter(filter);
-        });
-    });
-}
-
-// Función para aplicar filtro a los boletos
-function applyFilter(filter) {
-    const allButtons = document.querySelectorAll('#tickets-grid button[data-numero-boleto]');
-    let visibleCount = 0;
-    
-    allButtons.forEach(button => {
-        const estado = button.dataset.estado || 'disponible';
-        let shouldShow = false;
-        
-        switch(filter) {
-            case 'all':
-                shouldShow = true;
-                break;
-            case 'disponible':
-                shouldShow = estado === 'disponible' && !button.disabled;
-                break;
-            case 'seleccionado':
-                shouldShow = estado === 'seleccionado' || button.classList.contains('bg-primary');
-                break;
-            case 'reservado':
-                shouldShow = estado === 'reservado' || 
-                           (button.disabled && button.classList.contains('border-yellow-700'));
-                break;
-            case 'vendido':
-                shouldShow = estado === 'vendido' || 
-                           (button.disabled && button.classList.contains('border-red-900'));
-                break;
-        }
-        
-        if (shouldShow) {
-            button.style.display = '';
-            visibleCount++;
-        } else {
-            button.style.display = 'none';
-        }
-    });
-    
-    console.log(`Filtro "${filter}" aplicado: ${visibleCount} boletos visibles`);
-}
-
-// Función para buscar boletos
-function searchTickets(query) {
-    if (!query) {
-        // Si no hay búsqueda, aplicar solo el filtro
-        applyFilter(currentFilter);
-        return;
-    }
-    
-    const ticketNumber = parseInt(query);
-    const allButtons = document.querySelectorAll('#tickets-grid button[data-numero-boleto]');
-    
-    if (isNaN(ticketNumber)) {
-        // Si no es un número, buscar por texto en los números de boleto
-        allButtons.forEach(btn => {
-            const btnText = btn.textContent.trim();
-            const btnNumber = btn.dataset.numeroBoleto || '';
-            const matches = btnText.includes(query) || btnNumber.includes(query);
-            const estado = btn.dataset.estado || 'disponible';
-            
-            let matchesFilter = true;
-            if (currentFilter !== 'all') {
-                matchesFilter = shouldShowByFilter(btn, currentFilter, estado);
-            }
-            
-            btn.style.display = (matches && matchesFilter) ? '' : 'none';
-        });
-        return;
-    }
-    
-    // Buscar el boleto específico
-    let found = false;
-    
-    allButtons.forEach(btn => {
-        const btnNumber = parseInt(btn.dataset.numeroBoletoInt);
-        const matches = btnNumber === ticketNumber;
-        const estado = btn.dataset.estado || 'disponible';
-        
-        let matchesFilter = true;
-        if (currentFilter !== 'all') {
-            matchesFilter = shouldShowByFilter(btn, currentFilter, estado);
-        }
-        
-        if (matches && matchesFilter) {
-            btn.style.display = '';
-            if (!found) {
-                btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Resaltar temporalmente
-                btn.style.animation = 'pulse 0.5s ease-in-out 3';
-                setTimeout(() => {
-                    btn.style.animation = '';
-                }, 1500);
-                found = true;
-            }
-        } else {
-            btn.style.display = 'none';
-        }
-    });
-    
-    if (!found) {
-        console.log(`Boleto #${ticketNumber} no encontrado o no coincide con el filtro activo`);
-    }
-}
-
-// Función auxiliar para verificar si un boleto debe mostrarse según el filtro
-function shouldShowByFilter(button, filter, estado) {
-    switch(filter) {
-        case 'disponible':
-            return estado === 'disponible' && !button.disabled;
-        case 'seleccionado':
-            return estado === 'seleccionado' || button.classList.contains('bg-primary');
-        case 'reservado':
-            return estado === 'reservado' || 
-                   (button.disabled && button.classList.contains('border-yellow-700'));
-        case 'vendido':
-            return estado === 'vendido' || 
-                   (button.disabled && button.classList.contains('border-red-900'));
-        default:
-            return true;
-    }
-}
 
 // Función para manejar el botón "Proceder al Pago" (MODIFICADA)
 function handleProceedToPayment() {
@@ -1541,15 +1169,6 @@ function handleProceedToPayment() {
     return false;
 }
 
-// Función para guardar los boletos seleccionados (compatibilidad)
-function saveSelectedTickets() {
-    return handleProceedToPayment();
-}
-
 </script>
 
 </body></html>
-
-<!-- Luego del sorteo -->
-
-<!-- Luego del sorteo -->
