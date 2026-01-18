@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Iniciar Sesión - Plataforma de Sorteos</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2463eb",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "surface-dark": "#1a202c",
+                        "input-dark": "#282d39",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased min-h-screen flex flex-col">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Background Decoration -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-3xl"></div>
+        <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl"></div>
+    </div>
+
+    <div class="layout-container flex h-full grow flex-col z-10">
+        <!-- Header / Logo Area -->
+        <header class="flex items-center justify-center py-6 px-4 sm:px-10">
+            <div class="flex items-center gap-3 text-white">
+                <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                    <div class="flex items-center justify-center size-10 rounded-lg bg-primary/20 text-primary">
+                        <span class="material-symbols-outlined text-3xl">confirmation_number</span>
+                    </div>
+                    <h2 class="text-white text-xl font-bold leading-tight tracking-tight">Plataforma de Sorteos</h2>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content: Centered Login Card -->
+        <main class="flex flex-1 justify-center items-center px-4 py-5">
+            <div class="layout-content-container flex flex-col max-w-[480px] w-full flex-1">
+                <!-- Login Card -->
+                <div class="flex flex-col gap-6 sm:p-8 sm:bg-[#161b26] sm:rounded-xl sm:border sm:border-[#282d39]">
+                    
+                    <!-- Heading -->
+                    <div class="flex flex-col gap-2 text-center sm:text-left">
+                        <h1 class="text-white text-3xl font-black leading-tight tracking-[-0.033em]">Bienvenido de nuevo</h1>
+                        <p class="text-[#9da6b9] text-base font-normal leading-normal">Ingresa tus credenciales para acceder (Cliente o Administrador).</p>
+                    </div>
+
+                    <!-- Mensaje de Error/Éxito (oculto por defecto, se muestra con JavaScript) -->
+                    <div id="mensaje-error" class="hidden flex items-center gap-2 text-red-500 bg-red-500/10 p-3 rounded-lg text-sm border border-red-500/20">
+                        <span class="material-symbols-outlined text-lg">error</span>
+                        <p id="mensaje-error-texto"></p>
+                    </div>
+
+                    <div id="mensaje-exito" class="hidden flex items-center gap-2 text-green-500 bg-green-500/10 p-3 rounded-lg text-sm border border-green-500/20">
+                        <span class="material-symbols-outlined text-lg">check_circle</span>
+                        <p id="mensaje-exito-texto"></p>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="POST" action="../php/cliente/auth/InicioSesion.php" class="flex flex-col gap-5 mt-2" id="login-form" onsubmit="return handleLoginSubmit(event);">
+                        <input type="hidden" name="login" value="1"/>
+                        
+                        <!-- Email Input -->
+                        <label class="flex flex-col gap-2">
+                            <p class="text-white text-sm font-medium leading-normal">Correo Electrónico</p>
+                            <div class="relative">
+                                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
+                                    <span class="material-symbols-outlined">mail</span>
+                                </div>
+                                <input name="email" id="email-input" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-4 text-base font-normal leading-normal transition-all" placeholder="ejemplo@correo.com" type="email" required/>
+                            </div>
+                        </label>
+
+                        <!-- Password Input -->
+                        <label class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <p class="text-white text-sm font-medium leading-normal">Contraseña</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9da6b9]">
+                                    <span class="material-symbols-outlined">lock</span>
+                                </div>
+                                <input id="input-password-login" name="password" class="form-input flex w-full resize-none overflow-hidden rounded-lg text-white placeholder:text-[#9da6b9] bg-input-dark border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none h-12 pl-12 pr-12 text-base font-normal leading-normal transition-all" placeholder="••••••••" type="password" required/>
+                                <button type="button" id="toggle-password-login" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9da6b9] hover:text-white transition-colors cursor-pointer" aria-label="Mostrar contraseña">
+                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                </button>
+                            </div>
+                            <div class="flex justify-end mt-1">
+                                <a class="text-sm font-medium text-primary hover:text-blue-400 transition-colors" href="#">¿Olvidaste tu contraseña?</a>
+                            </div>
+                        </label>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-primary hover:bg-blue-600 transition-colors text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg shadow-blue-900/20 mt-2">
+                            <span class="truncate">Iniciar Sesión</span>
+                        </button>
+
+                        <!-- Demo Access Buttons (solo para prototipo HTML) -->
+                        <div class="relative my-4">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-[#282d39]"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-[#161b26] text-[#9da6b9]">O accede directamente a los prototipos</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="cliente/DashboardCliente.html" class="flex items-center justify-center gap-2 rounded-lg h-11 px-4 bg-[#282d39] hover:bg-[#353b4b] transition-colors text-white text-sm font-semibold border border-[#3e4552]/50">
+                                <span class="material-symbols-outlined text-[18px]">person</span>
+                                <span>Cliente</span>
+                            </a>
+                            <a href="administrador/DashboardAdmnistrador.html" class="flex items-center justify-center gap-2 rounded-lg h-11 px-4 bg-[#282d39] hover:bg-[#353b4b] transition-colors text-white text-sm font-semibold border border-[#3e4552]/50">
+                                <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                                <span>Admin</span>
+                            </a>
+                        </div>
+
+                        <!-- Register Link -->
+                        <div class="text-center pt-2">
+                            <p class="text-[#9da6b9] text-sm">
+                                ¿No tienes una cuenta? 
+                                <a class="font-bold text-primary hover:text-blue-400 transition-colors ml-1" href="CrearCuenta.html">Regístrate aquí</a>
+                            </p>
+                        </div>
+                        <!-- Google Sign In -->
+                        <div class="relative my-4">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-[#282d39]"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-[#161b26] text-[#9da6b9]">O continúa con</span>
+                            </div>
+                        </div>
+
+                        <div id="g_id_onload"
+                             data-client_id="776005870524-pthjf47lsf07l1ck5o03660cc9malctd.apps.googleusercontent.com"
+                             data-context="signin"
+                             data-ux_mode="popup"
+                             data-callback="handleCredentialResponse"
+                             data-auto_prompt="false">
+                        </div>
+
+                        <div class="g_id_signin"
+                             data-type="standard"
+                             data-shape="rectangular"
+                             data-theme="filled_black"
+                             data-text="signin_with"
+                             data-size="large"
+                             data-logo_alignment="left"
+                             data-width="100%">
+                        </div>
+                    </form>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // Función para manejar el submit del formulario (modo prototipo)
+        function handleLoginSubmit(event) {
+            // Si estamos en modo prototipo (sin PHP), mostrar opciones
+            const form = event.target;
+            const email = form.querySelector('[name="email"]').value;
+            const password = form.querySelector('[name="password"]').value;
+            
+            // Validación básica
+            if (!email || !password) {
+                event.preventDefault();
+                mostrarError('Por favor, completa todos los campos');
+                return false;
+            }
+            
+            // Si el formulario se envía y hay un error de red (PHP no disponible),
+            // el navegador mostrará el error. Si funciona, redirigirá normalmente.
+            // Para el prototipo, permitimos que se envíe normalmente.
+            return true;
+        }
+
+        function handleCredentialResponse(response) {
+            // Enviar el token al backend
+            fetch('../php/cliente/auth/google_auth.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Intentar redirigir a PHP, si falla ir a HTML
+                    window.location.href = '../php/cliente/pages/DashboardCliente.php';
+                } else {
+                    // Si falla, redirigir al prototipo HTML
+                    console.warn('Google auth falló, redirigiendo a prototipo HTML');
+                    window.location.href = 'cliente/DashboardCliente.html';
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                // Si hay error de conexión, redirigir al prototipo HTML
+                console.warn('Error de conexión, redirigiendo a prototipo HTML');
+                window.location.href = 'cliente/DashboardCliente.html';
+            });
+        }
+
+        // Función para mostrar mensajes de error
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('mensaje-error');
+            const errorTexto = document.getElementById('mensaje-error-texto');
+            const exitoDiv = document.getElementById('mensaje-exito');
+            
+            if (errorDiv && errorTexto) {
+                errorTexto.textContent = mensaje;
+                errorDiv.classList.remove('hidden');
+                exitoDiv.classList.add('hidden');
+            }
+        }
+
+        // Función para mostrar mensajes de éxito
+        function mostrarExito(mensaje) {
+            const exitoDiv = document.getElementById('mensaje-exito');
+            const exitoTexto = document.getElementById('mensaje-exito-texto');
+            const errorDiv = document.getElementById('mensaje-error');
+            
+            if (exitoDiv && exitoTexto) {
+                exitoTexto.textContent = mensaje;
+                exitoDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+            }
+        }
+
+        // Verificar si hay mensajes en la URL (después de redirección desde PHP)
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const exito = urlParams.get('exito');
+            
+            if (error) {
+                const mensajes = {
+                    'sesion_invalida': 'Tu sesión ha expirado. Por favor ingresa nuevamente.',
+                    'datos_no_encontrados': 'No se pudieron obtener tus datos. Por favor, intenta iniciar sesión nuevamente.',
+                    'credenciales_incorrectas': 'Credenciales incorrectas. Verifica tu email y contraseña.'
+                };
+                mostrarError(mensajes[error] || 'Ha ocurrido un error. Por favor intenta nuevamente.');
+            }
+            
+            if (exito) {
+                mostrarExito('Sesión cerrada correctamente');
+            }
+        });
+    </script>
+                </div>
+
+                <!-- Footer Links -->
+                <div class="mt-10 flex justify-center gap-6 text-[#9da6b9] text-xs">
+                    <a class="hover:text-white transition-colors" href="#">Términos y Condiciones</a>
+                    <a class="hover:text-white transition-colors" href="#">Política de Privacidad</a>
+                    <a class="hover:text-white transition-colors" href="#">Ayuda</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+// Función para toggle de mostrar/ocultar contraseña
+(function() {
+    'use strict';
+    function initPasswordToggle() {
+        const input = document.getElementById('input-password-login');
+        const button = document.getElementById('toggle-password-login');
+        if (!input || !button) return;
+        button.addEventListener('click', function() {
+            const icon = button.querySelector('.material-symbols-outlined');
+            if (!icon) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+                button.setAttribute('aria-label', 'Ocultar contraseña');
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+                button.setAttribute('aria-label', 'Mostrar contraseña');
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPasswordToggle);
+    } else {
+        initPasswordToggle();
+    }
+})();
+</script>
+</body>
+</html>
+
