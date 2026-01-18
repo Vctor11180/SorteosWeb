@@ -7,7 +7,8 @@ $conn = getDBConnection();
 /**
  * Obtiene los KPIs principales del dashboard
  */
-function obtenerKPIs($conn) {
+function obtenerKPIs($conn)
+{
     $kpis = [
         'ingresos_totales' => 0,
         'boletos_vendidos' => 0,
@@ -16,7 +17,7 @@ function obtenerKPIs($conn) {
         'tendencia_ingresos' => 0,
         'tendencia_boletos' => 0
     ];
-    
+
     try {
         // Ingresos totales (pagos completados)
         $sql = "SELECT COALESCE(SUM(monto_total), 0) as total FROM transacciones WHERE estado_pago = 'Completado'";
@@ -24,28 +25,28 @@ function obtenerKPIs($conn) {
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['ingresos_totales'] = number_format($row['total'], 2);
         }
-        
+
         // Boletos vendidos
         $sql = "SELECT COUNT(*) as total FROM boletos WHERE estado = 'Vendido'";
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['boletos_vendidos'] = $row['total'];
         }
-        
+
         // Sorteos activos
         $sql = "SELECT COUNT(*) as total FROM sorteos WHERE estado = 'Activo'";
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['sorteos_activos'] = $row['total'];
         }
-        
+
         // Pagos pendientes
         $sql = "SELECT COUNT(*) as total FROM transacciones WHERE estado_pago = 'Pendiente'";
         $result = $conn->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
             $kpis['pagos_pendientes'] = $row['total'];
         }
-        
+
         // Calcular tendencias (comparar con mes anterior)
         $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_actual 
                 FROM transacciones 
@@ -57,7 +58,7 @@ function obtenerKPIs($conn) {
         if ($result && $row = $result->fetch_assoc()) {
             $total_mes_actual = $row['total_mes_actual'];
         }
-        
+
         $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_anterior 
                 FROM transacciones 
                 WHERE estado_pago = 'Completado' 
@@ -68,40 +69,41 @@ function obtenerKPIs($conn) {
         if ($result && $row = $result->fetch_assoc()) {
             $total_mes_anterior = $row['total_mes_anterior'] > 0 ? $row['total_mes_anterior'] : 1;
         }
-        
+
         $kpis['tendencia_ingresos'] = round((($total_mes_actual - $total_mes_anterior) / $total_mes_anterior) * 100, 1);
-        
+
     } catch (Exception $e) {
         error_log("Error obteniendo KPIs: " . $e->getMessage());
     }
-    
+
     return $kpis;
 }
 
 /**
  * Obtiene sorteos próximos a finalizar
  */
-function obtenerSorteosPorFinalizar($conn, $limit = 3) {
+function obtenerSorteosPorFinalizar($conn, $limit = 3)
+{
     $sorteos = [];
-    
+
     try {
         $sql = "SELECT id_sorteo, titulo, imagen_url, fecha_fin 
                 FROM sorteos 
                 WHERE estado = 'Activo' AND fecha_fin > NOW()
                 ORDER BY fecha_fin ASC 
                 LIMIT ?";
-        
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $limit);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         while ($row = $result->fetch_assoc()) {
             // Calcular tiempo restante
             $fecha_fin = new DateTime($row['fecha_fin']);
             $ahora = new DateTime();
             $diferencia = $ahora->diff($fecha_fin);
-            
+
             $tiempo_restante = '';
             if ($diferencia->days > 0) {
                 $tiempo_restante = $diferencia->days . 'd ' . $diferencia->h . 'h';
@@ -110,7 +112,7 @@ function obtenerSorteosPorFinalizar($conn, $limit = 3) {
             } else {
                 $tiempo_restante = $diferencia->i . 'm';
             }
-            
+
             $sorteos[] = [
                 'id' => $row['id_sorteo'],
                 'titulo' => $row['titulo'],
@@ -119,21 +121,22 @@ function obtenerSorteosPorFinalizar($conn, $limit = 3) {
                 'urgente' => $diferencia->days == 0 && $diferencia->h < 6
             ];
         }
-        
+
         $stmt->close();
     } catch (Exception $e) {
         error_log("Error obteniendo sorteos por finalizar: " . $e->getMessage());
     }
-    
+
     return $sorteos;
 }
 
 /**
  * Obtiene pagos pendientes de validación
  */
-function obtenerPagosPendientes($conn, $limit = 4) {
+function obtenerPagosPendientes($conn, $limit = 4)
+{
     $pagos = [];
-    
+
     try {
         $sql = "SELECT DISTINCT
                     t.id_transaccion,
@@ -152,12 +155,12 @@ function obtenerPagosPendientes($conn, $limit = 4) {
                 LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
                 ORDER BY t.fecha_creacion DESC
                 LIMIT ?";
-        
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $limit);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         while ($row = $result->fetch_assoc()) {
             $pagos[] = [
                 'id' => $row['id_transaccion'],
@@ -170,12 +173,12 @@ function obtenerPagosPendientes($conn, $limit = 4) {
                 'iniciales' => strtoupper(substr($row['primer_nombre'], 0, 1) . substr($row['apellido_paterno'], 0, 1))
             ];
         }
-        
+
         $stmt->close();
     } catch (Exception $e) {
         error_log("Error obteniendo pagos pendientes: " . $e->getMessage());
     }
-    
+
     return $pagos;
 }
 
@@ -186,17 +189,24 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
 ?>
 
 
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Dashboard Administrador - Sorteos Web</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dashboard Administrador - Sorteos Web</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -211,492 +221,597 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
     </script>
-<style>
+    <style>
         body {
             font-family: 'Inter', sans-serif;
         }
+
         /* Custom scrollbar for dark theme */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #111621; 
+            background: #111621;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #2a3241; 
+            background: #2a3241;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #3b4657; 
+            background: #3b4657;
         }
     </style>
 </head>
+
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
-<div class="flex h-screen w-full">
-<!-- Sidebar -->
-<aside id="sidebar" class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25] lg:translate-x-0 -translate-x-full lg:static fixed inset-y-0 left-0 z-30 transition-transform duration-300">
-<!-- Mobile overlay -->
-<div id="mobileOverlay" onclick="toggleMobileMenu()" class="hidden lg:hidden fixed inset-0 bg-black/50 z-20"></div>
-<div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-2 text-primary">
-<span class="material-symbols-outlined text-3xl">confirmation_number</span>
-<span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span class="text-primary">Admin</span></span>
-</div>
-</div>
-<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="DashboardAdmnistrador.php" data-page="DashboardAdmnistrador.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+    <div class="flex h-screen w-full">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25] lg:translate-x-0 -translate-x-full lg:static fixed inset-y-0 left-0 z-30 transition-transform duration-300">
+            <!-- Mobile overlay -->
+            <div id="mobileOverlay" onclick="toggleMobileMenu()"
+                class="hidden lg:hidden fixed inset-0 bg-black/50 z-20"></div>
+            <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-border-dark">
+                <div class="flex items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined text-3xl">confirmation_number</span>
+                    <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Sorteos<span
+                            class="text-primary">Admin</span></span>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2">Principal</p>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="DashboardAdmnistrador.php" data-page="DashboardAdmnistrador.php">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
                     Dashboard
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="CrudGestionSorteo.php" data-page="CrudGestionSorteo.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="CrudGestionSorteo.php" data-page="CrudGestionSorteo.php">
+                    <span
+                        class="material-symbols-outlined group-hover:text-primary transition-colors">confirmation_number</span>
                     Gestión de Sorteos
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="ValidacionPagosAdministrador.php" data-page="ValidacionPagosAdministrador.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="ValidacionPagosAdministrador.php" data-page="ValidacionPagosAdministrador.php">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">payments</span>
                     Validación de Pagos
-                    <span class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
-</a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GeneradorGanadoresAdminstradores.php" data-page="GeneradorGanadoresAdminstradores.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
+                    <span
+                        class="ml-auto bg-yellow-500/20 text-yellow-500 text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+                </a>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="GeneradorGanadoresAdminstradores.php" data-page="GeneradorGanadoresAdminstradores.php">
+                    <span
+                        class="material-symbols-outlined group-hover:text-primary transition-colors">emoji_events</span>
                     Generación de Ganadores
                 </a>
-<p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración</p>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="GestionUsuariosAdministrador.php" data-page="GestionUsuariosAdministrador.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
+                <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6">Administración
+                </p>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="GestionUsuariosAdministrador.php" data-page="GestionUsuariosAdministrador.php">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">group</span>
                     Usuarios
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="AuditoriaAccionesAdmin.php" data-page="AuditoriaAccionesAdmin.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="AuditoriaAccionesAdmin.php" data-page="AuditoriaAccionesAdmin.php">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
                     Auditoría
                 </a>
-<a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group" href="InformesEstadisticasAdmin.php" data-page="InformesEstadisticasAdmin.php">
-<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group"
+                    href="InformesEstadisticasAdmin.php" data-page="InformesEstadisticasAdmin.php">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
                     Informes
                 </a>
-</div>
-<div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
-<div class="flex flex-col">
-<span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
-<span class="text-xs text-gray-500">admin@sorteos.web</span>
-</div>
-</div>
-</div>
-</aside>
-<!-- Main Content -->
-<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
-<!-- Header -->
-<header class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
-<div class="flex items-center gap-4">
-<!-- Mobile menu trigger (hidden on desktop) -->
-<button id="mobileMenuToggle" onclick="toggleMobileMenu()" class="lg:hidden text-gray-500 hover:text-primary transition-colors">
-<span class="material-symbols-outlined">menu</span>
-</button>
-<h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Dashboard</h1>
-</div>
-<div class="flex items-center gap-4">
-<div class="relative hidden md:block w-64">
-<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-<span class="material-symbols-outlined text-[20px]">search</span>
-</span>
-<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
-</div>
-<button id="notificationsButton" onclick="showNotifications()" class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-</button>
-</div>
-</header>
-<!-- Scrollable Content -->
-<div class="flex-1 overflow-y-auto p-6 space-y-6">
-<div class="max-w-[1400px] mx-auto w-full">
-<!-- Breadcrumbs -->
-<div class="flex flex-wrap gap-2 px-4 py-2 mb-4">
-<span class="text-white text-sm font-medium leading-normal flex items-center gap-1">
-<span class="material-symbols-outlined !text-lg">dashboard</span>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-border-dark">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture"
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');">
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
+                        <span class="text-xs text-gray-500">admin@sorteos.web</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+            <!-- Header -->
+            <header
+                class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-border-dark bg-white dark:bg-[#151a25]/80 backdrop-blur-md sticky top-0 z-20">
+                <div class="flex items-center gap-4">
+                    <!-- Mobile menu trigger (hidden on desktop) -->
+                    <button id="mobileMenuToggle" onclick="toggleMobileMenu()"
+                        class="lg:hidden text-gray-500 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                    <h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Dashboard</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden md:block w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </span>
+                        <input id="headerSearchInput"
+                            class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500"
+                            placeholder="Buscar sorteo, usuario..." type="text" />
+                    </div>
+                    <button id="notificationsButton" onclick="showNotifications()"
+                        class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div class="max-w-[1400px] mx-auto w-full">
+                    <!-- Breadcrumbs -->
+                    <div class="flex flex-wrap gap-2 px-4 py-2 mb-4">
+                        <span class="text-white text-sm font-medium leading-normal flex items-center gap-1">
+                            <span class="material-symbols-outlined !text-lg">dashboard</span>
                             Dashboard
                         </span>
-</div>
-<!-- Action Bar -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div>
-<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Resumen General</h2>
-<p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Bienvenido de nuevo. Aquí tienes lo que está pasando hoy.</p>
-</div>
-<button onclick="window.location.href='CrudGestionSorteo.php'" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
-<span class="material-symbols-outlined text-[20px]">add</span>
-                        Crear Nuevo Sorteo
-                    </button>
-</div>
-</div>
-<!-- KPI Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <!-- Total Ingresos -->
-    <div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
-        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span class="material-symbols-outlined text-6xl text-primary">attach_money</span>
-        </div>
-        <div class="flex justify-between items-start">
-            <div class="p-2 bg-primary/10 rounded-lg text-primary">
-                <span class="material-symbols-outlined">attach_money</span>
-            </div>
-            <span class="flex items-center text-xs font-medium <?php echo $kpis['tendencia_ingresos'] >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'; ?> px-2 py-1 rounded-full">
-                <span class="material-symbols-outlined text-[14px] mr-1"><?php echo $kpis['tendencia_ingresos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span> <?php echo ($kpis['tendencia_ingresos'] >= 0 ? '+' : '') . $kpis['tendencia_ingresos']; ?>%
-            </span>
-        </div>
-        <div>
-            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Ingresos Totales</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">$<?php echo $kpis['ingresos_totales']; ?></h3>
-        </div>
-    </div>
-    <!-- Boletos Vendidos -->
-    <div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
-        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span class="material-symbols-outlined text-6xl text-blue-400">confirmation_number</span>
-        </div>
-        <div class="flex justify-between items-start">
-            <div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
-                <span class="material-symbols-outlined">confirmation_number</span>
-            </div>
-            <span class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
-                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
-            </span>
-        </div>
-        <div>
-            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Boletos Vendidos</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo number_format($kpis['boletos_vendidos']); ?></h3>
-        </div>
-    </div>
-    <!-- Sorteos Activos -->
-    <div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
-        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span class="material-symbols-outlined text-6xl text-purple-400">casino</span>
-        </div>
-        <div class="flex justify-between items-start">
-            <div class="p-2 bg-purple-500/10 rounded-lg text-purple-500">
-                <span class="material-symbols-outlined">casino</span>
-            </div>
-        </div>
-        <div>
-            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Sorteos Activos</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo $kpis['sorteos_activos']; ?></h3>
-        </div>
-    </div>
-    <!-- Pagos Pendientes -->
-    <div class="bg-white dark:bg-card-dark p-5 rounded-xl border border-yellow-500/30 flex flex-col justify-between h-32 relative overflow-hidden group">
-        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <span class="material-symbols-outlined text-6xl text-yellow-500">pending_actions</span>
-        </div>
-        <div class="flex justify-between items-start">
-            <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
-                <span class="material-symbols-outlined">pending_actions</span>
-            </div>
-            <?php if ($kpis['pagos_pendientes'] > 0): ?>
-            <span class="flex items-center text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full animate-pulse">
-                Acción Requerida
-            </span>
-            <?php endif; ?>
-        </div>
-        <div>
-            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pagos Pendientes</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo $kpis['pagos_pendientes']; ?></h3>
-        </div>
-    </div>
-</div>
-<!-- Main Grid: Charts & Sidebar List -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Chart Section -->
-    <div class="lg:col-span-2 bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark p-6">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Ventas de Boletos</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Últimos 30 días</p>
-            </div>
-            <select id="chartPeriodSelect" onchange="updateChartPeriod(this.value)" class="bg-gray-100 dark:bg-[#111621] border-none text-xs rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-0">
-                <option value="30days">Últimos 30 días</option>
-                <option value="week">Esta semana</option>
-                <option value="year">Este año</option>
-            </select>
-        </div>
-        <div class="h-64 w-full">
-            <!-- SVG Chart Simulation -->
-            <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
-                <defs>
-                    <lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
-                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-                    </lineargradient>
-                </defs>
-                <!-- Grid Lines -->
-                <line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
-                <!-- Area Path -->
-                <path d="M0,250 L0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40 L800,250 Z" fill="url(#gradient)"></path>
-                <!-- Line Path -->
-                <path d="M0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
-            </svg>
-        </div>
-        <div class="flex justify-between text-xs text-gray-500 mt-2 px-2">
-            <span>01 Nov</span>
-            <span>08 Nov</span>
-            <span>15 Nov</span>
-            <span>22 Nov</span>
-            <span>29 Nov</span>
-        </div>
-    </div>
-    <!-- Closing Soon List -->
-    <div class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark flex flex-col">
-        <div class="p-6 border-b border-gray-200 dark:border-border-dark flex justify-between items-center">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sorteos por Finalizar</h3>
-            <a class="text-xs text-primary font-medium hover:underline" href="CrudGestionSorteo.php">Ver todos</a>
-        </div>
-        <div class="flex-1 overflow-y-auto p-2">
-            <div class="flex flex-col gap-2">
-                <?php if (empty($sorteos_finalizando)): ?>
-                    <div class="p-6 text-center">
-                        <p class="text-gray-500 dark:text-gray-400 text-sm">No hay sorteos próximos a finalizar</p>
                     </div>
-                <?php else: ?>
-                    <?php foreach ($sorteos_finalizando as $sorteo): ?>
-                    <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group" onclick="viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')">
-                        <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('<?php echo htmlspecialchars($sorteo['imagen_url']); ?>');"></div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors"><?php echo htmlspecialchars($sorteo['titulo']); ?></h4>
-                            <p class="text-xs text-gray-500">Cierra en: <span class="<?php echo $sorteo['urgente'] ? 'text-orange-500' : 'text-gray-400'; ?> font-bold"><?php echo $sorteo['tiempo_restante']; ?></span></p>
+                    <!-- Action Bar -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Resumen General</h2>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Bienvenido de nuevo. Aquí tienes lo
+                                que está pasando hoy.</p>
                         </div>
-                        <button onclick="event.stopPropagation(); viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')" class="text-gray-400 hover:text-primary">
-                            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                        <button onclick="window.location.href='CrudGestionSorteo.php'"
+                            class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+                            <span class="material-symbols-outlined text-[20px]">add</span>
+                            Crear Nuevo Sorteo
                         </button>
                     </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-        <div class="p-4 border-t border-gray-200 dark:border-border-dark">
-            <button onclick="window.location.href='GeneradorGanadoresAdminstradores.php'" class="w-full py-2 text-sm text-center text-slate-900 dark:text-white bg-gray-100 dark:bg-[#111621] hover:bg-gray-200 dark:hover:bg-[#2a3241] rounded-lg transition-colors font-medium">
-                Gestionar Ganadores
-            </button>
-        </div>
-    </div>
-</div>
-<!-- Recent Payments Table -->
-<div class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden">
-    <div class="p-6 border-b border-gray-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Validación de Pagos Recientes</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Pagos que requieren tu atención inmediata.</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="showPaymentFilters()" class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Filtrar</button>
-            <button onclick="exportPaymentsTable()" class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Exportar</button>
-        </div>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50 dark:bg-[#151a25] border-b border-gray-200 dark:border-border-dark">
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Usuario</th>
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Sorteo</th>
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Referencia</th>
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Monto</th>
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">Estado</th>
-                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-border-dark">
-                <?php if (empty($pagos_pendientes)): ?>
-                    <tr>
-                        <td colspan="6" class="py-8 text-center">
-                            <p class="text-gray-500 dark:text-gray-400 text-sm">No hay pagos registrados</p>
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php 
-                    $colores_avatar = ['bg-gray-700', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600'];
-                    foreach ($pagos_pendientes as $index => $pago): 
-                        $color_avatar = $colores_avatar[$index % count($colores_avatar)];
-                    ?>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full <?php echo $color_avatar; ?> flex items-center justify-center text-xs font-bold text-white"><?php echo $pago['iniciales']; ?></div>
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($pago['usuario_nombre']); ?></p>
-                                    <p class="text-xs text-gray-500"><?php echo htmlspecialchars($pago['usuario_email']); ?></p>
-                                </div>
+                </div>
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Total Ingresos -->
+                    <div
+                        class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl text-primary">attach_money</span>
+                        </div>
+                        <div class="flex justify-between items-start">
+                            <div class="p-2 bg-primary/10 rounded-lg text-primary">
+                                <span class="material-symbols-outlined">attach_money</span>
                             </div>
-                        </td>
-                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300"><?php echo htmlspecialchars($pago['sorteo']); ?></td>
-                        <td class="py-4 px-6 text-sm text-gray-500 font-mono"><?php echo htmlspecialchars($pago['referencia']); ?></td>
-                        <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$<?php echo $pago['monto']; ?></td>
-                        <td class="py-4 px-6">
-                            <?php 
-                            $estado_class = '';
-                            $estado_texto = '';
-                            switch($pago['estado']) {
-                                case 'Pendiente':
-                                    $estado_class = 'bg-yellow-500/10 text-yellow-500';
-                                    $estado_texto = 'Pendiente';
-                                    break;
-                                case 'Completado':
-                                    $estado_class = 'bg-green-500/10 text-green-500';
-                                    $estado_texto = 'Aprobado';
-                                    break;
-                                case 'Fallido':
-                                    $estado_class = 'bg-red-500/10 text-red-500';
-                                    $estado_texto = 'Rechazado';
-                                    break;
-                            }
-                            ?>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $estado_class; ?>">
-                                <?php echo $estado_texto; ?>
+                            <span
+                                class="flex items-center text-xs font-medium <?php echo $kpis['tendencia_ingresos'] >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'; ?> px-2 py-1 rounded-full">
+                                <span
+                                    class="material-symbols-outlined text-[14px] mr-1"><?php echo $kpis['tendencia_ingresos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span>
+                                <?php echo ($kpis['tendencia_ingresos'] >= 0 ? '+' : '') . $kpis['tendencia_ingresos']; ?>%
                             </span>
-                        </td>
-                        <td class="py-4 px-6 text-right">
-                            <?php if ($pago['estado'] == 'Pendiente'): ?>
-                                <button onclick="validatePayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')" class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
-                                <button onclick="rejectPayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')" class="text-gray-400 hover:text-red-500 transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">block</span>
-                                </button>
-                            <?php else: ?>
-                                <button onclick="viewPaymentDetails('<?php echo htmlspecialchars($pago['referencia']); ?>')" class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Ingresos Totales</p>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                                $<?php echo $kpis['ingresos_totales']; ?></h3>
+                        </div>
+                    </div>
+                    <!-- Boletos Vendidos -->
+                    <div
+                        class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl text-blue-400">confirmation_number</span>
+                        </div>
+                        <div class="flex justify-between items-start">
+                            <div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                                <span class="material-symbols-outlined">confirmation_number</span>
+                            </div>
+                            <span
+                                class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Boletos Vendidos</p>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                                <?php echo number_format($kpis['boletos_vendidos']); ?>
+                            </h3>
+                        </div>
+                    </div>
+                    <!-- Sorteos Activos -->
+                    <div
+                        class="bg-white dark:bg-card-dark p-5 rounded-xl border border-gray-200 dark:border-border-dark flex flex-col justify-between h-32 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl text-purple-400">casino</span>
+                        </div>
+                        <div class="flex justify-between items-start">
+                            <div class="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                                <span class="material-symbols-outlined">casino</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Sorteos Activos</p>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                                <?php echo $kpis['sorteos_activos']; ?>
+                            </h3>
+                        </div>
+                    </div>
+                    <!-- Pagos Pendientes -->
+                    <div
+                        class="bg-white dark:bg-card-dark p-5 rounded-xl border border-yellow-500/30 flex flex-col justify-between h-32 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <span class="material-symbols-outlined text-6xl text-yellow-500">pending_actions</span>
+                        </div>
+                        <div class="flex justify-between items-start">
+                            <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
+                                <span class="material-symbols-outlined">pending_actions</span>
+                            </div>
+                            <?php if ($kpis['pagos_pendientes'] > 0): ?>
+                                <span
+                                    class="flex items-center text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full animate-pulse">
+                                    Acción Requerida
+                                </span>
                             <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pagos Pendientes</p>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+                                <?php echo $kpis['pagos_pendientes']; ?>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Main Grid: Charts & Sidebar List -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart Section -->
+                    <div
+                        class="lg:col-span-2 bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Ventas de Boletos</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Últimos 30 días</p>
+                            </div>
+                            <select id="chartPeriodSelect" onchange="updateChartPeriod(this.value)"
+                                class="bg-gray-100 dark:bg-[#111621] border-none text-xs rounded-lg px-3 py-2 text-slate-900 dark:text-white focus:ring-0">
+                                <option value="30days">Últimos 30 días</option>
+                                <option value="week">Esta semana</option>
+                                <option value="year">Este año</option>
+                            </select>
+                        </div>
+                        <div class="h-64 w-full">
+                            <!-- SVG Chart Simulation -->
+                            <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
+                                <defs>
+                                    <lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
+                                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
+                                    </lineargradient>
+                                </defs>
+                                <!-- Grid Lines -->
+                                <line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+                                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190"
+                                    y2="190"></line>
+                                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130"
+                                    y2="130"></line>
+                                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70"
+                                    y2="70"></line>
+                                <!-- Area Path -->
+                                <path
+                                    d="M0,250 L0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40 L800,250 Z"
+                                    fill="url(#gradient)"></path>
+                                <!-- Line Path -->
+                                <path
+                                    d="M0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40"
+                                    fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
+                            </svg>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-2 px-2">
+                            <span>01 Nov</span>
+                            <span>08 Nov</span>
+                            <span>15 Nov</span>
+                            <span>22 Nov</span>
+                            <span>29 Nov</span>
+                        </div>
+                    </div>
+                    <!-- Closing Soon List -->
+                    <div
+                        class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark flex flex-col">
+                        <div
+                            class="p-6 border-b border-gray-200 dark:border-border-dark flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sorteos por Finalizar</h3>
+                            <a class="text-xs text-primary font-medium hover:underline" href="CrudGestionSorteo.php">Ver
+                                todos</a>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2">
+                            <div class="flex flex-col gap-2">
+                                <?php if (empty($sorteos_finalizando)): ?>
+                                    <div class="p-6 text-center">
+                                        <p class="text-gray-500 dark:text-gray-400 text-sm">No hay sorteos próximos a
+                                            finalizar</p>
+                                    </div>
+                                <?php else: ?>
+                                    <?php foreach ($sorteos_finalizando as $sorteo): ?>
+                                        <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group"
+                                            onclick="viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')">
+                                            <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0"
+                                                style="background-image: url('<?php echo htmlspecialchars($sorteo['imagen_url']); ?>');">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h4
+                                                    class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                                                    <?php echo htmlspecialchars($sorteo['titulo']); ?>
+                                                </h4>
+                                                <p class="text-xs text-gray-500">Cierra en: <span
+                                                        class="<?php echo $sorteo['urgente'] ? 'text-orange-500' : 'text-gray-400'; ?> font-bold"><?php echo $sorteo['tiempo_restante']; ?></span>
+                                                </p>
+                                            </div>
+                                            <button
+                                                onclick="event.stopPropagation(); viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')"
+                                                class="text-gray-400 hover:text-primary">
+                                                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                                            </button>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="p-4 border-t border-gray-200 dark:border-border-dark">
+                            <button onclick="window.location.href='GeneradorGanadoresAdminstradores.php'"
+                                class="w-full py-2 text-sm text-center text-slate-900 dark:text-white bg-gray-100 dark:bg-[#111621] hover:bg-gray-200 dark:hover:bg-[#2a3241] rounded-lg transition-colors font-medium">
+                                Gestionar Ganadores
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Payments Table -->
+                <div
+                    class="bg-white dark:bg-card-dark rounded-xl border border-gray-200 dark:border-border-dark overflow-hidden">
+                    <div
+                        class="p-6 border-b border-gray-200 dark:border-border-dark flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Validación de Pagos Recientes
+                            </h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Pagos que requieren tu atención
+                                inmediata.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="showPaymentFilters()"
+                                class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Filtrar</button>
+                            <button onclick="exportPaymentsTable()"
+                                class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#111621] rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a3241]">Exportar</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-gray-50 dark:bg-[#151a25] border-b border-gray-200 dark:border-border-dark">
+                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Usuario</th>
+                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Sorteo</th>
+                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Referencia</th>
+                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Monto</th>
+                                    <th class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Estado</th>
+                                    <th
+                                        class="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-border-dark">
+                                <?php if (empty($pagos_pendientes)): ?>
+                                    <tr>
+                                        <td colspan="6" class="py-8 text-center">
+                                            <p class="text-gray-500 dark:text-gray-400 text-sm">No hay pagos registrados</p>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php
+                                    $colores_avatar = ['bg-gray-700', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600'];
+                                    foreach ($pagos_pendientes as $index => $pago):
+                                        $color_avatar = $colores_avatar[$index % count($colores_avatar)];
+                                        ?>
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                            <td class="py-4 px-6">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-8 h-8 rounded-full <?php echo $color_avatar; ?> flex items-center justify-center text-xs font-bold text-white">
+                                                        <?php echo $pago['iniciales']; ?>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                                            <?php echo htmlspecialchars($pago['usuario_nombre']); ?>
+                                                        </p>
+                                                        <p class="text-xs text-gray-500">
+                                                            <?php echo htmlspecialchars($pago['usuario_email']); ?>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">
+                                                <?php echo htmlspecialchars($pago['sorteo']); ?>
+                                            </td>
+                                            <td class="py-4 px-6 text-sm text-gray-500 font-mono">
+                                                <?php echo htmlspecialchars($pago['referencia']); ?>
+                                            </td>
+                                            <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">
+                                                $<?php echo $pago['monto']; ?></td>
+                                            <td class="py-4 px-6">
+                                                <?php
+                                                $estado_class = '';
+                                                $estado_texto = '';
+                                                switch ($pago['estado']) {
+                                                    case 'Pendiente':
+                                                        $estado_class = 'bg-yellow-500/10 text-yellow-500';
+                                                        $estado_texto = 'Pendiente';
+                                                        break;
+                                                    case 'Completado':
+                                                        $estado_class = 'bg-green-500/10 text-green-500';
+                                                        $estado_texto = 'Aprobado';
+                                                        break;
+                                                    case 'Fallido':
+                                                        $estado_class = 'bg-red-500/10 text-red-500';
+                                                        $estado_texto = 'Rechazado';
+                                                        break;
+                                                }
+                                                ?>
+                                                <span
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $estado_class; ?>">
+                                                    <?php echo $estado_texto; ?>
+                                                </span>
+                                            </td>
+                                            <td class="py-4 px-6 text-right">
+                                                <?php if ($pago['estado'] == 'Pendiente'): ?>
+                                                    <button
+                                                        onclick="validatePayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')"
+                                                        class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+                                                    <button
+                                                        onclick="rejectPayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')"
+                                                        class="text-gray-400 hover:text-red-500 transition-colors">
+                                                        <span class="material-symbols-outlined text-[20px]">block</span>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button
+                                                        onclick="viewPaymentDetails('<?php echo htmlspecialchars($pago['referencia']); ?>')"
+                                                        class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-gray-200 dark:border-border-dark flex items-center justify-between">
+                        <p class="text-xs text-gray-500">Mostrando <?php echo count($pagos_pendientes); ?> de
+                            <?php echo $kpis['pagos_pendientes']; ?> pendientes
+                        </p>
+                        <div class="flex gap-2">
+                            <button id="prevPaymentsBtn" onclick="changePaymentsPage('prev')"
+                                class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
+                            <button id="nextPaymentsBtn" onclick="changePaymentsPage('next')"
+                                class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
+                        </div>
+                    </div>
+                </div>
+        </main>
     </div>
-    <div class="p-4 border-t border-gray-200 dark:border-border-dark flex items-center justify-between">
-        <p class="text-xs text-gray-500">Mostrando <?php echo count($pagos_pendientes); ?> de <?php echo $kpis['pagos_pendientes']; ?> pendientes</p>
-        <div class="flex gap-2">
-            <button id="prevPaymentsBtn" onclick="changePaymentsPage('prev')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
-            <button id="nextPaymentsBtn" onclick="changePaymentsPage('next')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
-        </div>
-    </div>
-</div>
-</main>
-</div>
-<script>
-/**
- * DASHBOARD ADMINISTRADOR - Funcionalidades JavaScript
- * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
- */
+    <script>
+        /**
+         * DASHBOARD ADMINISTRADOR - Funcionalidades JavaScript
+         * Todas las funciones están documentadas para facilitar la migración a otra arquitectura
+         */
 
-// ========== BÚSQUEDA GLOBAL ==========
-document.addEventListener('DOMContentLoaded', function() {
-    const headerSearchInput = document.getElementById('headerSearchInput');
-    if (headerSearchInput) {
-        headerSearchInput.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase().trim();
-            if (query.length > 2) {
-                performGlobalSearch(query);
-            }
-        });
-        
-        headerSearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const query = e.target.value.toLowerCase().trim();
-                if (query.length > 0) {
-                    performGlobalSearch(query);
-                }
-            }
-        });
-    }
-});
+        // ========== BÚSQUEDA GLOBAL ==========
+        document.addEventListener('DOMContentLoaded', function () {
+            const headerSearchInput = document.getElementById('headerSearchInput');
+            if (headerSearchInput) {
+                headerSearchInput.addEventListener('input', function (e) {
+                    const query = e.target.value.toLowerCase().trim();
+                    if (query.length > 2) {
+                        performGlobalSearch(query);
+                    }
+                });
 
-/**
- * Realiza búsqueda global en la página actual
- * @param {string} query - Término de búsqueda
- */
-function performGlobalSearch(query) {
-    try {
-        if (!query || query.length < 2) {
-            return;
-        }
-        
-        const queryLower = query.toLowerCase().trim();
-        let resultados = [];
-        
-        // Buscar en la tabla de pagos recientes
-        const paymentRows = document.querySelectorAll('tbody tr');
-        paymentRows.forEach(row => {
-            const texto = row.textContent.toLowerCase();
-            if (texto.includes(queryLower)) {
-                resultados.push({
-                    tipo: 'Pago',
-                    texto: row.querySelector('td')?.textContent || '',
-                    elemento: row
+                headerSearchInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        const query = e.target.value.toLowerCase().trim();
+                        if (query.length > 0) {
+                            performGlobalSearch(query);
+                        }
+                    }
                 });
             }
         });
-        
-        // Buscar en sorteos por finalizar
-        const raffleCards = document.querySelectorAll('[data-raffle-name], .raffle-card');
-        raffleCards.forEach(card => {
-            const texto = card.textContent.toLowerCase();
-            if (texto.includes(queryLower)) {
-                resultados.push({
-                    tipo: 'Sorteo',
-                    texto: card.getAttribute('data-raffle-name') || card.textContent.substring(0, 50),
-                    elemento: card
-                });
-            }
-        });
-        
-        // Si hay resultados, resaltarlos
-        if (resultados.length > 0) {
-            // Remover resaltados previos
-            document.querySelectorAll('.search-highlight').forEach(el => {
-                el.classList.remove('search-highlight', 'bg-yellow-500/20');
-            });
-            
-            // Resaltar resultados
-            resultados.forEach(resultado => {
-                if (resultado.elemento) {
-                    resultado.elemento.classList.add('search-highlight', 'bg-yellow-500/20');
-                    resultado.elemento.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-            
-            showNotification(`Se encontraron ${resultados.length} resultado(s)`, 'success');
-        } else {
-            showNotification('No se encontraron resultados', 'info');
-        }
-    } catch (error) {
-        console.error('Error en búsqueda global:', error);
-        showNotification('Error al realizar la búsqueda', 'error');
-    }
-}
 
-// ========== NOTIFICACIONES ==========
-/**
- * Muestra panel de notificaciones
- */
-function showNotifications() {
-    const notifications = [
-        { id: 1, type: 'payment', message: '3 pagos pendientes de validación', time: 'Hace 5 min', action: () => window.location.href = 'ValidacionPagosAdministrador.php' },
-        { id: 2, type: 'raffle', message: 'Sorteo "iPhone 15 Pro Max" finaliza en 2 horas', time: 'Hace 15 min', action: () => window.location.href = 'CrudGestionSorteo.php' },
-        { id: 3, type: 'winner', message: 'Ganador generado para sorteo #8820', time: 'Hace 1 hora', action: () => window.location.href = 'GeneradorGanadoresAdminstradores.php' }
-    ];
-    
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
-    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
-    
-    modal.innerHTML = `
+        /**
+         * Realiza búsqueda global en la página actual
+         * @param {string} query - Término de búsqueda
+         */
+        function performGlobalSearch(query) {
+            try {
+                if (!query || query.length < 2) {
+                    return;
+                }
+
+                const queryLower = query.toLowerCase().trim();
+                let resultados = [];
+
+                // Buscar en la tabla de pagos recientes
+                const paymentRows = document.querySelectorAll('tbody tr');
+                paymentRows.forEach(row => {
+                    const texto = row.textContent.toLowerCase();
+                    if (texto.includes(queryLower)) {
+                        resultados.push({
+                            tipo: 'Pago',
+                            texto: row.querySelector('td')?.textContent || '',
+                            elemento: row
+                        });
+                    }
+                });
+
+                // Buscar en sorteos por finalizar
+                const raffleCards = document.querySelectorAll('[data-raffle-name], .raffle-card');
+                raffleCards.forEach(card => {
+                    const texto = card.textContent.toLowerCase();
+                    if (texto.includes(queryLower)) {
+                        resultados.push({
+                            tipo: 'Sorteo',
+                            texto: card.getAttribute('data-raffle-name') || card.textContent.substring(0, 50),
+                            elemento: card
+                        });
+                    }
+                });
+
+                // Si hay resultados, resaltarlos
+                if (resultados.length > 0) {
+                    // Remover resaltados previos
+                    document.querySelectorAll('.search-highlight').forEach(el => {
+                        el.classList.remove('search-highlight', 'bg-yellow-500/20');
+                    });
+
+                    // Resaltar resultados
+                    resultados.forEach(resultado => {
+                        if (resultado.elemento) {
+                            resultado.elemento.classList.add('search-highlight', 'bg-yellow-500/20');
+                            resultado.elemento.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
+
+                    showNotification(`Se encontraron ${resultados.length} resultado(s)`, 'success');
+                } else {
+                    showNotification('No se encontraron resultados', 'info');
+                }
+            } catch (error) {
+                console.error('Error en búsqueda global:', error);
+                showNotification('Error al realizar la búsqueda', 'error');
+            }
+        }
+
+        // ========== NOTIFICACIONES ==========
+        /**
+         * Muestra panel de notificaciones
+         */
+        function showNotifications() {
+            const notifications = [
+                { id: 1, type: 'payment', message: '3 pagos pendientes de validación', time: 'Hace 5 min', action: () => window.location.href = 'ValidacionPagosAdministrador.php' },
+                { id: 2, type: 'raffle', message: 'Sorteo "iPhone 15 Pro Max" finaliza en 2 horas', time: 'Hace 15 min', action: () => window.location.href = 'CrudGestionSorteo.php' },
+                { id: 3, type: 'winner', message: 'Ganador generado para sorteo #8820', time: 'Hace 1 hora', action: () => window.location.href = 'GeneradorGanadoresAdminstradores.php' }
+            ];
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+            modal.onclick = function (e) { if (e.target === modal) modal.remove(); };
+
+            modal.innerHTML = `
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
             <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-border-dark">
@@ -719,309 +834,309 @@ function showNotifications() {
             </div>
         </div>
     `;
-    
-    document.body.appendChild(modal);
-}
 
-// ========== GRÁFICO DE VENTAS ==========
-/**
- * Actualiza el período del gráfico de ventas
- * @param {string} period - Período seleccionado (30days, week, year)
- */
-function updateChartPeriod(period) {
-    console.log('Actualizando gráfico para período:', period);
-    showNotification(`Gráfico actualizado: ${period}`, 'success');
-    // En producción, esto haría una llamada API para obtener nuevos datos
-    // y actualizaría el SVG del gráfico
-}
+            document.body.appendChild(modal);
+        }
 
-// ========== SORTEOS POR FINALIZAR ==========
-/**
- * Muestra detalles de un sorteo
- * @param {string} raffleName - Nombre del sorteo
- */
-function viewRaffleDetails(raffleName) {
-    console.log('Ver detalles de sorteo:', raffleName);
-    window.location.href = `CrudGestionSorteo.php?raffle=${encodeURIComponent(raffleName)}`;
-}
+        // ========== GRÁFICO DE VENTAS ==========
+        /**
+         * Actualiza el período del gráfico de ventas
+         * @param {string} period - Período seleccionado (30days, week, year)
+         */
+        function updateChartPeriod(period) {
+            console.log('Actualizando gráfico para período:', period);
+            showNotification(`Gráfico actualizado: ${period}`, 'success');
+            // En producción, esto haría una llamada API para obtener nuevos datos
+            // y actualizaría el SVG del gráfico
+        }
 
-// ========== VALIDACIÓN DE PAGOS ==========
-/**
- * Valida un pago pendiente
- * @param {string} reference - Referencia del pago
- * @param {string} userName - Nombre del usuario
- */
-async function validatePayment(reference, userName) {
-    const confirmado = await mostrarModalConfirmacion(
-        `¿Deseas aprobar el pago ${reference} de ${userName}?`,
-        'Confirmar aprobación',
-        'info'
-    );
-    
-    if (!confirmado) {
-        return;
-    }
-    
-    // Simular validación
-    showNotification(`Pago ${reference} aprobado exitosamente`, 'success');
-    
-    // En producción: llamada API
-    // fetch(`/api/payments/${reference}/approve`, { method: 'POST' })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         showNotification('Pago aprobado', 'success');
-    //         location.reload();
-    //     });
-}
+        // ========== SORTEOS POR FINALIZAR ==========
+        /**
+         * Muestra detalles de un sorteo
+         * @param {string} raffleName - Nombre del sorteo
+         */
+        function viewRaffleDetails(raffleName) {
+            console.log('Ver detalles de sorteo:', raffleName);
+            window.location.href = `CrudGestionSorteo.php?raffle=${encodeURIComponent(raffleName)}`;
+        }
 
-/**
- * Rechaza un pago pendiente
- * @param {string} reference - Referencia del pago
- * @param {string} userName - Nombre del usuario
- */
-async function rejectPayment(reference, userName) {
-    const motivo = await mostrarModalInput(
-        `¿Por qué deseas rechazar el pago ${reference} de ${userName}?`,
-        'Motivo del rechazo',
-        'Ingresa el motivo del rechazo...',
-        ''
-    );
-    
-    if (!motivo || motivo.trim() === '') {
-        return;
-    }
-    
-    // Simular rechazo
-    showNotification(`Pago ${reference} rechazado`, 'success');
-    
-    // En producción: llamada API
-    // fetch(`/api/payments/${reference}/reject`, { 
-    //     method: 'POST',
-    //     body: JSON.stringify({ motivo })
-    // })
-}
+        // ========== VALIDACIÓN DE PAGOS ==========
+        /**
+         * Valida un pago pendiente
+         * @param {string} reference - Referencia del pago
+         * @param {string} userName - Nombre del usuario
+         */
+        async function validatePayment(reference, userName) {
+            const confirmado = await mostrarModalConfirmacion(
+                `¿Deseas aprobar el pago ${reference} de ${userName}?`,
+                'Confirmar aprobación',
+                'info'
+            );
 
-/**
- * Muestra detalles de un pago
- * @param {string} reference - Referencia del pago
- */
-function viewPaymentDetails(reference) {
-    window.location.href = `ValidacionPagosAdministrador.php?payment=${reference}`;
-}
+            if (!confirmado) {
+                return;
+            }
 
-/**
- * Muestra filtros para la tabla de pagos
- */
-function showPaymentFilters() {
-    showNotification('Funcionalidad de filtros próximamente', 'info');
-    // En producción, mostraría un modal con opciones de filtrado
-}
+            // Simular validación
+            showNotification(`Pago ${reference} aprobado exitosamente`, 'success');
 
-/**
- * Exporta la tabla de pagos a CSV
- */
-function exportPaymentsTable() {
-    const data = [
-        ['Usuario', 'Sorteo', 'Referencia', 'Monto', 'Estado'],
-        ['Juan Pérez', 'Sorteo Zapatillas Jordan', 'REF-982342', '$25.00', 'Pendiente'],
-        ['María Rodríguez', 'iPhone 15 Pro Max', 'REF-982343', '$50.00', 'Aprobado'],
-        ['Luis González', 'Gran Premio $50,000', 'REF-982344', '$100.00', 'Rechazado'],
-        ['Ana Sánchez', 'Sorteo Zapatillas Jordan', 'REF-982345', '$25.00', 'Pendiente']
-    ];
-    
-    const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `pagos_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    
-    showNotification('Tabla exportada exitosamente', 'success');
-}
+            // En producción: llamada API
+            // fetch(`/api/payments/${reference}/approve`, { method: 'POST' })
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         showNotification('Pago aprobado', 'success');
+            //         location.reload();
+            //     });
+        }
 
-// ========== PAGINACIÓN DE PAGOS ==========
-let currentPaymentsPage = 1;
-const totalPaymentsPages = 6; // 23 pagos / 4 por página
+        /**
+         * Rechaza un pago pendiente
+         * @param {string} reference - Referencia del pago
+         * @param {string} userName - Nombre del usuario
+         */
+        async function rejectPayment(reference, userName) {
+            const motivo = await mostrarModalInput(
+                `¿Por qué deseas rechazar el pago ${reference} de ${userName}?`,
+                'Motivo del rechazo',
+                'Ingresa el motivo del rechazo...',
+                ''
+            );
 
-/**
- * Cambia la página de la tabla de pagos
- * @param {string} direction - 'prev' o 'next'
- */
-function changePaymentsPage(direction) {
-    if (direction === 'prev' && currentPaymentsPage > 1) {
-        currentPaymentsPage--;
-    } else if (direction === 'next' && currentPaymentsPage < totalPaymentsPages) {
-        currentPaymentsPage++;
-    }
-    
-    // Actualizar botones
-    document.getElementById('prevPaymentsBtn').disabled = currentPaymentsPage === 1;
-    document.getElementById('nextPaymentsBtn').disabled = currentPaymentsPage === totalPaymentsPages;
-    
-    // En producción, cargaría los datos de la página
-    showNotification(`Página ${currentPaymentsPage} de ${totalPaymentsPages}`, 'info');
-}
+            if (!motivo || motivo.trim() === '') {
+                return;
+            }
 
-// ========== NOTIFICACIONES TOAST ==========
-/**
- * Muestra una notificación toast
- * @param {string} message - Mensaje a mostrar
- * @param {string} type - Tipo: 'success', 'error', 'info'
- */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
-        type === 'success' ? 'bg-green-500 text-white' : 
-        type === 'error' ? 'bg-red-500 text-white' : 
-        'bg-blue-500 text-white'
-    }`;
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateX(100%)';
-    notification.style.transition = 'all 0.3s ease-in-out';
-    
-    notification.innerHTML = `
+            // Simular rechazo
+            showNotification(`Pago ${reference} rechazado`, 'success');
+
+            // En producción: llamada API
+            // fetch(`/api/payments/${reference}/reject`, { 
+            //     method: 'POST',
+            //     body: JSON.stringify({ motivo })
+            // })
+        }
+
+        /**
+         * Muestra detalles de un pago
+         * @param {string} reference - Referencia del pago
+         */
+        function viewPaymentDetails(reference) {
+            window.location.href = `ValidacionPagosAdministrador.php?payment=${reference}`;
+        }
+
+        /**
+         * Muestra filtros para la tabla de pagos
+         */
+        function showPaymentFilters() {
+            showNotification('Funcionalidad de filtros próximamente', 'info');
+            // En producción, mostraría un modal con opciones de filtrado
+        }
+
+        /**
+         * Exporta la tabla de pagos a CSV
+         */
+        function exportPaymentsTable() {
+            const data = [
+                ['Usuario', 'Sorteo', 'Referencia', 'Monto', 'Estado'],
+                ['Juan Pérez', 'Sorteo Zapatillas Jordan', 'REF-982342', '$25.00', 'Pendiente'],
+                ['María Rodríguez', 'iPhone 15 Pro Max', 'REF-982343', '$50.00', 'Aprobado'],
+                ['Luis González', 'Gran Premio $50,000', 'REF-982344', '$100.00', 'Rechazado'],
+                ['Ana Sánchez', 'Sorteo Zapatillas Jordan', 'REF-982345', '$25.00', 'Pendiente']
+            ];
+
+            const csv = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `pagos_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+
+            showNotification('Tabla exportada exitosamente', 'success');
+        }
+
+        // ========== PAGINACIÓN DE PAGOS ==========
+        let currentPaymentsPage = 1;
+        const totalPaymentsPages = 6; // 23 pagos / 4 por página
+
+        /**
+         * Cambia la página de la tabla de pagos
+         * @param {string} direction - 'prev' o 'next'
+         */
+        function changePaymentsPage(direction) {
+            if (direction === 'prev' && currentPaymentsPage > 1) {
+                currentPaymentsPage--;
+            } else if (direction === 'next' && currentPaymentsPage < totalPaymentsPages) {
+                currentPaymentsPage++;
+            }
+
+            // Actualizar botones
+            document.getElementById('prevPaymentsBtn').disabled = currentPaymentsPage === 1;
+            document.getElementById('nextPaymentsBtn').disabled = currentPaymentsPage === totalPaymentsPages;
+
+            // En producción, cargaría los datos de la página
+            showNotification(`Página ${currentPaymentsPage} de ${totalPaymentsPages}`, 'info');
+        }
+
+        // ========== NOTIFICACIONES TOAST ==========
+        /**
+         * Muestra una notificación toast
+         * @param {string} message - Mensaje a mostrar
+         * @param {string} type - Tipo: 'success', 'error', 'info'
+         */
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                    'bg-blue-500 text-white'
+                }`;
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            notification.style.transition = 'all 0.3s ease-in-out';
+
+            notification.innerHTML = `
         <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
         <span class="font-medium">${message}</span>
     `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
 
-// ========== NAVEGACIÓN DINÁMICA ==========
-/**
- * Inicializa la navegación dinámica
- */
-document.addEventListener('DOMContentLoaded', function() {
-    setActiveMenuItem();
-    initMobileMenu();
-});
+            document.body.appendChild(notification);
 
-/**
- * Establece el estado activo del menú según la página actual
- */
-function setActiveMenuItem() {
-    const currentPage = window.location.pathname.split('/').pop() || window.location.href.split('/').pop();
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    navLinks.forEach(link => {
-        const linkPage = link.getAttribute('data-page') || link.getAttribute('href');
-        if (linkPage === currentPage || link.getAttribute('href') === currentPage) {
-            link.className = 'nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium';
-            const icon = link.querySelector('.material-symbols-outlined');
-            if (icon) {
-                icon.classList.remove('group-hover:text-primary', 'transition-colors');
-            }
-        } else {
-            link.className = 'nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group';
-            const icon = link.querySelector('.material-symbols-outlined');
-            if (icon && !icon.classList.contains('group-hover:text-primary')) {
-                icon.classList.add('group-hover:text-primary', 'transition-colors');
-            }
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
-    });
-}
 
-/**
- * Inicializa el menú móvil
- */
-function initMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobileOverlay');
-    
-    // Cerrar menú al hacer clic en un enlace (móvil)
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 1024) {
-                toggleMobileMenu();
-            }
+        // ========== NAVEGACIÓN DINÁMICA ==========
+        /**
+         * Inicializa la navegación dinámica
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+            setActiveMenuItem();
+            initMobileMenu();
         });
-    });
-    
-    // Cerrar menú al redimensionar a desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 1024) {
-            if (sidebar) sidebar.classList.remove('-translate-x-full');
-            if (overlay) overlay.classList.add('hidden');
+
+        /**
+         * Establece el estado activo del menú según la página actual
+         */
+        function setActiveMenuItem() {
+            const currentPage = window.location.pathname.split('/').pop() || window.location.href.split('/').pop();
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            navLinks.forEach(link => {
+                const linkPage = link.getAttribute('data-page') || link.getAttribute('href');
+                if (linkPage === currentPage || link.getAttribute('href') === currentPage) {
+                    link.className = 'nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium';
+                    const icon = link.querySelector('.material-symbols-outlined');
+                    if (icon) {
+                        icon.classList.remove('group-hover:text-primary', 'transition-colors');
+                    }
+                } else {
+                    link.className = 'nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors group';
+                    const icon = link.querySelector('.material-symbols-outlined');
+                    if (icon && !icon.classList.contains('group-hover:text-primary')) {
+                        icon.classList.add('group-hover:text-primary', 'transition-colors');
+                    }
+                }
+            });
         }
-    });
-}
 
-/**
- * Toggle del menú móvil
- */
-function toggleMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('mobileOverlay');
-    
-    if (sidebar && overlay) {
-        const isOpen = !sidebar.classList.contains('-translate-x-full');
-        
-        if (isOpen) {
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-        } else {
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
+        /**
+         * Inicializa el menú móvil
+         */
+        function initMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+
+            // Cerrar menú al hacer clic en un enlace (móvil)
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth < 1024) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+
+            // Cerrar menú al redimensionar a desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1024) {
+                    if (sidebar) sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                }
+            });
         }
-    }
-}
 
-/**
- * Navega hacia atrás en el historial
- */
-function goBack() {
-    if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        // Fallback a página padre
-        window.location.href = 'GestionUsuariosAdministrador.php';
-    }
-}
+        /**
+         * Toggle del menú móvil
+         */
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
 
-// ========== SISTEMA DE MODALES ==========
-/**
- * Muestra un modal de confirmación (reemplazo de confirm())
- */
-function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 'warning') {
-    return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.2s ease-in-out';
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.setAttribute('aria-labelledby', 'confirm-modal-title');
-        overlay.onclick = function(e) {
-            if (e.target === overlay) {
-                cerrarModal(overlay);
-                resolve(false);
+            if (sidebar && overlay) {
+                const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+                if (isOpen) {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                }
             }
-        };
-        
-        const iconos = {
-            warning: { icon: 'warning', color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-            danger: { icon: 'error', color: 'text-red-400', bg: 'bg-red-500/10' },
-            info: { icon: 'info', color: 'text-blue-400', bg: 'bg-blue-500/10' }
-        };
-        
-        const config = iconos[tipo] || iconos.warning;
-        
-        const modal = document.createElement('div');
-        modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
-        
-        modal.innerHTML = `
+        }
+
+        /**
+         * Navega hacia atrás en el historial
+         */
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // Fallback a página padre
+                window.location.href = 'GestionUsuariosAdministrador.php';
+            }
+        }
+
+
+        // ========== SISTEMA DE MODALES ==========
+        /**
+         * Muestra un modal de confirmación (reemplazo de confirm())
+         */
+        function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 'warning') {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.2s ease-in-out';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.setAttribute('aria-labelledby', 'confirm-modal-title');
+                overlay.onclick = function (e) {
+                    if (e.target === overlay) {
+                        cerrarModal(overlay);
+                        resolve(false);
+                    }
+                };
+
+                const iconos = {
+                    warning: { icon: 'warning', color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+                    danger: { icon: 'error', color: 'text-red-400', bg: 'bg-red-500/10' },
+                    info: { icon: 'info', color: 'text-blue-400', bg: 'bg-blue-500/10' }
+                };
+
+                const config = iconos[tipo] || iconos.warning;
+
+                const modal = document.createElement('div');
+                modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
+
+                modal.innerHTML = `
             <div aria-hidden="true" class="fixed inset-0 transition-opacity">
                 <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
             </div>
@@ -1050,58 +1165,58 @@ function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 
                 </div>
             </div>
         `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        
-        window.modalConfirmResolve = resolve;
-        
-        const confirmBtn = overlay.querySelector('#confirmBtn');
-        confirmBtn.onclick = () => {
-            cerrarModal(overlay);
-            resolve(true);
-        };
-        
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-        }, 10);
-        
-        const escHandler = (e) => {
-            if (e.key === 'Escape') {
-                cerrarModal(overlay);
-                resolve(false);
-                document.removeEventListener('keydown', escHandler);
-            }
-        };
-        document.addEventListener('keydown', escHandler);
-        
-        setTimeout(() => confirmBtn.focus(), 100);
-    });
-}
 
-/**
- * Muestra un modal de entrada de texto (reemplazo de prompt())
- */
-function mostrarModalInput(mensaje, titulo = 'Ingresar información', placeholder = '', valorInicial = '') {
-    return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.2s ease-in-out';
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.setAttribute('aria-labelledby', 'input-modal-title');
-        overlay.onclick = function(e) {
-            if (e.target === overlay) {
-                cerrarModal(overlay);
-                resolve(null);
-            }
-        };
-        
-        const modal = document.createElement('div');
-        modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
-        
-        modal.innerHTML = `
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+
+                window.modalConfirmResolve = resolve;
+
+                const confirmBtn = overlay.querySelector('#confirmBtn');
+                confirmBtn.onclick = () => {
+                    cerrarModal(overlay);
+                    resolve(true);
+                };
+
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                }, 10);
+
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cerrarModal(overlay);
+                        resolve(false);
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+
+                setTimeout(() => confirmBtn.focus(), 100);
+            });
+        }
+
+        /**
+         * Muestra un modal de entrada de texto (reemplazo de prompt())
+         */
+        function mostrarModalInput(mensaje, titulo = 'Ingresar información', placeholder = '', valorInicial = '') {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.2s ease-in-out';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.setAttribute('aria-labelledby', 'input-modal-title');
+                overlay.onclick = function (e) {
+                    if (e.target === overlay) {
+                        cerrarModal(overlay);
+                        resolve(null);
+                    }
+                };
+
+                const modal = document.createElement('div');
+                modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
+
+                modal.innerHTML = `
             <div aria-hidden="true" class="fixed inset-0 transition-opacity">
                 <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
             </div>
@@ -1131,58 +1246,61 @@ function mostrarModalInput(mensaje, titulo = 'Ingresar información', placeholde
                 </div>
             </div>
         `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        
-        window.modalInputResolve = resolve;
-        
-        const input = overlay.querySelector('#modalInput');
-        const submitBtn = overlay.querySelector('#submitBtn');
-        
-        submitBtn.onclick = () => {
-            const valor = input.value.trim();
-            cerrarModal(overlay);
-            resolve(valor || null);
-        };
-        
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                submitBtn.click();
-            }
-        };
-        
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-            input.focus();
-            input.select();
-        }, 10);
-        
-        const escHandler = (e) => {
-            if (e.key === 'Escape') {
-                cerrarModal(overlay);
-                resolve(null);
-                document.removeEventListener('keydown', escHandler);
-            }
-        };
-        document.addEventListener('keydown', escHandler);
-    });
-}
 
-/**
- * Cierra un modal
- */
-function cerrarModal(overlay) {
-    if (overlay) {
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-            overlay.remove();
-        }, 200);
-    }
-}
-</script>
-</body></html>
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+
+                window.modalInputResolve = resolve;
+
+                const input = overlay.querySelector('#modalInput');
+                const submitBtn = overlay.querySelector('#submitBtn');
+
+                submitBtn.onclick = () => {
+                    const valor = input.value.trim();
+                    cerrarModal(overlay);
+                    resolve(valor || null);
+                };
+
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        submitBtn.click();
+                    }
+                };
+
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    input.focus();
+                    input.select();
+                }, 10);
+
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cerrarModal(overlay);
+                        resolve(null);
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+            });
+        }
+
+        /**
+         * Cierra un modal
+         */
+        function cerrarModal(overlay) {
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.remove();
+                }, 200);
+            }
+        }
+    </script>
+</body>
+
+</html>
 
 //pagina para ver el dashboard como administrador despues de iniciar sesion
-//Se ve esta pagina para ver el dashboard de la plataforma y los datos de los sorteos, los boletos vendidos, los pagos pendientes, los sorteos activos y los sorteos por finalizar.
+//Se ve esta pagina para ver el dashboard de la plataforma y los datos de los sorteos, los boletos vendidos, los pagos
+pendientes, los sorteos activos y los sorteos por finalizar.

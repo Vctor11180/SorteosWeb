@@ -187,11 +187,19 @@ $tipoUsuario = $datosUsuario['tipoUsuario'];
 <div class="lg:col-span-8 flex flex-col gap-6">
 <div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] p-6 md:p-8 shadow-2xl shadow-black/20 backdrop-blur-sm">
 <div class="mb-6 pb-6 border-b border-[#282d39]/50">
+<div class="flex items-center justify-between">
+<div>
 <h2 class="text-white text-2xl font-bold flex items-center gap-3">
 <span class="material-symbols-outlined text-primary text-2xl">support_agent</span>
 Envíanos un mensaje
 </h2>
 <p class="text-[#9da6b9] text-sm mt-2">Responderemos a tu consulta en un plazo de 24 horas.</p>
+</div>
+<a href="MisTicketsSoporte.php" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary/10 to-blue-600/10 border border-primary/20 hover:border-primary/40 text-primary font-semibold text-sm transition-all duration-200 hover:from-primary/20 hover:to-blue-600/20">
+<span class="material-symbols-outlined text-lg">inbox</span>
+Ver mis tickets
+</a>
+</div>
 </div>
 <form id="contact-form" action="#" class="flex flex-col gap-5">
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -369,17 +377,9 @@ Información de Contacto
 <!-- Client Layout Script -->
 <script src="js/custom-alerts.js"></script>
 <script src="js/client-layout.js"></script>
-<!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <!-- Custom Alerts Script -->
 <script src="js/custom-alerts.js"></script>
 <script>
-// Configuración de EmailJS
-const EMAILJS_SERVICE_ID = 'service_t6dgdll';
-const EMAILJS_TEMPLATE_ID = 'template_lrz706t';
-const EMAILJS_PUBLIC_KEY = 'AbarWURbTBo53jPRO';
-const RECIPIENT_EMAIL = 'ismaeldev04@gmail.com'; // Correo destinatario
-
 // Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
 const userSessionData = {
     nombre: '<?php echo addslashes($usuarioNombre); ?>',
@@ -402,106 +402,124 @@ if (userSessionData.nombre && userSessionData.tipoUsuario) {
     sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
 }
 
-// Inicializar EmailJS cuando el SDK esté cargado
+// Inicializar cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('soporte');
     }
     
-    // Inicializar EmailJS
-    if (typeof emailjs !== 'undefined') {
-        emailjs.init(EMAILJS_PUBLIC_KEY);
-    }
-    
     // Manejar el envío del formulario de contacto
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Obtener valores del formulario
-            const nombre = contactForm.querySelector('input[type="text"]').value.trim();
-            const email = contactForm.querySelector('input[type="email"]').value.trim();
+            const nombreInput = contactForm.querySelector('input[type="text"]');
+            const emailInput = contactForm.querySelector('input[type="email"]');
             const selectElement = contactForm.querySelector('select');
-            const asuntoTexto = selectElement.options[selectElement.selectedIndex].text;
-            const asunto = selectElement.value || asuntoTexto;
-            const mensaje = contactForm.querySelector('textarea').value.trim();
+            const mensajeTextarea = contactForm.querySelector('textarea');
+            
+            const nombre = nombreInput ? nombreInput.value.trim() : '';
+            const email = emailInput ? emailInput.value.trim() : '';
+            const asuntoTexto = selectElement ? selectElement.options[selectElement.selectedIndex].text : '';
+            const asunto = selectElement ? (selectElement.value || asuntoTexto) : '';
+            const mensaje = mensajeTextarea ? mensajeTextarea.value.trim() : '';
             
             // Validar campos
-            if (!nombre || !email || !mensaje || !asunto || asunto === '') {
+            if (!nombre || !email || !mensaje || !asunto || asunto === '' || selectElement.selectedIndex === 0) {
                 if (typeof customToast === 'function') {
-                    customToast('Por favor, completa todos los campos', 'error', 3000);
+                    customToast('Por favor, completa todos los campos correctamente', 'error', 3000);
                 } else {
-                    alert('Por favor, completa todos los campos');
+                    alert('Por favor, completa todos los campos correctamente');
                 }
                 return;
             }
             
-            // Usar EmailJS para enviar el correo
-            if (typeof emailjs !== 'undefined') {
-                // Preparar los parámetros del template (deben coincidir con las variables de tu plantilla en EmailJS)
-                const templateParams = {
-                    from_name: nombre,
-                    from_email: email,
-                    subject: `[Soporte Sorteos Web] ${asuntoTexto}`,
-                    message: mensaje,
-                    reply_to: email
-                };
+            // Validar longitud mínima del mensaje
+            if (mensaje.length < 10) {
+                if (typeof customToast === 'function') {
+                    customToast('El mensaje debe tener al menos 10 caracteres', 'error', 3000);
+                } else {
+                    alert('El mensaje debe tener al menos 10 caracteres');
+                }
+                return;
+            }
+            
+            // Determinar prioridad según el asunto
+            let prioridad = 'Media';
+            const asuntoLower = asunto.toLowerCase();
+            if (asuntoLower.includes('urgente') || asuntoLower.includes('crítico') || asuntoLower.includes('pago')) {
+                prioridad = 'Alta';
+            } else if (asuntoLower.includes('consulta') || asuntoLower.includes('información')) {
+                prioridad = 'Baja';
+            }
+            
+            // Preparar datos para la API
+            const ticketData = {
+                asunto: `${asuntoTexto}: ${nombre}`,
+                mensaje: `Nombre: ${nombre}\nEmail: ${email}\n\nMensaje:\n${mensaje}`,
+                prioridad: prioridad,
+                categoria: asunto
+            };
+            
+            // Deshabilitar el botón de envío mientras se procesa
+            const submitButton = contactForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Enviando...</span>';
+            
+            try {
+                // Enviar ticket a la API
+                const response = await fetch('api_soporte.php?action=create_ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ticketData)
+                });
                 
-                // Deshabilitar el botón de envío mientras se procesa
-                const submitButton = contactForm.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.innerHTML;
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Enviando...</span>';
+                const result = await response.json();
                 
-                // Enviar el correo usando EmailJS
-                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-                    .then(function(response) {
-                        console.log('Email enviado exitosamente!', response.status, response.text);
-                        if (typeof customToast === 'function') {
-                            customToast('Mensaje enviado exitosamente. Te responderemos pronto.', 'success', 4000);
-                        } else {
-                            alert('Mensaje enviado exitosamente');
-                        }
-                        contactForm.reset();
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = originalButtonText;
-                    }, function(error) {
-                        console.error('Error completo al enviar email:', error);
-                        console.error('Código de error:', error.text || error);
-                        console.error('Status:', error.status);
-                        
-                        let errorMessage = 'Error al enviar el mensaje. ';
-                        if (error.text) {
-                            errorMessage += error.text;
-                        } else {
-                            errorMessage += 'Por favor, verifica la consola para más detalles.';
-                        }
-                        
-                        if (typeof customToast === 'function') {
-                            customToast(errorMessage, 'error', 6000);
-                        } else {
-                            alert(errorMessage);
-                        }
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = originalButtonText;
-                    });
-            } else {
-                // EmailJS no está disponible, usar mailto
-                const subject = encodeURIComponent(`[Soporte Sorteos Web] ${asuntoTexto}`);
-                const body = encodeURIComponent(`Nombre: ${nombre}\nCorreo: ${email}\nAsunto: ${asuntoTexto}\n\nMensaje:\n${mensaje}`);
-                const mailtoLink = `mailto:${RECIPIENT_EMAIL}?subject=${subject}&body=${body}`;
-                
-                window.location.href = mailtoLink;
-                
-                setTimeout(() => {
+                if (result.success) {
+                    // Éxito
                     if (typeof customToast === 'function') {
-                        customToast('Se abrirá tu cliente de correo para enviar el mensaje.', 'info', 4000);
+                        customToast('Ticket creado exitosamente. Número de ticket: #' + result.data.id_ticket + '. Te responderemos pronto.', 'success', 5000);
                     } else {
-                        alert('Se abrirá tu cliente de correo para enviar el mensaje.');
+                        alert('Ticket creado exitosamente. Número: #' + result.data.id_ticket);
                     }
+                    
+                    // Limpiar formulario
                     contactForm.reset();
-                }, 500);
+                    
+                    // Opcional: Redirigir a ver el ticket o mostrar enlace
+                    setTimeout(() => {
+                        if (confirm('¿Deseas ver tus tickets de soporte?')) {
+                            window.location.href = 'MisTicketsSoporte.php';
+                        }
+                    }, 2000);
+                } else {
+                    // Error de la API
+                    const errorMessage = result.error || 'Error al crear el ticket';
+                    if (typeof customToast === 'function') {
+                        customToast(errorMessage, 'error', 6000);
+                    } else {
+                        alert(errorMessage);
+                    }
+                }
+            } catch (error) {
+                // Error de red o del servidor
+                console.error('Error al crear ticket:', error);
+                const errorMessage = 'Error de conexión. Por favor, intenta nuevamente.';
+                if (typeof customToast === 'function') {
+                    customToast(errorMessage, 'error', 6000);
+                } else {
+                    alert(errorMessage);
+                }
+            } finally {
+                // Restaurar botón
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
             }
         });
     }

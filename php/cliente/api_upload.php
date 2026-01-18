@@ -5,6 +5,7 @@
  * 
  * Endpoints:
  * - POST ?action=upload_comprobante - Subir comprobante de pago
+ * - POST ?action=upload_avatar - Subir foto de perfil/avatar del usuario
  */
 
 // Desactivar display_errors para evitar output antes del JSON
@@ -60,6 +61,11 @@ try {
         case 'upload_comprobante':
             ob_clean();
             uploadComprobante($usuarioId);
+            break;
+            
+        case 'upload_avatar':
+            ob_clean();
+            uploadAvatar($usuarioId);
             break;
             
         default:
@@ -210,6 +216,180 @@ function uploadComprobante($usuarioId) {
         error_log("Error en uploadComprobante: " . $e->getMessage());
         error_log("Stack trace: " . $e->getTraceAsString());
         sendError('Error al subir el comprobante: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Sube un avatar/foto de perfil del usuario
+ */
+function uploadAvatar($usuarioId) {
+    try {
+        // Verificar que se envió un archivo
+        if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
+            $errorMessage = 'No se recibió ningún archivo.';
+            
+            if (isset($_FILES['avatar']['error'])) {
+                switch ($_FILES['avatar']['error']) {
+                    case UPLOAD_ERR_INI_SIZE:
+                    case UPLOAD_ERR_FORM_SIZE:
+                        $errorMessage = 'El archivo excede el tamaño máximo permitido (5MB).';
+                        break;
+                    case UPLOAD_ERR_PARTIAL:
+                        $errorMessage = 'El archivo se subió parcialmente.';
+                        break;
+                    case UPLOAD_ERR_NO_FILE:
+                        $errorMessage = 'No se seleccionó ningún archivo.';
+                        break;
+                    case UPLOAD_ERR_NO_TMP_DIR:
+                        $errorMessage = 'Error del servidor: falta carpeta temporal.';
+                        break;
+                    case UPLOAD_ERR_CANT_WRITE:
+                        $errorMessage = 'Error del servidor: no se pudo escribir el archivo.';
+                        break;
+                    case UPLOAD_ERR_EXTENSION:
+                        $errorMessage = 'Error del servidor: extensión bloqueada.';
+                        break;
+                }
+            }
+            
+            sendError($errorMessage, 400);
+            return;
+        }
+        
+        $file = $_FILES['avatar'];
+        
+        // Validar tipo de archivo (solo imágenes para avatares)
+        $allowedTypes = [
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/webp'
+        ];
+        
+        $allowedExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+        
+        // Obtener tipo MIME
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        
+        // Obtener extensión del archivo original
+        $originalName = $file['name'];
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        
+        // Validar tipo MIME y extensión
+        if (!in_array($mimeType, $allowedTypes) || !in_array($extension, $allowedExtensions)) {
+            sendError('Tipo de archivo no permitido. Solo se permiten archivos PNG, JPG, JPEG o WEBP.', 400);
+            return;
+        }
+        
+        // Validar tamaño (5MB máximo para avatares)
+        $maxSize = 5 * 1024 * 1024; // 5MB en bytes
+        if ($file['size'] > $maxSize) {
+            sendError('El archivo excede el tamaño máximo de 5MB.', 400);
+            return;
+        }
+        
+        // Validar tamaño mínimo (1KB)
+        $minSize = 1024; // 1KB
+        if ($file['size'] < $minSize) {
+            sendError('El archivo es demasiado pequeño. Debe tener al menos 1KB.', 400);
+            return;
+        }
+        
+        // Crear directorio de avatares si no existe
+        $uploadDir = __DIR__ . '/uploads/avatars/';
+        if (!file_exists($uploadDir)) {
+            if (!mkdir($uploadDir, 0755, true)) {
+                error_log("Error: No se pudo crear el directorio de avatares: $uploadDir");
+                sendError('Error del servidor: no se pudo crear el directorio de almacenamiento.', 500);
+                return;
+            }
+        }
+        
+        // Eliminar avatar anterior del usuario si existe
+        try {
+            require_once __DIR__ . '/config/database.php';
+            $db = getDB();
+            
+            $stmt = $db->prepare("SELECT avatar_url FROM usuarios WHERE id_usuario = :usuario_id");
+            $stmt->execute([':usuario_id' => $usuarioId]);
+            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($usuario && !empty($usuario['avatar_url']) && strpos($usuario['avatar_url'], 'uploads/avatars/') !== false) {
+                // Solo eliminar si es un archivo local (no URL externa)
+                $oldAvatarPath = __DIR__ . '/' . $usuario['avatar_url'];
+                if (file_exists($oldAvatarPath)) {
+                    @unlink($oldAvatarPath); // Intentar eliminar, ignorar si falla
+                }
+            }
+        } catch (Exception $e) {
+            // No fallar si no se puede eliminar el avatar anterior
+            error_log("Advertencia: No se pudo eliminar avatar anterior: " . $e->getMessage());
+        }
+        
+        // Generar nombre único para el archivo
+        // Formato: avatar_{id_usuario}_{timestamp}_{random}.{extension}
+        $timestamp = time();
+        $random = bin2hex(random_bytes(4));
+        $uniqueFileName = "avatar_{$usuarioId}_{$timestamp}_{$random}.{$extension}";
+        $filePath = $uploadDir . $uniqueFileName;
+        
+        // Mover archivo a la carpeta de destino
+        if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+            error_log("Error: No se pudo mover el archivo subido a: $filePath");
+            sendError('Error del servidor: no se pudo guardar el archivo.', 500);
+            return;
+        }
+        
+        // Verificar que el archivo se guardó correctamente
+        if (!file_exists($filePath)) {
+            sendError('Error del servidor: el archivo no se guardó correctamente.', 500);
+            return;
+        }
+        
+        // Ruta relativa para guardar en BD (sin la ruta completa del servidor)
+        $relativePath = 'uploads/avatars/' . $uniqueFileName;
+        
+        // Actualizar avatar_url en la base de datos
+        try {
+            require_once __DIR__ . '/config/database.php';
+            $db = getDB();
+            
+            $stmt = $db->prepare("UPDATE usuarios SET avatar_url = :avatar_url WHERE id_usuario = :usuario_id");
+            $stmt->execute([
+                ':avatar_url' => $relativePath,
+                ':usuario_id' => $usuarioId
+            ]);
+            
+            // Actualizar sesión
+            $_SESSION['usuario_avatar'] = $relativePath;
+            
+        } catch (Exception $e) {
+            error_log("Error al actualizar avatar_url en BD: " . $e->getMessage());
+            // No fallar, el archivo ya se guardó
+        }
+        
+        // Retornar éxito con información del archivo
+        echo json_encode([
+            'success' => true,
+            'message' => 'Avatar subido exitosamente',
+            'data' => [
+                'file_name' => $uniqueFileName,
+                'original_name' => $originalName,
+                'file_path' => $relativePath,
+                'file_url' => $relativePath, // Para usar directamente como URL
+                'file_size' => $file['size'],
+                'file_type' => $mimeType,
+                'file_extension' => $extension,
+                'upload_date' => date('Y-m-d H:i:s')
+            ]
+        ], JSON_UNESCAPED_UNICODE);
+        
+    } catch (Exception $e) {
+        error_log("Error en uploadAvatar: " . $e->getMessage());
+        error_log("Stack trace: " . $e->getTraceAsString());
+        sendError('Error al subir el avatar: ' . $e->getMessage(), 500);
     }
 }
 

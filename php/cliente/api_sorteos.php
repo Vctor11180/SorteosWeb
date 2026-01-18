@@ -285,6 +285,19 @@ function getSorteoStats($db, $idSorteo) {
             return;
         }
         
+        // Liberar reservas expiradas (más de 15 minutos) antes de contar
+        $stmt = $db->prepare("
+            UPDATE boletos
+            SET estado = 'Disponible',
+                id_usuario_actual = NULL,
+                fecha_reserva = NULL
+            WHERE id_sorteo = :id_sorteo
+            AND estado = 'Reservado'
+            AND fecha_reserva IS NOT NULL
+            AND TIMESTAMPDIFF(SECOND, fecha_reserva, NOW()) > 900
+        ");
+        $stmt->execute([':id_sorteo' => $idSorteo]);
+        
         // Obtener estadísticas de boletos
         $stmt = $db->prepare("
             SELECT 
@@ -316,9 +329,12 @@ function getSorteoStats($db, $idSorteo) {
             $totalBoletos = $totalBoletosCrear;
         }
         
-        // Calcular porcentajes
+        // Calcular boletos ocupados (vendidos + reservados) para el contador
+        $boletosOcupados = $boletosVendidos + $boletosReservados;
+        
+        // Calcular porcentajes (usando ocupados para mostrar progreso real)
         $porcentajeVendido = $totalBoletosCrear > 0 
-            ? round(($boletosVendidos / $totalBoletosCrear) * 100, 1) 
+            ? round(($boletosOcupados / $totalBoletosCrear) * 100, 1) 
             : 0;
         
         $porcentajeReservado = $totalBoletosCrear > 0 
@@ -334,7 +350,7 @@ function getSorteoStats($db, $idSorteo) {
             'data' => [
                 'id_sorteo' => $idSorteo,
                 'total_boletos' => $totalBoletosCrear,
-                'boletos_vendidos' => $boletosVendidos,
+                'boletos_vendidos' => $boletosOcupados, // Incluye vendidos + reservados para el contador
                 'boletos_reservados' => $boletosReservados,
                 'boletos_disponibles' => $boletosDisponibles,
                 'porcentaje_vendido' => $porcentajeVendido,
@@ -378,14 +394,47 @@ function processSorteoData($db, $sorteo) {
         $boletosDisponibles = intval($boletosInfo['boletos_disponibles'] ?? 0);
         $boletosTotales = intval($sorteo['total_boletos_crear'] ?? 0);
         
+        // Liberar reservas expiradas (más de 15 minutos) antes de contar
+        $stmt = $db->prepare("
+            UPDATE boletos
+            SET estado = 'Disponible',
+                id_usuario_actual = NULL,
+                fecha_reserva = NULL
+            WHERE id_sorteo = :id_sorteo
+            AND estado = 'Reservado'
+            AND fecha_reserva IS NOT NULL
+            AND TIMESTAMPDIFF(SECOND, fecha_reserva, NOW()) > 900
+        ");
+        $stmt->execute([':id_sorteo' => $idSorteo]);
+        
+        // Volver a contar después de liberar reservas expiradas
+        $stmt = $db->prepare("
+            SELECT 
+                COUNT(CASE WHEN estado = 'Vendido' THEN 1 END) as boletos_vendidos,
+                COUNT(CASE WHEN estado = 'Reservado' THEN 1 END) as boletos_reservados,
+                COUNT(CASE WHEN estado = 'Disponible' THEN 1 END) as boletos_disponibles
+            FROM boletos
+            WHERE id_sorteo = :id_sorteo
+        ");
+        $stmt->execute([':id_sorteo' => $idSorteo]);
+        $boletosInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $boletosVendidos = intval($boletosInfo['boletos_vendidos'] ?? 0);
+        $boletosReservados = intval($boletosInfo['boletos_reservados'] ?? 0);
+        $boletosDisponibles = intval($boletosInfo['boletos_disponibles'] ?? 0);
+        
         // Si no hay boletos creados aún, los disponibles son el total
         if ($boletosDisponibles == 0 && $boletosVendidos == 0 && $boletosReservados == 0 && $boletosTotales > 0) {
             $boletosDisponibles = $boletosTotales;
         }
         
-        // Calcular porcentaje vendido
+        // Calcular boletos ocupados (vendidos + reservados) para el contador
+        // Los boletos reservados también están ocupados, así que los contamos
+        $boletosOcupados = $boletosVendidos + $boletosReservados;
+        
+        // Calcular porcentaje vendido (usando ocupados para mostrar progreso real)
         $porcentajeVendido = $boletosTotales > 0 
-            ? round(($boletosVendidos / $boletosTotales) * 100, 1) 
+            ? round(($boletosOcupados / $boletosTotales) * 100, 1) 
             : 0;
         
         // Calcular tiempo restante
@@ -444,7 +493,7 @@ function processSorteoData($db, $sorteo) {
             'descripcion' => $sorteo['descripcion'] ?? '',
             'precio_boleto' => floatval($sorteo['precio_boleto']),
             'total_boletos' => $boletosTotales,
-            'boletos_vendidos' => $boletosVendidos,
+            'boletos_vendidos' => $boletosOcupados, // Incluye vendidos + reservados para el contador
             'boletos_reservados' => $boletosReservados,
             'boletos_disponibles' => $boletosDisponibles,
             'porcentaje_vendido' => $porcentajeVendido,
