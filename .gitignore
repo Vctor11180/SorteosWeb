@@ -1,0 +1,39 @@
+# Archivos de credenciales y secretos
+client_secret_*.json
+*.json
+!package.json
+!composer.json
+!tsconfig.json
+
+# Archivos de configuración local
+.env
+.env.local
+config.local.php
+
+# Archivos de uploads (comprobantes, avatares, etc.)
+php/cliente/uploads/
+php/cliente/api/uploads/
+
+# Archivos temporales
+*.tmp
+*.log
+*.cache
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de backup
+*.bak
+*.backup
+*~
+
