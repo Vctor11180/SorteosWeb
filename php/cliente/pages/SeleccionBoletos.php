@@ -1159,7 +1159,6 @@ function updateTimer(tiempo) {
     }
 }
 
-
 // Función para eliminar un boleto del carrito
 async function removeTicketFromCart(numeroInt, numeroDisplay) {
     if (!currentSorteoId) {
