@@ -40,30 +40,67 @@ function obtenerDatosUsuarioCompletos() {
         error_log("obtenerDatosUsuarioCompletos - Consultando datos para usuario_id: " . $usuarioId);
         
         // Obtener todos los datos del usuario desde la base de datos
-        $stmt = $db->prepare("
-            SELECT 
+        // Primero, verificar qué columnas existen en la tabla
+        $columnsQuery = "SHOW COLUMNS FROM usuarios LIKE 'segundo_nombre'";
+        $hasSegundoNombre = false;
+        try {
+            $colCheck = $db->query($columnsQuery);
+            $hasSegundoNombre = ($colCheck->rowCount() > 0);
+        } catch (PDOException $e) {
+            // Si falla, asumimos que no existe
+            $hasSegundoNombre = false;
+        }
+        
+        $columnsQuery2 = "SHOW COLUMNS FROM usuarios LIKE 'avatar_url'";
+        $hasAvatarUrl = false;
+        try {
+            $colCheck2 = $db->query($columnsQuery2);
+            $hasAvatarUrl = ($colCheck2->rowCount() > 0);
+        } catch (PDOException $e) {
+            // Si falla, asumimos que no existe
+            $hasAvatarUrl = false;
+        }
+        
+        // Construir SELECT dinámicamente según columnas disponibles
+        $selectFields = "
                 u.id_usuario,
                 u.email,
                 u.password_hash,
                 u.primer_nombre,
-                u.segundo_nombre,
                 u.apellido_paterno,
                 u.apellido_materno,
-                u.fecha_nacimiento,
+
                 u.telefono,
                 u.saldo_disponible,
-                u.avatar_url,
                 u.estado,
-                u.fecha_registro,
+                u.created_at,
                 r.id_rol,
-                r.nombre_rol
+                r.nombre_rol";
+        
+        if ($hasSegundoNombre) {
+            $selectFields = str_replace("u.primer_nombre,", "u.primer_nombre,\n                u.segundo_nombre,", $selectFields);
+        }
+        
+        if ($hasAvatarUrl) {
+            $selectFields = str_replace("u.saldo_disponible,", "u.saldo_disponible,\n                u.avatar_url,", $selectFields);
+        }
+        
+        $stmt = $db->prepare("
+            SELECT 
+                $selectFields
             FROM usuarios u
             INNER JOIN roles r ON u.id_rol = r.id_rol
             WHERE u.id_usuario = :usuario_id
         ");
         
-        $stmt->execute([':usuario_id' => $usuarioId]);
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt->execute([':usuario_id' => $usuarioId]);
+            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("obtenerDatosUsuarioCompletos - ERROR en consulta SQL: " . $e->getMessage());
+            error_log("obtenerDatosUsuarioCompletos - SQL ejecutado: " . $selectFields);
+            return null;
+        }
         
         if (!$usuario) {
             error_log("obtenerDatosUsuarioCompletos - ERROR: No se encontró usuario con ID: " . $usuarioId);
@@ -83,11 +120,18 @@ function obtenerDatosUsuarioCompletos() {
         // Determinar tipo de usuario
         $tipoUsuario = ($usuario['nombre_rol'] === 'Administrador') ? 'Administrador' : 'Usuario Premium';
         
+        // Determinar URL del avatar (usar placeholder si no existe)
+        $avatarUrl = $usuario['avatar_url'] ?? null;
+        if (empty($avatarUrl) || $avatarUrl === 'default_avatar.png') {
+            // Usar un placeholder online en lugar de un archivo local
+            $avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg';
+        }
+        
         // Actualizar la sesión con los datos más recientes
         $_SESSION['usuario_nombre'] = $nombreCompleto;
         $_SESSION['usuario_email'] = $usuario['email'];
         $_SESSION['usuario_saldo'] = floatval($usuario['saldo_disponible']);
-        $_SESSION['usuario_avatar'] = $usuario['avatar_url'] ?? 'default_avatar.png';
+        $_SESSION['usuario_avatar'] = $avatarUrl;
         $_SESSION['usuario_rol'] = $usuario['nombre_rol'];
         $_SESSION['usuario_estado'] = $usuario['estado'];
         
@@ -96,18 +140,18 @@ function obtenerDatosUsuarioCompletos() {
             'id_usuario' => $usuario['id_usuario'],
             'nombre' => $nombreCompleto,
             'primer_nombre' => $usuario['primer_nombre'],
-            'segundo_nombre' => $usuario['segundo_nombre'],
+            'segundo_nombre' => $usuario['segundo_nombre'] ?? '',
             'apellido_paterno' => $usuario['apellido_paterno'],
             'apellido_materno' => $usuario['apellido_materno'],
             'email' => $usuario['email'],
             'telefono' => $usuario['telefono'],
-            'fecha_nacimiento' => $usuario['fecha_nacimiento'],
+
             'saldo' => floatval($usuario['saldo_disponible']),
-            'avatar' => $usuario['avatar_url'] ?? 'default_avatar.png',
+            'avatar' => $avatarUrl,
             'estado' => $usuario['estado'],
             'rol' => $usuario['nombre_rol'],
             'tipoUsuario' => $tipoUsuario,
-            'fecha_registro' => $usuario['fecha_registro']
+            'fecha_registro' => $usuario['created_at']
         ];
         
     } catch (PDOException $e) {
@@ -133,7 +177,7 @@ function obtenerDatosUsuarioParaJS() {
             'tipoUsuario' => 'Usuario Premium',
             'email' => '',
             'saldo' => 0.00,
-            'avatar' => 'default_avatar.png'
+            'avatar' => 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
         ];
     }
     

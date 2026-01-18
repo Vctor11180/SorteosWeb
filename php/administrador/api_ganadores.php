@@ -66,7 +66,7 @@ function getSorteosForWinners($conn) {
                 (SELECT COUNT(*) FROM boletos b WHERE b.id_sorteo = s.id_sorteo AND b.estado = 'Vendido') as vendidos,
                 (SELECT COUNT(*) FROM ganadores g WHERE g.id_sorteo = s.id_sorteo) as tiene_ganador,
                 g.id_usuario as id_ganador,
-                u.primer_nombre, u.apellido_paterno, u.avatar_url,
+                u.primer_nombre, u.apellido_paterno,
                 b.numero_boleto as boleto_ganador,
                 g.fecha_anuncio
               FROM sorteos s
@@ -105,7 +105,7 @@ function getSorteosForWinners($conn) {
             'recaudado' => $row['vendidos'] * $row['precio_boleto'],
             'ganador' => $row['id_ganador'] ? [
                 'nombre' => $row['primer_nombre'] . ' ' . $row['apellido_paterno'],
-                'avatar' => $row['avatar_url'],
+                'avatar' => '', // Placeholder en frontend
                 'boleto' => $row['boleto_ganador'],
                 'fecha' => $row['fecha_anuncio']
             ] : null
@@ -167,7 +167,7 @@ function generateWinner($conn, $data) {
         $conn->commit();
         
         // Obtener datos del ganador para devolver
-        $sqlWinnerInfo = "SELECT primer_nombre, apellido_paterno, avatar_url FROM usuarios WHERE id_usuario = " . $winnerTicket['id_usuario_actual'];
+        $sqlWinnerInfo = "SELECT primer_nombre, apellido_paterno FROM usuarios WHERE id_usuario = " . $winnerTicket['id_usuario_actual'];
         $resInfo = $conn->query($sqlWinnerInfo);
         $userInfo = $resInfo->fetch_assoc();
         
@@ -177,7 +177,7 @@ function generateWinner($conn, $data) {
             'data' => [
                 'ganador' => $userInfo['primer_nombre'] . ' ' . $userInfo['apellido_paterno'],
                 'boleto' => $winnerTicket['numero_boleto'],
-                'avatar' => $userInfo['avatar_url']
+                'avatar' => ''
             ]
         ]);
         
@@ -194,7 +194,7 @@ function getWinnerHistory($conn) {
     // Similar a getSorteos pero enfocado en una lista plana de eventos/ganadores
     $query = "SELECT 
                 g.fecha_anuncio,
-                u.primer_nombre, u.apellido_paterno, u.avatar_url,
+                u.primer_nombre, u.apellido_paterno,
                 b.numero_boleto,
                 s.titulo as sorteo_titulo,
                 s.imagen_url as sorteo_imagen,
@@ -218,7 +218,7 @@ function getWinnerHistory($conn) {
             'estado' => $row['entregado'] ? 'Entregado' : 'Generado',
             'accion' => $row['entregado'] ? 'entregado' : 'generado',
             'imagen' => "url('" . ($row['sorteo_imagen'] ?? '') . "')",
-            'avatar' => $row['avatar_url']
+            'avatar' => ''
         ];
     }
     

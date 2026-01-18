@@ -1,191 +1,4 @@
 <!DOCTYPE html>
-<?php
-// Conexión a la base de datos
-require_once 'config.php';
-$conn = getDBConnection();
-
-/**
- * Obtiene los KPIs principales del dashboard
- */
-function obtenerKPIs($conn) {
-    $kpis = [
-        'ingresos_totales' => 0,
-        'boletos_vendidos' => 0,
-        'sorteos_activos' => 0,
-        'pagos_pendientes' => 0,
-        'tendencia_ingresos' => 0,
-        'tendencia_boletos' => 0
-    ];
-    
-    try {
-        // Ingresos totales (pagos completados)
-        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total FROM transacciones WHERE estado_pago = 'Completado'";
-        $result = $conn->query($sql);
-        if ($result && $row = $result->fetch_assoc()) {
-            $kpis['ingresos_totales'] = number_format($row['total'], 2);
-        }
-        
-        // Boletos vendidos
-        $sql = "SELECT COUNT(*) as total FROM boletos WHERE estado = 'Vendido'";
-        $result = $conn->query($sql);
-        if ($result && $row = $result->fetch_assoc()) {
-            $kpis['boletos_vendidos'] = $row['total'];
-        }
-        
-        // Sorteos activos
-        $sql = "SELECT COUNT(*) as total FROM sorteos WHERE estado = 'Activo'";
-        $result = $conn->query($sql);
-        if ($result && $row = $result->fetch_assoc()) {
-            $kpis['sorteos_activos'] = $row['total'];
-        }
-        
-        // Pagos pendientes
-        $sql = "SELECT COUNT(*) as total FROM transacciones WHERE estado_pago = 'Pendiente'";
-        $result = $conn->query($sql);
-        if ($result && $row = $result->fetch_assoc()) {
-            $kpis['pagos_pendientes'] = $row['total'];
-        }
-        
-        // Calcular tendencias (comparar con mes anterior)
-        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_actual 
-                FROM transacciones 
-                WHERE estado_pago = 'Completado' 
-                AND MONTH(fecha_creacion) = MONTH(CURRENT_DATE())
-                AND YEAR(fecha_creacion) = YEAR(CURRENT_DATE())";
-        $result = $conn->query($sql);
-        $total_mes_actual = 0;
-        if ($result && $row = $result->fetch_assoc()) {
-            $total_mes_actual = $row['total_mes_actual'];
-        }
-        
-        $sql = "SELECT COALESCE(SUM(monto_total), 0) as total_mes_anterior 
-                FROM transacciones 
-                WHERE estado_pago = 'Completado' 
-                AND MONTH(fecha_creacion) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
-                AND YEAR(fecha_creacion) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))";
-        $result = $conn->query($sql);
-        $total_mes_anterior = 1; // Evitar división por cero
-        if ($result && $row = $result->fetch_assoc()) {
-            $total_mes_anterior = $row['total_mes_anterior'] > 0 ? $row['total_mes_anterior'] : 1;
-        }
-        
-        $kpis['tendencia_ingresos'] = round((($total_mes_actual - $total_mes_anterior) / $total_mes_anterior) * 100, 1);
-        
-    } catch (Exception $e) {
-        error_log("Error obteniendo KPIs: " . $e->getMessage());
-    }
-    
-    return $kpis;
-}
-
-/**
- * Obtiene sorteos próximos a finalizar
- */
-function obtenerSorteosPorFinalizar($conn, $limit = 3) {
-    $sorteos = [];
-    
-    try {
-        $sql = "SELECT id_sorteo, titulo, imagen_url, fecha_fin 
-                FROM sorteos 
-                WHERE estado = 'Activo' AND fecha_fin > NOW()
-                ORDER BY fecha_fin ASC 
-                LIMIT ?";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $limit);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        while ($row = $result->fetch_assoc()) {
-            // Calcular tiempo restante
-            $fecha_fin = new DateTime($row['fecha_fin']);
-            $ahora = new DateTime();
-            $diferencia = $ahora->diff($fecha_fin);
-            
-            $tiempo_restante = '';
-            if ($diferencia->days > 0) {
-                $tiempo_restante = $diferencia->days . 'd ' . $diferencia->h . 'h';
-            } else if ($diferencia->h > 0) {
-                $tiempo_restante = $diferencia->h . 'h ' . $diferencia->i . 'm';
-            } else {
-                $tiempo_restante = $diferencia->i . 'm';
-            }
-            
-            $sorteos[] = [
-                'id' => $row['id_sorteo'],
-                'titulo' => $row['titulo'],
-                'imagen_url' => $row['imagen_url'] ?: 'https://via.placeholder.com/150',
-                'tiempo_restante' => $tiempo_restante,
-                'urgente' => $diferencia->days == 0 && $diferencia->h < 6
-            ];
-        }
-        
-        $stmt->close();
-    } catch (Exception $e) {
-        error_log("Error obteniendo sorteos por finalizar: " . $e->getMessage());
-    }
-    
-    return $sorteos;
-}
-
-/**
- * Obtiene pagos pendientes de validación
- */
-function obtenerPagosPendientes($conn, $limit = 4) {
-    $pagos = [];
-    
-    try {
-        $sql = "SELECT DISTINCT
-                    t.id_transaccion,
-                    t.referencia_pago,
-                    t.monto_total,
-                    t.estado_pago,
-                    t.fecha_creacion,
-                    u.primer_nombre,
-                    u.apellido_paterno,
-                    u.email,
-                    s.titulo as sorteo_titulo
-                FROM transacciones t
-                JOIN usuarios u ON t.id_usuario = u.id_usuario
-                LEFT JOIN detalle_transaccion_boletos dtb ON t.id_transaccion = dtb.id_transaccion
-                LEFT JOIN boletos b ON dtb.id_boleto = b.id_boleto
-                LEFT JOIN sorteos s ON b.id_sorteo = s.id_sorteo
-                ORDER BY t.fecha_creacion DESC
-                LIMIT ?";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $limit);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        while ($row = $result->fetch_assoc()) {
-            $pagos[] = [
-                'id' => $row['id_transaccion'],
-                'referencia' => $row['referencia_pago'] ?: 'REF-' . str_pad($row['id_transaccion'], 6, '0', STR_PAD_LEFT),
-                'usuario_nombre' => $row['primer_nombre'] . ' ' . $row['apellido_paterno'],
-                'usuario_email' => $row['email'],
-                'sorteo' => $row['sorteo_titulo'] ?: 'Sin sorteo asignado',
-                'monto' => number_format($row['monto_total'], 2),
-                'estado' => $row['estado_pago'],
-                'iniciales' => strtoupper(substr($row['primer_nombre'], 0, 1) . substr($row['apellido_paterno'], 0, 1))
-            ];
-        }
-        
-        $stmt->close();
-    } catch (Exception $e) {
-        error_log("Error obteniendo pagos pendientes: " . $e->getMessage());
-    }
-    
-    return $pagos;
-}
-
-// Obtener datos para el dashboard
-$kpis = obtenerKPIs($conn);
-$sorteos_finalizando = obtenerSorteosPorFinalizar($conn);
-$pagos_pendientes = obtenerPagosPendientes($conn);
-?>
-
-
 <html class="dark" lang="es"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -195,6 +8,7 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
         tailwind.config = {
@@ -282,13 +96,21 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
                     Informes
                 </a>
 </div>
-<div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3">
+<div class="p-4 border-t border-gray-200 dark:border-border-dark relative">
+<div id="admin-user-menu-trigger" class="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
-<div class="flex flex-col">
+<div class="flex flex-col flex-1">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
+<span class="material-symbols-outlined text-gray-500 text-lg">arrow_drop_down</span>
+</div>
+<!-- Dropdown Menu -->
+<div id="admin-user-menu" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+<button id="admin-logout-btn" onclick="handleLogoutAdmin()" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
 </div>
 </div>
 </aside>
@@ -304,12 +126,7 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
 <h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Dashboard</h1>
 </div>
 <div class="flex items-center gap-4">
-<div class="relative hidden md:block w-64">
-<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-<span class="material-symbols-outlined text-[20px]">search</span>
-</span>
-<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
-</div>
+
 <button id="notificationsButton" onclick="showNotifications()" class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -349,13 +166,13 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
             <div class="p-2 bg-primary/10 rounded-lg text-primary">
                 <span class="material-symbols-outlined">attach_money</span>
             </div>
-            <span class="flex items-center text-xs font-medium <?php echo $kpis['tendencia_ingresos'] >= 0 ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'; ?> px-2 py-1 rounded-full">
-                <span class="material-symbols-outlined text-[14px] mr-1"><?php echo $kpis['tendencia_ingresos'] >= 0 ? 'trending_up' : 'trending_down'; ?></span> <?php echo ($kpis['tendencia_ingresos'] >= 0 ? '+' : '') . $kpis['tendencia_ingresos']; ?>%
+            <span id="trendIngresos" class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> --%
             </span>
         </div>
         <div>
             <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Ingresos Totales</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">$<?php echo $kpis['ingresos_totales']; ?></h3>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">$<span id="kpiIngresos">0.00</span></h3>
         </div>
     </div>
     <!-- Boletos Vendidos -->
@@ -367,13 +184,13 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
             <div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
                 <span class="material-symbols-outlined">confirmation_number</span>
             </div>
-            <span class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
-                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +5%
+            <span id="trendBoletos" class="flex items-center text-xs font-medium text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> --%
             </span>
         </div>
         <div>
             <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Boletos Vendidos</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo number_format($kpis['boletos_vendidos']); ?></h3>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><span id="kpiBoletos">0</span></h3>
         </div>
     </div>
     <!-- Sorteos Activos -->
@@ -388,7 +205,7 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
         </div>
         <div>
             <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Sorteos Activos</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo $kpis['sorteos_activos']; ?></h3>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><span id="kpiSorteos">0</span></h3>
         </div>
     </div>
     <!-- Pagos Pendientes -->
@@ -400,15 +217,13 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
             <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
                 <span class="material-symbols-outlined">pending_actions</span>
             </div>
-            <?php if ($kpis['pagos_pendientes'] > 0): ?>
-            <span class="flex items-center text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full animate-pulse">
+            <span id="badgePagosAction" class="hidden flex items-center text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full animate-pulse">
                 Acción Requerida
             </span>
-            <?php endif; ?>
         </div>
         <div>
             <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pagos Pendientes</p>
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><?php echo $kpis['pagos_pendientes']; ?></h3>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mt-1"><span id="kpiPagos">0</span></h3>
         </div>
     </div>
 </div>
@@ -427,32 +242,8 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
                 <option value="year">Este año</option>
             </select>
         </div>
-        <div class="h-64 w-full">
-            <!-- SVG Chart Simulation -->
-            <svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
-                <defs>
-                    <lineargradient id="gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="#2463eb" stop-opacity="0.2"></stop>
-                        <stop offset="100%" stop-color="#2463eb" stop-opacity="0"></stop>
-                    </lineargradient>
-                </defs>
-                <!-- Grid Lines -->
-                <line stroke="#2a3241" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="190" y2="190"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="130" y2="130"></line>
-                <line stroke="#2a3241" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="70" y2="70"></line>
-                <!-- Area Path -->
-                <path d="M0,250 L0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40 L800,250 Z" fill="url(#gradient)"></path>
-                <!-- Line Path -->
-                <path d="M0,200 C100,180 150,220 200,150 C250,80 300,120 400,100 C500,80 550,60 600,90 C650,120 700,50 800,40" fill="none" stroke="#2463eb" stroke-linecap="round" stroke-width="3"></path>
-            </svg>
-        </div>
-        <div class="flex justify-between text-xs text-gray-500 mt-2 px-2">
-            <span>01 Nov</span>
-            <span>08 Nov</span>
-            <span>15 Nov</span>
-            <span>22 Nov</span>
-            <span>29 Nov</span>
+        <div class="h-64 w-full relative">
+            <canvas id="salesChart"></canvas>
         </div>
     </div>
     <!-- Closing Soon List -->
@@ -463,24 +254,11 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
         </div>
         <div class="flex-1 overflow-y-auto p-2">
             <div class="flex flex-col gap-2">
-                <?php if (empty($sorteos_finalizando)): ?>
-                    <div class="p-6 text-center">
-                        <p class="text-gray-500 dark:text-gray-400 text-sm">No hay sorteos próximos a finalizar</p>
+                <div id="sorteosFinalizandoContainer" class="flex flex-col gap-2">
+                    <div class="p-6 text-center text-gray-500">
+                        <span class="material-symbols-outlined animate-spin">autorenew</span> Cargando...
                     </div>
-                <?php else: ?>
-                    <?php foreach ($sorteos_finalizando as $sorteo): ?>
-                    <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group" onclick="viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')">
-                        <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('<?php echo htmlspecialchars($sorteo['imagen_url']); ?>');"></div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors"><?php echo htmlspecialchars($sorteo['titulo']); ?></h4>
-                            <p class="text-xs text-gray-500">Cierra en: <span class="<?php echo $sorteo['urgente'] ? 'text-orange-500' : 'text-gray-400'; ?> font-bold"><?php echo $sorteo['tiempo_restante']; ?></span></p>
-                        </div>
-                        <button onclick="event.stopPropagation(); viewRaffleDetails('<?php echo htmlspecialchars($sorteo['titulo']); ?>')" class="text-gray-400 hover:text-primary">
-                            <span class="material-symbols-outlined text-[20px]">chevron_right</span>
-                        </button>
-                    </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                </div>
             </div>
         </div>
         <div class="p-4 border-t border-gray-200 dark:border-border-dark">
@@ -515,72 +293,14 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-border-dark">
-                <?php if (empty($pagos_pendientes)): ?>
-                    <tr>
-                        <td colspan="6" class="py-8 text-center">
-                            <p class="text-gray-500 dark:text-gray-400 text-sm">No hay pagos registrados</p>
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php 
-                    $colores_avatar = ['bg-gray-700', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600'];
-                    foreach ($pagos_pendientes as $index => $pago): 
-                        $color_avatar = $colores_avatar[$index % count($colores_avatar)];
-                    ?>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full <?php echo $color_avatar; ?> flex items-center justify-center text-xs font-bold text-white"><?php echo $pago['iniciales']; ?></div>
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white"><?php echo htmlspecialchars($pago['usuario_nombre']); ?></p>
-                                    <p class="text-xs text-gray-500"><?php echo htmlspecialchars($pago['usuario_email']); ?></p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300"><?php echo htmlspecialchars($pago['sorteo']); ?></td>
-                        <td class="py-4 px-6 text-sm text-gray-500 font-mono"><?php echo htmlspecialchars($pago['referencia']); ?></td>
-                        <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$<?php echo $pago['monto']; ?></td>
-                        <td class="py-4 px-6">
-                            <?php 
-                            $estado_class = '';
-                            $estado_texto = '';
-                            switch($pago['estado']) {
-                                case 'Pendiente':
-                                    $estado_class = 'bg-yellow-500/10 text-yellow-500';
-                                    $estado_texto = 'Pendiente';
-                                    break;
-                                case 'Completado':
-                                    $estado_class = 'bg-green-500/10 text-green-500';
-                                    $estado_texto = 'Aprobado';
-                                    break;
-                                case 'Fallido':
-                                    $estado_class = 'bg-red-500/10 text-red-500';
-                                    $estado_texto = 'Rechazado';
-                                    break;
-                            }
-                            ?>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $estado_class; ?>">
-                                <?php echo $estado_texto; ?>
-                            </span>
-                        </td>
-                        <td class="py-4 px-6 text-right">
-                            <?php if ($pago['estado'] == 'Pendiente'): ?>
-                                <button onclick="validatePayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')" class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
-                                <button onclick="rejectPayment('<?php echo htmlspecialchars($pago['referencia']); ?>', '<?php echo htmlspecialchars($pago['usuario_nombre']); ?>')" class="text-gray-400 hover:text-red-500 transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]">block</span>
-                                </button>
-                            <?php else: ?>
-                                <button onclick="viewPaymentDetails('<?php echo htmlspecialchars($pago['referencia']); ?>')" class="text-gray-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium">Ver</button>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                <tbody id="pagosTableBody" class="divide-y divide-gray-200 dark:divide-border-dark">
+                    <tr><td colspan="6" class="py-8 text-center text-gray-500"><span class="material-symbols-outlined animate-spin">autorenew</span> Cargando pagos...</td></tr>
+                </tbody>
             </tbody>
         </table>
     </div>
     <div class="p-4 border-t border-gray-200 dark:border-border-dark flex items-center justify-between">
-        <p class="text-xs text-gray-500">Mostrando <?php echo count($pagos_pendientes); ?> de <?php echo $kpis['pagos_pendientes']; ?> pendientes</p>
+        <p class="text-xs text-gray-500">Mostrando <span id="paymentCountShown">0</span> de <span id="paymentCountTotal">0</span> pendientes</p>
         <div class="flex gap-2">
             <button id="prevPaymentsBtn" onclick="changePaymentsPage('prev')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50">Anterior</button>
             <button id="nextPaymentsBtn" onclick="changePaymentsPage('next')" class="px-3 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">Siguiente</button>
@@ -597,6 +317,7 @@ $pagos_pendientes = obtenerPagosPendientes($conn);
 
 // ========== BÚSQUEDA GLOBAL ==========
 document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
     const headerSearchInput = document.getElementById('headerSearchInput');
     if (headerSearchInput) {
         headerSearchInput.addEventListener('input', function(e) {
@@ -616,6 +337,119 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+async function loadDashboardData() {
+    try {
+        // Cargar KPIS
+        const resKpis = await fetch('api_dashboard.php?action=kpis');
+        const kpis = await resKpis.json();
+        if (kpis.success) {
+            document.getElementById('kpiIngresos').textContent = kpis.data.ingresos_totales;
+            document.getElementById('kpiBoletos').textContent = kpis.data.boletos_vendidos;
+            document.getElementById('kpiSorteos').textContent = kpis.data.sorteos_activos;
+            document.getElementById('kpiPagos').textContent = kpis.data.pagos_pendientes;
+            
+            // Tendencias
+            updateTrend('trendIngresos', kpis.data.tendencia_ingresos);
+            updateTrend('trendBoletos', kpis.data.tendencia_boletos);
+            
+            if (kpis.data.pagos_pendientes > 0) {
+                document.getElementById('badgePagosAction').classList.remove('hidden');
+                document.getElementById('paymentCountTotal').textContent = kpis.data.pagos_pendientes;
+            }
+        }
+
+        // Cargar Actividad Reciente (Sorteos y Pagos)
+        const resActivity = await fetch('api_dashboard.php?action=recent_activity');
+        const activity = await resActivity.json();
+        
+        if (activity.success) {
+            renderSorteosFinalizando(activity.data.sorteos_finalizando);
+            renderpagosPendientes(activity.data.pagos_pendientes);
+            document.getElementById('paymentCountShown').textContent = activity.data.pagos_pendientes.length;
+        }
+
+        // Cargar Datos Gráfico Inicial
+        const resChart = await fetch('api_dashboard.php?action=chart_data&period=30days');
+        const chartData = await resChart.json();
+        if (chartData.success) {
+            initSalesChart(chartData.data.labels, chartData.data.values);
+        }
+
+    } catch (e) {
+        console.error('Error cargando dashboard:', e);
+    }
+}
+
+function updateTrend(elementId, value) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    value = parseFloat(value);
+    const isPositive = value >= 0;
+    const colorClass = isPositive ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10';
+    const icon = isPositive ? 'trending_up' : 'trending_down';
+    const sign = isPositive ? '+' : '';
+    
+    el.className = `flex items-center text-xs font-medium ${colorClass} px-2 py-1 rounded-full`;
+    el.innerHTML = `<span class="material-symbols-outlined text-[14px] mr-1">${icon}</span> ${sign}${value}%`;
+}
+
+function renderSorteosFinalizando(sorteos) {
+    const container = document.getElementById('sorteosFinalizandoContainer');
+    if (!sorteos || sorteos.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center"><p class="text-gray-500 text-sm">No hay sorteos próximos a finalizar</p></div>';
+        return;
+    }
+    
+    container.innerHTML = sorteos.map(s => `
+        <div class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg flex items-center gap-3 transition-colors cursor-pointer group" onclick="viewRaffleDetails('${s.titulo}')">
+            <div class="w-12 h-12 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('${s.imagen || 'https://via.placeholder.com/150'}');"></div>
+            <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">${s.titulo}</h4>
+                <p class="text-xs text-gray-500">Cierra en: <span class="${s.urgente ? 'text-orange-500' : 'text-gray-400'} font-bold">${s.tiempo_restante}</span></p>
+            </div>
+            <button onclick="event.stopPropagation(); viewRaffleDetails('${s.titulo}')" class="text-gray-400 hover:text-primary">
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+        </div>
+    `).join('');
+}
+
+function renderpagosPendientes(pagos) {
+    const tbody = document.getElementById('pagosTableBody');
+    if (!pagos || pagos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-500">No hay pagos registrados</td></tr>';
+        return;
+    }
+    
+    const colores = ['bg-gray-700', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-green-600', 'bg-yellow-600', 'bg-red-600'];
+    
+    tbody.innerHTML = pagos.map((p, i) => {
+        const color = colores[i % colores.length];
+        return `
+        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <td class="py-4 px-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full ${color} flex items-center justify-center text-xs font-bold text-white">${p.iniciales}</div>
+                    <div>
+                        <p class="text-sm font-medium text-slate-900 dark:text-white">${p.usuario}</p>
+                        <p class="text-xs text-gray-500">${p.email}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${p.sorteo}</td>
+            <td class="py-4 px-6 text-sm text-gray-500 font-mono">${p.referencia}</td>
+            <td class="py-4 px-6 text-sm font-medium text-slate-900 dark:text-white">$${parseFloat(p.monto).toFixed(2)}</td>
+            <td class="py-4 px-6">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-500">Pendiente</span>
+            </td>
+            <td class="py-4 px-6 text-right">
+                <button onclick="window.location.href='ValidacionPagosAdministrador.php'" class="text-primary hover:text-primary/80 text-sm font-medium mr-3">Validar</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
 
 /**
  * Realiza búsqueda global en la página actual
@@ -724,15 +558,113 @@ function showNotifications() {
 }
 
 // ========== GRÁFICO DE VENTAS ==========
+let salesChartInstance = null;
+
+function initSalesChart(labels, data) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    
+    // Gradient fill
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(36, 99, 235, 0.2)');
+    gradient.addColorStop(1, 'rgba(36, 99, 235, 0)');
+
+    salesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Ventas ($)',
+                data: data,
+                borderColor: '#2463eb',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointBackgroundColor: '#2463eb',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#2463eb',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(17, 22, 33, 0.9)',
+                    titleColor: '#fff',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#2a3241',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#94a3b8'
+                    }
+                },
+                y: {
+                    create: false,
+                    grid: {
+                        color: '#2a3241',
+                        borderDash: [5, 5]
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'nearest'
+            }
+        }
+    });
+}
+
 /**
  * Actualiza el período del gráfico de ventas
  * @param {string} period - Período seleccionado (30days, week, year)
  */
-function updateChartPeriod(period) {
-    console.log('Actualizando gráfico para período:', period);
-    showNotification(`Gráfico actualizado: ${period}`, 'success');
-    // En producción, esto haría una llamada API para obtener nuevos datos
-    // y actualizaría el SVG del gráfico
+async function updateChartPeriod(period) {
+    const btn = document.getElementById('chartPeriodSelect');
+    const originalText = btn.value;
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`api_dashboard.php?action=chart_data&period=${period}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            if (salesChartInstance) {
+                salesChartInstance.data.labels = result.data.labels;
+                salesChartInstance.data.datasets[0].data = result.data.values;
+                salesChartInstance.update();
+                showNotification(`Gráfico actualizado: ${period === '30days' ? 'Últimos 30 días' : period === 'week' ? 'Esta semana' : 'Este año'}`, 'success');
+            }
+        } else {
+            showNotification('Error cargando datos del gráfico', 'error');
+        }
+    } catch (e) {
+        console.error('Error updating chart:', e);
+        showNotification('Error de conexión', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.value = period; // Restore selection visually
+    }
 }
 
 // ========== SORTEOS POR FINALIZAR ==========
@@ -1181,6 +1113,64 @@ function cerrarModal(overlay) {
         }, 200);
     }
 }
+
+// Función para manejar el logout del administrador
+function handleLogoutAdmin() {
+    // Usar customConfirm para mantener consistencia con el resto de la aplicación
+    if (typeof customConfirm === 'function') {
+        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+            if (confirmed) {
+                // Redirigir al logout.php que destruye la sesión del servidor
+                window.location.href = 'logout.php';
+            }
+        });
+    } else {
+        // Si customConfirm no está disponible, esperar a que se cargue
+        setTimeout(() => {
+            if (typeof customConfirm === 'function') {
+                handleLogoutAdmin();
+            } else {
+                // Fallback si customConfirm no se carga
+                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                    window.location.href = 'logout.php';
+                }
+            }
+        }, 200);
+    }
+}
+
+// Función para inicializar el menú desplegable del usuario administrador
+function initAdminUserMenu() {
+    const menuTrigger = document.getElementById('admin-user-menu-trigger');
+    const menu = document.getElementById('admin-user-menu');
+    
+    if (menuTrigger && menu) {
+        // Toggle del menú al hacer clic en el trigger
+        menuTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+        
+        // Cerrar el menú al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!menuTrigger.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar el menú con la tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+    }
+}
+
+// Inicializar cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    initAdminUserMenu();
+});
 </script>
 </body></html>
 

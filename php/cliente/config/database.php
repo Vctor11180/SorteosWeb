@@ -78,4 +78,3 @@ function getDB() {
     return Database::getInstance()->getConnection();
 }
 
-?>

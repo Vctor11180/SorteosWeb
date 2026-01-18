@@ -24,6 +24,6 @@ if (ini_get("session.use_cookies")) {
 // Destruir la sesión
 session_destroy();
 
-// Redirigir al login del cliente (o al index principal)
-header('Location: ../cliente/InicioSesion.php');
+// Redirigir a la Landing Page (página de inicio)
+header('Location: ../LandingPage.php');
 exit;

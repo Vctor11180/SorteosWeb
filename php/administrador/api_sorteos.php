@@ -6,6 +6,7 @@
 
 header('Content-Type: application/json; charset=utf-8');
 require_once 'config.php';
+require_once 'audit_helper.php';
 
 $conn = getDBConnection();
 $method = $_SERVER['REQUEST_METHOD'];
@@ -72,6 +73,8 @@ try {
                 } else {
                     sendError('ID de sorteo requerido', 400);
                 }
+            } elseif ($action === 'categorias') {
+                getCategorias($conn);
             } else {
                 getSorteos($conn);
             }
@@ -110,13 +113,18 @@ function getSorteos($conn) {
                 s.fecha_inicio,
                 s.fecha_fin,
                 s.imagen_url,
+                s.caracteristicas,
+                s.nro_resolucion_aj,
+                s.id_categoria,
                 s.estado,
                 s.id_creador,
                 u.primer_nombre,
                 u.apellido_paterno,
+                c.nombre_categoria,
                 COUNT(b.id_boleto) as boletos_vendidos
               FROM sorteos s
               LEFT JOIN usuarios u ON s.id_creador = u.id_usuario
+              LEFT JOIN categorias c ON s.id_categoria = c.id_categoria
               LEFT JOIN boletos b ON s.id_sorteo = b.id_sorteo AND b.estado = 'Vendido'
               GROUP BY s.id_sorteo
               ORDER BY s.fecha_inicio DESC";
@@ -152,13 +160,18 @@ function getSorteo($conn, $id) {
                 s.fecha_inicio,
                 s.fecha_fin,
                 s.imagen_url,
+                s.caracteristicas,
+                s.nro_resolucion_aj,
+                s.id_categoria,
                 s.estado,
                 s.id_creador,
                 u.primer_nombre,
                 u.apellido_paterno,
+                c.nombre_categoria,
                 COUNT(b.id_boleto) as boletos_vendidos
               FROM sorteos s
               LEFT JOIN usuarios u ON s.id_creador = u.id_usuario
+              LEFT JOIN categorias c ON s.id_categoria = c.id_categoria
               LEFT JOIN boletos b ON s.id_sorteo = b.id_sorteo AND b.estado = 'Vendido'
               WHERE s.id_sorteo = ?
               GROUP BY s.id_sorteo");
@@ -226,6 +239,25 @@ function createSorteo($conn, $id_admin) {
     }
     $imagen_url = $data['imagen_url'] ?? null;
     
+    // Nuevos campos
+    $caracteristicas = null;
+    if (isset($data['caracteristicas']) && !empty($data['caracteristicas'])) {
+        // Si es un array, convertir a JSON
+        if (is_array($data['caracteristicas'])) {
+            $caracteristicas = json_encode($data['caracteristicas'], JSON_UNESCAPED_UNICODE);
+        } else {
+            // Si ya es string, validar que sea JSON válido
+            $caracteristicas = $data['caracteristicas'];
+            json_decode($caracteristicas); // Validar formato
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $caracteristicas = null; // Si no es JSON válido, usar null
+            }
+        }
+    }
+    $nro_resolucion_aj = isset($data['nro_resolucion_aj']) && !empty($data['nro_resolucion_aj']) ? trim($data['nro_resolucion_aj']) : null;
+    $id_categoria = isset($data['id_categoria']) && !empty($data['id_categoria']) ? intval($data['id_categoria']) : null;
+
+    
     // Validar fechas
     $fecha_inicio_dt = new DateTime($fecha_inicio);
     $fecha_fin_dt = new DateTime($fecha_fin);
@@ -237,10 +269,10 @@ function createSorteo($conn, $id_admin) {
     
     // Insertar sorteo
     $stmt = $conn->prepare("INSERT INTO sorteos 
-        (titulo, descripcion, precio_boleto, total_boletos_crear, fecha_inicio, fecha_fin, estado, id_creador, imagen_url)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        (titulo, descripcion, precio_boleto, total_boletos_crear, fecha_inicio, fecha_fin, estado, id_creador, imagen_url, caracteristicas, nro_resolucion_aj, id_categoria)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     
-    $stmt->bind_param("ssdisssis", 
+    $stmt->bind_param("ssdissssissi", 
         $titulo, 
         $descripcion, 
         $precio_boleto, 
@@ -249,11 +281,21 @@ function createSorteo($conn, $id_admin) {
         $fecha_fin, 
         $estado, 
         $id_admin,
-        $imagen_url
+        $imagen_url,
+        $caracteristicas,
+        $nro_resolucion_aj,
+        $id_categoria
     );
     
     if ($stmt->execute()) {
         $id_sorteo = $conn->insert_id;
+        
+        // Auditoria
+        registrarAuditoria($conn, 'CREAR_SORTEO', 'Sorteos', [
+            'id_sorteo' => $id_sorteo,
+            'titulo' => $titulo,
+            'creado_por' => $id_admin
+        ]);
         
         // Crear boletos para el sorteo
         crearBoletos($conn, $id_sorteo, $total_boletos);
@@ -297,6 +339,25 @@ function updateSorteo($conn, $id_admin) {
     }
     $imagen_url = $data['imagen_url'] ?? null;
     
+    // Nuevos campos
+    $caracteristicas = null;
+    if (isset($data['caracteristicas']) && !empty($data['caracteristicas'])) {
+        // Si es un array, convertir a JSON
+        if (is_array($data['caracteristicas'])) {
+            $caracteristicas = json_encode($data['caracteristicas'], JSON_UNESCAPED_UNICODE);
+        } else {
+            // Si ya es string, validar que sea JSON válido
+            $caracteristicas = $data['caracteristicas'];
+            json_decode($caracteristicas); // Validar formato
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $caracteristicas = null; // Si no es JSON válido, usar null
+            }
+        }
+    }
+    $nro_resolucion_aj = isset($data['nro_resolucion_aj']) && !empty($data['nro_resolucion_aj']) ? trim($data['nro_resolucion_aj']) : null;
+    $id_categoria = isset($data['id_categoria']) && !empty($data['id_categoria']) ? intval($data['id_categoria']) : null;
+
+    
     // Validar fechas
     $fecha_inicio_dt = new DateTime($fecha_inicio);
     $fecha_fin_dt = new DateTime($fecha_fin);
@@ -306,15 +367,15 @@ function updateSorteo($conn, $id_admin) {
         return;
     }
     
-    // Verificar que el sorteo existe y pertenece al admin
-    $stmt = $conn->prepare("SELECT id_sorteo FROM sorteos WHERE id_sorteo = ? AND id_creador = ?");
-    $stmt->bind_param("ii", $id_sorteo, $id_admin);
+    // Verificar que el sorteo existe (SIN verificar id_creador por ahora)
+    $stmt = $conn->prepare("SELECT id_sorteo FROM sorteos WHERE id_sorteo = ?");
+    $stmt->bind_param("i", $id_sorteo);
     $stmt->execute();
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
         $stmt->close();
-        sendError('Sorteo no encontrado o no tienes permisos para editarlo', 404);
+        sendError('Sorteo no encontrado', 404);
         return;
     }
     $stmt->close();
@@ -328,10 +389,13 @@ function updateSorteo($conn, $id_admin) {
         fecha_inicio = ?, 
         fecha_fin = ?, 
         estado = ?,
-        imagen_url = ?
+        imagen_url = ?,
+        caracteristicas = ?,
+        nro_resolucion_aj = ?,
+        id_categoria = ?
         WHERE id_sorteo = ?");
     
-    $stmt->bind_param("ssdissssi", 
+    $stmt->bind_param("ssdissssssii", 
         $titulo, 
         $descripcion, 
         $precio_boleto, 
@@ -340,10 +404,19 @@ function updateSorteo($conn, $id_admin) {
         $fecha_fin, 
         $estado,
         $imagen_url,
+        $caracteristicas,
+        $nro_resolucion_aj,
+        $id_categoria,
         $id_sorteo
     );
     
     if ($stmt->execute()) {
+        // Auditoria
+        registrarAuditoria($conn, 'EDITAR_SORTEO', 'Sorteos', [
+            'id_sorteo' => $id_sorteo,
+            'cambios' => ['titulo' => $titulo, 'estado' => $estado]
+        ]);
+
         echo json_encode([
             'success' => true,
             'message' => 'Sorteo actualizado exitosamente'
@@ -386,6 +459,11 @@ function deleteSorteo($conn, $id_admin) {
     $stmt->bind_param("i", $id_sorteo);
     
     if ($stmt->execute()) {
+        // Auditoria
+        registrarAuditoria($conn, 'ELIMINAR_SORTEO', 'Sorteos', [
+            'id_sorteo_eliminado' => $id_sorteo
+        ]);
+
         echo json_encode([
             'success' => true,
             'message' => 'Sorteo eliminado exitosamente'
@@ -430,6 +508,37 @@ function crearBoletos($conn, $id_sorteo, $total_boletos) {
 }
 
 /**
+ * Obtiene todas las categorías disponibles
+ */
+function getCategorias($conn) {
+    $query = "SELECT id_categoria, nombre_categoria, descripcion, icono_url 
+              FROM categorias 
+              ORDER BY nombre_categoria ASC";
+    
+    $result = $conn->query($query);
+    
+    if (!$result) {
+        sendError('Error al obtener categorías: ' . $conn->error, 500);
+        return;
+    }
+    
+    $categorias = [];
+    while ($row = $result->fetch_assoc()) {
+        $categorias[] = [
+            'id_categoria' => (int)$row['id_categoria'],
+            'nombre_categoria' => $row['nombre_categoria'],
+            'descripcion' => $row['descripcion'] ?? '',
+            'icono_url' => $row['icono_url'] ?? null
+        ];
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $categorias
+    ], JSON_UNESCAPED_UNICODE);
+}
+
+/**
  * Formatea un sorteo para la respuesta JSON
  */
 function formatSorteo($row) {
@@ -452,6 +561,15 @@ function formatSorteo($row) {
         $creado_por = 'Admin';
     }
     
+    // Decodificar caracteristicas JSON si existe
+    $caracteristicas = null;
+    if (isset($row['caracteristicas']) && !empty($row['caracteristicas'])) {
+        $caracteristicas = json_decode($row['caracteristicas'], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $caracteristicas = null;
+        }
+    }
+    
     return [
         'id' => (string)$row['id_sorteo'],
         'id_sorteo' => $row['id_sorteo'],
@@ -467,7 +585,11 @@ function formatSorteo($row) {
         'ticketsTotal' => (int)$row['total_boletos_crear'],
         'precio_boleto' => floatval($row['precio_boleto'] ?? 0),
         'createdBy' => $creado_por,
-        'imagen_url' => $row['imagen_url'] ?? null
+        'imagen_url' => $row['imagen_url'] ?? null,
+        'caracteristicas' => $caracteristicas,
+        'nro_resolucion_aj' => $row['nro_resolucion_aj'] ?? null,
+        'id_categoria' => $row['id_categoria'] ?? null,
+        'nombre_categoria' => $row['nombre_categoria'] ?? null
     ];
 }
 
@@ -516,19 +638,18 @@ function crearAdminPorDefecto($conn) {
     $primer_nombre = 'Administrador';
     $apellido_paterno = 'Sistema';
     $apellido_materno = '';
-    $fecha_nacimiento = '1990-01-01';
+    // fecha_nacimiento removed
     $password_hash = password_hash('admin123', PASSWORD_DEFAULT); // Contraseña por defecto
     $telefono = '';
     
     $stmt = $conn->prepare("INSERT INTO usuarios 
-        (primer_nombre, apellido_paterno, apellido_materno, fecha_nacimiento, email, password_hash, telefono, id_rol, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Activo')");
+        (primer_nombre, apellido_paterno, apellido_materno, email, password_hash, telefono, id_rol, estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
     
-    $stmt->bind_param("sssssssi", 
+    $stmt->bind_param("ssssssi", 
         $primer_nombre,
         $apellido_paterno,
         $apellido_materno,
-        $fecha_nacimiento,
         $email,
         $password_hash,
         $telefono,

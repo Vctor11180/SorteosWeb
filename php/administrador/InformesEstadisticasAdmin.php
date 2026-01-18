@@ -399,13 +399,21 @@ $lista_sorteos = obtenerListaSorteos($conn);
                     Informes
                 </a>
 </div>
-<div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3">
+<div class="p-4 border-t border-gray-200 dark:border-border-dark relative">
+<div id="admin-user-menu-trigger" class="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
-<div class="flex flex-col">
+<div class="flex flex-col flex-1">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
+<span class="material-symbols-outlined text-gray-500 text-lg">arrow_drop_down</span>
+</div>
+<!-- Dropdown Menu -->
+<div id="admin-user-menu" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+<button id="admin-logout-btn" onclick="handleLogoutAdmin()" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
 </div>
 </div>
 </aside>
@@ -420,13 +428,8 @@ $lista_sorteos = obtenerListaSorteos($conn);
 <h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Informes y Estadísticas</h1>
 </div>
 <div class="flex items-center gap-4">
-<div class="relative hidden md:block w-64">
-<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-<span class="material-symbols-outlined text-[20px]">search</span>
-</span>
-<input class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary placeholder-gray-500" placeholder="Buscar sorteo, usuario..." type="text"/>
-</div>
-<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+
+<button id="notificationsButton" onclick="showNotifications()" class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
 </button>
@@ -1092,6 +1095,49 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+// ========== NOTIFICACIONES ==========
+function showNotifications() {
+    const notifications = [
+        { id: 1, type: 'payment', message: '3 pagos pendientes de validación', time: 'Hace 5 min', url: 'ValidacionPagosAdministrador.php' },
+        { id: 2, type: 'raffle', message: 'Sorteo "iPhone 15 Pro Max" finaliza en 2 horas', time: 'Hace 15 min', url: 'CrudGestionSorteo.php' },
+        { id: 3, type: 'winner', message: 'Ganador generado para sorteo #8820', time: 'Hace 1 hora', url: 'GeneradorGanadoresAdminstradores.php' }
+    ];
+    
+    const existingModal = document.getElementById('notificationModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'notificationModal';
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    
+    modal.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Notificaciones</h3>
+                    <div class="space-y-3">
+                        ${notifications.map(n => `
+                            <div onclick="window.location.href='${n.url}'" class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer border border-gray-200 dark:border-border-dark transition-colors">
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">${n.message}</p>
+                                <p class="text-xs text-gray-500 mt-1">${n.time}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="document.getElementById('notificationModal').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
 </script>
 </body>
 </html>

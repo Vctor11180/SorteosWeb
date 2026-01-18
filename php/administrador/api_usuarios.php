@@ -1,10 +1,11 @@
 <?php
 /**
- * API para gestionar acciones de usuarios (bloquear temporal, banear permanente)
+ * API para gestionar acciones de usuarios (bloquear temporal, banear permanente, crear, editar)
  */
 
 header('Content-Type: application/json');
 require_once 'config.php';
+require_once 'audit_helper.php';
 
 $conn = getDBConnection();
 
@@ -18,35 +19,41 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Obtener datos del cuerpo de la petición
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (!isset($input['action']) || !isset($input['userId'])) {
+if (!isset($input['action'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+    echo json_encode(['success' => false, 'message' => 'Acción requerida']);
     exit;
 }
 
 $action = $input['action'];
-$userId = intval($input['userId']);
+$userId = isset($input['userId']) ? intval($input['userId']) : 0;
 
-// Validar que el usuario existe
-$checkQuery = "SELECT id_usuario, estado FROM usuarios WHERE id_usuario = ?";
-$stmt = $conn->prepare($checkQuery);
-$stmt->bind_param('i', $userId);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'message' => 'Usuario no encontrado']);
+// Validar userId solo si la acción no es crear_usuario
+if ($action !== 'crear_usuario' && $userId <= 0) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'ID de usuario requerido']);
     exit;
 }
 
-$user = $result->fetch_assoc();
-$stmt->close();
+// Validar que el usuario existe (si no es crear)
+if ($action !== 'crear_usuario') {
+    $checkQuery = "SELECT id_usuario, estado FROM usuarios WHERE id_usuario = ?";
+    $stmt = $conn->prepare($checkQuery);
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Usuario no encontrado']);
+        exit;
+    }
+    $stmt->close();
+}
 
 try {
     switch ($action) {
         case 'bloquear_temporal':
-            // Bloquear temporalmente (cambiar estado a Inactivo)
             $duracion = $input['duracion'] ?? null;
             $razon = $input['razon'] ?? null;
             
@@ -55,11 +62,13 @@ try {
             $stmt->bind_param('i', $userId);
             
             if ($stmt->execute()) {
-                // Registrar en auditoría si existe la tabla
-                if ($razon) {
-                    // Aquí podrías insertar en una tabla de historial de bloqueos
-                    // Por ahora solo actualizamos el estado
-                }
+                // Auditoría
+                registrarAuditoria($conn, 'BANEAR_USUARIO', 'Usuarios', [
+                    'id_usuario_afectado' => $userId,
+                    'tipo' => 'Temporal',
+                    'duracion' => $duracion,
+                    'razon' => $razon
+                ]);
                 
                 $stmt->close();
                 echo json_encode([
@@ -74,7 +83,6 @@ try {
             break;
             
         case 'banear_permanente':
-            // Banear permanentemente (cambiar estado a Baneado)
             $razon = $input['razon'] ?? '';
             
             if (empty($razon)) {
@@ -88,8 +96,12 @@ try {
             $stmt->bind_param('i', $userId);
             
             if ($stmt->execute()) {
-                // Registrar en auditoría si existe la tabla
-                // Aquí podrías insertar en una tabla de historial de baneos con la razón
+                // Auditoría
+                registrarAuditoria($conn, 'BANEAR_USUARIO', 'Usuarios', [
+                    'id_usuario_afectado' => $userId,
+                    'tipo' => 'Permanente',
+                    'razon' => $razon
+                ]);
                 
                 $stmt->close();
                 echo json_encode([
@@ -99,12 +111,55 @@ try {
                 ]);
             } else {
                 $stmt->close();
-                throw new Exception('Error al banear al usuario');
+                throw new Exception('Error al banear al usuario: ' . $conn->error);
             }
             break;
             
+        case 'crear_usuario':
+            $primer_nombre = trim($input['primer_nombre'] ?? '');
+            $apellido_paterno = trim($input['apellido_paterno'] ?? '');
+            $email = trim($input['email'] ?? '');
+            $password = trim($input['password'] ?? '');
+            $id_rol = intval($input['rol'] ?? 2);
+            
+            if (empty($primer_nombre) || empty($email) || empty($password)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+                exit;
+            }
+            
+            // Verificar email único
+            $check = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ?");
+            $check->bind_param("s", $email);
+            $check->execute();
+            if ($check->get_result()->num_rows > 0) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'El email ya existe']);
+                exit;
+            }
+            
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $estado = 'Activo';
+            
+            $stmt = $conn->prepare("INSERT INTO usuarios (primer_nombre, apellido_paterno, apellido_materno, email, password_hash, id_rol, estado) VALUES (?, ?, '', ?, ?, ?, ?)");
+            $stmt->bind_param("ssssis", $primer_nombre, $apellido_paterno, $email, $hash, $id_rol, $estado);
+            
+            if ($stmt->execute()) {
+                $newId = $stmt->insert_id;
+                // Auditoría
+                registrarAuditoria($conn, 'CREAR_USUARIO', 'Usuarios', [
+                    'id_nuevo' => $newId,
+                    'email' => $email,
+                    'rol' => $id_rol
+                ]);
+
+                echo json_encode(['success' => true, 'message' => 'Usuario creado exitosamente']);
+            } else {
+                throw new Exception("Error al crear usuario: " . $conn->error);
+            }
+            break;
+
         case 'editar_usuario':
-            // Editar información del usuario
             $nombre = trim($input['nombre'] ?? '');
             $email = trim($input['email'] ?? '');
             $telefono = trim($input['telefono'] ?? '');
@@ -115,21 +170,19 @@ try {
                 exit;
             }
             
-            // Validar formato de email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'message' => 'El formato del email no es válido']);
                 exit;
             }
             
-            // Verificar que el email no esté en uso por otro usuario
+            // Verificar que el email no esté en uso por otro
             $checkEmailQuery = "SELECT id_usuario FROM usuarios WHERE email = ? AND id_usuario != ?";
             $stmt = $conn->prepare($checkEmailQuery);
             $stmt->bind_param('si', $email, $userId);
             $stmt->execute();
-            $emailResult = $stmt->get_result();
             
-            if ($emailResult->num_rows > 0) {
+            if ($stmt->get_result()->num_rows > 0) {
                 $stmt->close();
                 http_response_code(400);
                 echo json_encode(['success' => false, 'message' => 'Este email ya está en uso por otro usuario']);
@@ -137,25 +190,22 @@ try {
             }
             $stmt->close();
             
-            // Separar nombre completo en partes
+            // Separar nombre
             $nombreParts = explode(' ', $nombre, 4);
             $primer_nombre = $nombreParts[0] ?? '';
-            $segundo_nombre = $nombreParts[1] ?? null;
-            $apellido_paterno = $nombreParts[2] ?? '';
-            $apellido_materno = $nombreParts[3] ?? '';
+            // Nota: segundo_nombre NO existe en esquema según fixes previos, así que lo ignoramos o unimos
+            // Pero en api anterior trataba de usarlo. Vamos a simplificar usando solo primer y apellidos.
+            // Si el esquema no tiene segundo_nombre, no debemos intentar guardarlo.
+            // Asumiremos: primer nombre es part 0, apellido es resto.
             
-            // Si solo hay 2 partes, asumir que es nombre y apellido
-            if (count($nombreParts) == 2) {
-                $primer_nombre = $nombreParts[0];
-                $apellido_paterno = $nombreParts[1];
-                $segundo_nombre = null;
-                $apellido_materno = '';
-            }
-            
-            // Actualizar usuario
+            // Revisando schema: usuarios tiene primer_nombre, apellido_paterno, apellido_materno.
+            // Lógica simple:
+            $primer_nombre = $nombreParts[0];
+            $apellido_paterno = $nombreParts[1] ?? '';
+            $apellido_materno = isset($nombreParts[2]) ? implode(' ', array_slice($nombreParts, 2)) : '';
+
             $updateQuery = "UPDATE usuarios SET 
                             primer_nombre = ?, 
-                            segundo_nombre = ?, 
                             apellido_paterno = ?, 
                             apellido_materno = ?, 
                             email = ?, 
@@ -163,9 +213,8 @@ try {
                             WHERE id_usuario = ?";
             
             $stmt = $conn->prepare($updateQuery);
-            $stmt->bind_param('ssssssi', 
+            $stmt->bind_param('sssssi', 
                 $primer_nombre,
-                $segundo_nombre,
                 $apellido_paterno,
                 $apellido_materno,
                 $email,
@@ -174,6 +223,12 @@ try {
             );
             
             if ($stmt->execute()) {
+                // Auditoría
+                registrarAuditoria($conn, 'EDITAR_USUARIO', 'Usuarios', [
+                    'id_usuario_afectado' => $userId,
+                    'cambios' => ['nombre' => $nombre, 'email' => $email]
+                ]);
+
                 $stmt->close();
                 echo json_encode([
                     'success' => true,
@@ -181,7 +236,7 @@ try {
                 ]);
             } else {
                 $stmt->close();
-                throw new Exception('Error al actualizar el usuario');
+                throw new Exception('Error al actualizar el usuario: ' . $conn->error);
             }
             break;
             
@@ -200,4 +255,3 @@ try {
 
 $conn->close();
 ?>
-

@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <?php
+// Habilitar reporte de errores
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Conexión a la base de datos
 require_once 'config.php';
 $conn = getDBConnection();
@@ -10,8 +15,8 @@ $userId = isset($_GET['userId']) ? intval($_GET['userId']) : 0;
 // Obtener datos del usuario
 $userData = null;
 if ($userId > 0) {
-    $query = "SELECT u.id_usuario, u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno,
-                     u.email, u.telefono, u.estado, u.fecha_registro, u.avatar_url,
+    $query = "SELECT u.id_usuario, u.primer_nombre, u.apellido_paterno, u.apellido_materno,
+                     u.email, u.telefono, u.estado, u.created_at,
                      (SELECT COUNT(*) FROM boletos WHERE id_usuario_actual = u.id_usuario AND estado = 'Vendido') as boletos_comprados,
                      (SELECT COUNT(*) FROM ganadores WHERE id_usuario = u.id_usuario) as sorteos_ganados,
                      (SELECT COALESCE(SUM(monto_total), 0) FROM transacciones WHERE id_usuario = u.id_usuario AND estado_pago = 'Completado') as total_gastado
@@ -24,8 +29,9 @@ if ($userId > 0) {
     
     if ($result->num_rows > 0) {
         $userData = $result->fetch_assoc();
-        $nombreCompleto = trim($userData['primer_nombre'] . ' ' . ($userData['segundo_nombre'] ?? '') . ' ' . $userData['apellido_paterno'] . ' ' . $userData['apellido_materno']);
-        $fechaRegistro = date('M Y', strtotime($userData['fecha_registro']));
+        // Concatenar nombre sin segundo_nombre
+        $nombreCompleto = trim($userData['primer_nombre'] . ' ' . $userData['apellido_paterno'] . ' ' . $userData['apellido_materno']);
+        $fechaRegistro = date('M Y', strtotime($userData['created_at']));
         $estado = $userData['estado'];
         $estadoClasses = [
             'Activo' => 'bg-green-400/10 text-green-400 ring-green-400/20',
@@ -191,7 +197,7 @@ if ($userId > 0) {
 <div class="flex items-start gap-5">
 <?php if ($userData): ?>
 <?php 
-$avatarUrl = $userData['avatar_url'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($nombreCompleto) . '&background=2463eb&color=fff';
+$avatarUrl = 'https://ui-avatars.com/api/?name=' . urlencode($nombreCompleto) . '&background=2463eb&color=fff';
 ?>
 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-24 border-2 border-[#282d39] shadow-md ring-2 ring-primary/20" data-alt="User Profile Picture" style='background-image: url("<?php echo htmlspecialchars($avatarUrl); ?>");'></div>
 <div class="flex flex-col gap-2">

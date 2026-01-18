@@ -58,14 +58,13 @@ function getTransacciones($conn) {
                 t.id_transaccion,
                 t.monto_total as monto,
                 t.metodo_pago,
-                t.referencia_pago,
+                t.gateway_reference as referencia_pago,
                 t.comprobante_url,
                 t.estado_pago,
                 t.fecha_creacion,
                 u.primer_nombre,
                 u.apellido_paterno,
                 u.email,
-                u.avatar_url,
                 (SELECT COUNT(*) FROM detalle_transaccion_boletos dt WHERE dt.id_transaccion = t.id_transaccion) as cantidad_boletos,
                 (
                     SELECT s.titulo 
@@ -97,7 +96,7 @@ function getTransacciones($conn) {
             'id' => $row['id_transaccion'],
             'usuario' => $row['primer_nombre'] . ' ' . $row['apellido_paterno'],
             'email' => $row['email'],
-            'avatar' => $row['avatar_url'] ?? '', // Default handling in frontend
+            'avatar' => '', // No hay avatar en la tabla usuarios por defecto
             'sorteo' => $row['nombre_sorteo'] ?? 'Varios / Desconocido',
             'cantidad_boletos' => $row['cantidad_boletos'],
             'numeros_boletos' => $row['numeros_boletos'],

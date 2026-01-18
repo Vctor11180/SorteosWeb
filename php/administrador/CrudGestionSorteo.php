@@ -100,13 +100,21 @@ $conn = getDBConnection();
                     Informes
                 </a>
 </div>
-<div class="p-4 border-t border-gray-200 dark:border-border-dark">
-<div class="flex items-center gap-3">
+<div class="p-4 border-t border-gray-200 dark:border-border-dark relative">
+<div id="admin-user-menu-trigger" class="flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors">
 <div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="User profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfIzDdUJZk0e1bBHKOe7BG0HPanJ3nx8d9vtsJZZMiXM6ZJw9-oPch2DQWyWWrowTikKHJBUkhOyI6hUEiy_TgTGdRmm-4uDyO3KjasL500lcWogtry5HOXaJxBgDxpuT_8QBEVTnbuI4727c7c5qtPNid2CyQr0SnpyEcv2R9UEoiXiOVUH_g0RdYwYfb9u5EU5DkqEZl2oL9UW9s45D-zD3htPmEHk69TrCVPL50vnE6cDfTlcz9AJEZo7Hb8gpAhxwAxDP4SCs');"></div>
-<div class="flex flex-col">
+<div class="flex flex-col flex-1">
 <span class="text-sm font-medium text-slate-900 dark:text-white">Admin User</span>
 <span class="text-xs text-gray-500">admin@sorteos.web</span>
 </div>
+<span class="material-symbols-outlined text-gray-500 text-lg">arrow_drop_down</span>
+</div>
+<!-- Dropdown Menu -->
+<div id="admin-user-menu" class="hidden absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+<button id="admin-logout-btn" onclick="handleLogoutAdmin()" class="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar Sesión</span>
+</button>
 </div>
 </div>
 </aside>
@@ -119,16 +127,12 @@ $conn = getDBConnection();
 <button id="mobileMenuToggle" onclick="toggleMobileMenu()" class="lg:hidden text-gray-500 hover:text-primary transition-colors">
 <span class="material-symbols-outlined">menu</span>
 </button>
+
 <h1 class="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">Gestión de Sorteos</h1>
 </div>
 <div class="flex items-center gap-4">
-<div class="relative hidden md:block w-64">
-<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-<span class="material-symbols-outlined text-[20px]">search</span>
-</span>
-<input id="headerSearchInput" class="w-full bg-gray-100 dark:bg-[#1e2433] border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400" placeholder="Buscar sorteo, usuario..." type="text" style="color: rgb(15 23 42) !important;"/>
-</div>
-<button class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+
+<button id="notificationsButton" onclick="showNotifications()" class="relative p-2 text-gray-500 hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
 </button>
@@ -204,6 +208,7 @@ $conn = getDBConnection();
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" scope="col">Nombre del Sorteo</th>
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" scope="col">Periodo</th>
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" scope="col">Premio Principal</th>
+<th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32" scope="col">Categoría</th>
 <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32" scope="col">Estado</th>
 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-48" scope="col">Boletos</th>
 <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32" scope="col">Acciones</th>
@@ -328,6 +333,22 @@ Cargando sorteos...
 <option value="Finalizado">Finalizado</option>
 </select>
 </div>
+<!-- Nuevos campos opcionales -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="categoriaSelectInput">Categoría <span class="text-gray-400 text-xs">(Opcional)</span></label>
+    <select class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md bg-white dark:bg-[#111621] dark:text-white" id="categoriaSelectInput" name="id_categoria">
+        <option value="">Sin categoría</option>
+    </select>
+</div>
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="nroResolucionTextInput">Nro. Resolución <span class="text-gray-400 text-xs">(Opcional)</span></label>
+    <input class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="nroResolucionTextInput" name="nro_resolucion_aj" placeholder="Ej: RES-2024-001" type="text"/>
+</div>
+<div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="caracteristicasTextInput">Características <span class="text-gray-400 text-xs">(Opcional, separadas por coma)</span></label>
+    <textarea class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary sm:text-sm bg-white dark:bg-[#111621] dark:text-white px-3 py-2" id="caracteristicasTextInput" name="caracteristicas" placeholder="Ej: Motor 2.0L, Color Rojo, Año 2024" rows="2"></textarea>
+    <p class="text-xs text-gray-500 mt-1">Separe cada característica con una coma</p>
+</div>
 <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3 mt-6">
 <button type="submit" id="saveRaffleButton" class="w-full inline-flex justify-center items-center gap-2 rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
 <span class="material-symbols-outlined text-sm">save</span>
@@ -376,9 +397,38 @@ async function loadRaffles() {
     }
 }
 
+// Cargar categorías desde la API
+let categorias = [];
+async function loadCategorias() {
+    try {
+        const response = await fetch('api_sorteos.php?action=categorias');
+        const result = await response.json();
+        
+        if (result.success) {
+            categorias = result.data;
+            // Poblar el select de categorías
+            const categoriaSelect = document.getElementById('categoriaSelectInput');
+            if (categoriaSelect) {
+                categoriaSelect.innerHTML = '<option value="">Sin categoría</option>';
+                categorias.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id_categoria;
+                    option.textContent = cat.nombre_categoria;
+                    categoriaSelect.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar sorteos al iniciar
+    // Cargar sorteos y categorías al iniciar
     loadRaffles();
+    loadCategorias();
+
     
     // Establecer fecha mínima para los campos de fecha (fecha actual)
     const today = new Date().toISOString().split('T')[0];
@@ -532,7 +582,7 @@ function renderTable(filteredRaffles) {
     const pageRaffles = filteredRaffles.slice(start, end);
     
     if (pageRaffles.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No se encontraron sorteos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No se encontraron sorteos</td></tr>';
         return;
     }
     
@@ -567,7 +617,17 @@ function renderTable(filteredRaffles) {
             : raffle.period || 'N/A';
         const periodYear = periodParts.length >= 6 ? periodParts[5] : '';
         
-        return `<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="${raffle.id}" data-name="${raffle.name}" data-period="${raffle.period || ''}" data-prize="${raffle.prize || ''}" data-status="${raffle.status}" data-tickets-sold="${raffle.ticketsSold}" data-tickets-total="${raffle.ticketsTotal}" data-created-by="${raffle.createdBy}">
+        // Badge de categoría
+        const categoriaBadge = raffle.nombre_categoria 
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">${raffle.nombre_categoria}</span>`
+            : '<span class="text-xs text-gray-400">Sin categoría</span>';
+        
+        // Tooltip de características
+        const caracteristicasTooltip = raffle.caracteristicas && Array.isArray(raffle.caracteristicas) && raffle.caracteristicas.length > 0
+            ? `title="${raffle.caracteristicas.join(', ')}"`
+            : '';
+        
+        return `<tr class="raffle-row hover:bg-gray-50 dark:hover:bg-[#1e2433] transition-colors group" data-id="${raffle.id}" data-name="${raffle.name}" data-period="${raffle.period || ''}" data-prize="${raffle.prize || ''}" data-status="${raffle.status}" data-tickets-sold="${raffle.ticketsSold}" data-tickets-total="${raffle.ticketsTotal}" data-created-by="${raffle.createdBy}" ${caracteristicasTooltip}>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-mono">#${raffle.id}</td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-slate-900 dark:text-white">${raffle.name || 'Sin título'}</div>
@@ -583,6 +643,7 @@ function renderTable(filteredRaffles) {
                     <span class="text-sm text-gray-900 dark:text-gray-300">${raffle.prize || 'Premio Principal'}</span>
                 </div>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap">${categoriaBadge}</td>
             <td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="w-full">
@@ -681,6 +742,22 @@ window.showRaffleModal = function(mode, raffleData = null) {
             document.getElementById('ticketsInput').value = raffleData.ticketsTotal || '';
             document.getElementById('statusInput').value = raffleData.status || 'Activo';
             document.getElementById('imagenUrlInput').value = raffleData.imagen_url || '';
+            
+            // Cargar nuevos campos opcionales
+            if (document.getElementById('categoriaSelectInput')) {
+                document.getElementById('categoriaSelectInput').value = raffleData.id_categoria || '';
+            }
+            if (document.getElementById('nroResolucionTextInput')) {
+                document.getElementById('nroResolucionTextInput').value = raffleData.nro_resolucion_aj || '';
+            }
+            if (document.getElementById('caracteristicasTextInput') && raffleData.caracteristicas) {
+                // Convertir array de características a texto separado por comas
+                const caracteristicasText = Array.isArray(raffleData.caracteristicas) 
+                    ? raffleData.caracteristicas.join(', ') 
+                    : '';
+                document.getElementById('caracteristicasTextInput').value = caracteristicasText;
+            }
+
             
             // Parsear fechas - usar fecha_inicio y fecha_fin si están disponibles
             if (raffleData.fecha_inicio && raffleData.fecha_fin) {
@@ -819,6 +896,18 @@ async function saveRaffle(e) {
                 const fecha_fin = document.getElementById('endDateInput').value;
                 const imagen_url = document.getElementById('imagenUrlInput').value.trim() || null;
                 
+                // Nuevos campos opcionales
+                const id_categoria = document.getElementById('categoriaSelectInput')?.value || null;
+                const nro_resolucion_aj = document.getElementById('nroResolucionTextInput')?.value.trim() || null;
+                const caracteristicasText = document.getElementById('caracteristicasTextInput')?.value.trim() || '';
+                
+                // Convertir características de texto separado por comas a array JSON
+                let caracteristicas = null;
+                if (caracteristicasText) {
+                    caracteristicas = caracteristicasText.split(',').map(c => c.trim()).filter(c => c.length > 0);
+                }
+
+                
                 // Validar campos requeridos
                 if (!titulo || !descripcion || !total_boletos_crear || !estado || !fecha_inicio || !fecha_fin) {
                         throw new Error('Faltan datos requeridos en el formulario');
@@ -841,7 +930,10 @@ async function saveRaffle(e) {
                     fecha_inicio: fecha_inicio + ' 00:00:00',
                     fecha_fin: fecha_fin + ' 23:59:59',
                     estado: estado, // Asegurar que el estado se envíe
-                    imagen_url: imagen_url
+                    imagen_url: imagen_url,
+                    caracteristicas: caracteristicas,
+                    nro_resolucion_aj: nro_resolucion_aj,
+                    id_categoria: id_categoria
                 };
                 
                 // Debug: verificar que el estado se está enviando
@@ -1226,16 +1318,29 @@ function toggleMobileMenu() {
  */
 function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 'warning') {
     return new Promise((resolve) => {
+        // Usar estructura similar al modal de editar/crear
         const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-50 overflow-y-auto modal-overlay';
-        overlay.style.opacity = '0';
-        overlay.style.transition = 'opacity 0.2s ease-in-out';
+        overlay.className = 'fixed inset-0 z-[9999] overflow-y-auto modal-overlay';
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-labelledby', 'confirm-modal-title');
+        
+        // Función para cerrar
+        const close = () => {
+            const container = overlay.querySelector('.transform');
+            if (container) {
+                container.classList.remove('scale-100', 'opacity-100');
+                container.classList.add('scale-95', 'opacity-0');
+            }
+            setTimeout(() => {
+                overlay.remove();
+            }, 200);
+            document.body.style.overflow = '';
+        };
+
         overlay.onclick = function(e) {
-            if (e.target === overlay) {
-                cerrarModal(overlay);
+            if (e.target.closest('.modal-backdrop') || e.target === overlay) {
+                close();
                 resolve(false);
             }
         };
@@ -1248,64 +1353,90 @@ function mostrarModalConfirmacion(mensaje, titulo = 'Confirmar acción', tipo = 
         
         const config = iconos[tipo] || iconos.warning;
         
-        const modal = document.createElement('div');
-        modal.className = 'flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0';
-        
-        modal.innerHTML = `
-            <div aria-hidden="true" class="fixed inset-0 transition-opacity">
-                <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
-            </div>
-            <span aria-hidden="true" class="hidden sm:inline-block sm:align-middle sm:h-screen">​</span>
-            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark">
-                <div class="px-4 pt-5 pb-4 sm:p-6">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${config.bg} sm:mx-0 sm:h-10 sm:w-10">
-                            <span class="material-symbols-outlined ${config.color}">${config.icon}</span>
-                        </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 id="confirm-modal-title" class="text-lg leading-6 font-medium text-slate-900 dark:text-white">${titulo}</h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500 dark:text-gray-400">${mensaje}</p>
+        // Prevenir scroll del body
+        document.body.style.overflow = 'hidden';
+
+        modalHTML = `
+            <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity modal-backdrop" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="relative inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-border-dark scale-95 opacity-0 duration-200 ease-out" id="modal-content">
+                    <div class="px-4 pt-5 pb-4 sm:p-6">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${config.bg} sm:mx-0 sm:h-10 sm:w-10">
+                                <span class="material-symbols-outlined ${config.color}">${config.icon}</span>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white" id="confirm-modal-title">
+                                    ${titulo}
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        ${mensaje}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
-                    <button id="confirmBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors">
-                        Confirmar
-                    </button>
-                    <button id="cancelBtn" onclick="cerrarModal(this.closest('.modal-overlay')); window.modalConfirmResolve(false);" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
-                        Cancelar
-                    </button>
+                    
+                    <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                        <button type="button" id="confirmBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                            Eliminar
+                        </button>
+                        <button type="button" id="cancelBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-[#1c212c] text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                            Cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
         
-        overlay.appendChild(modal);
+        overlay.innerHTML = modalHTML;
         document.body.appendChild(overlay);
         
-        window.modalConfirmResolve = resolve;
+        // Animación de entrada
+        requestAnimationFrame(() => {
+            const content = overlay.querySelector('#modal-content');
+            if (content) {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }
+        });
         
         const confirmBtn = overlay.querySelector('#confirmBtn');
+        const cancelBtn = overlay.querySelector('#cancelBtn');
+        
+        // Ajustar texto/color del botón según el tipo
+        if (tipo !== 'danger') {
+            confirmBtn.className = 'w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm transition-colors';
+            confirmBtn.textContent = 'Confirmar';
+        }
+        
         confirmBtn.onclick = () => {
-            cerrarModal(overlay);
+            close();
             resolve(true);
         };
         
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-        }, 10);
+        cancelBtn.onclick = () => {
+             close();
+             resolve(false);
+        };
         
         const escHandler = (e) => {
             if (e.key === 'Escape') {
-                cerrarModal(overlay);
+                close();
                 resolve(false);
                 document.removeEventListener('keydown', escHandler);
             }
         };
         document.addEventListener('keydown', escHandler);
         
-        setTimeout(() => confirmBtn.focus(), 100);
+        // Focus management
+        setTimeout(() => cancelBtn.focus(), 50);
     });
 }
 
@@ -1454,6 +1585,107 @@ function getFilteredRaffles() {
 
 // Las funciones ya están disponibles globalmente a través de window.showRaffleModal
 // No es necesario duplicar las asignaciones
+
+// ========== NOTIFICACIONES ==========
+function showNotifications() {
+    const notifications = [
+        { id: 1, type: 'payment', message: '3 pagos pendientes de validación', time: 'Hace 5 min', url: 'ValidacionPagosAdministrador.php' },
+        { id: 2, type: 'raffle', message: 'Sorteo "iPhone 15 Pro Max" finaliza en 2 horas', time: 'Hace 15 min', url: 'CrudGestionSorteo.php' },
+        { id: 3, type: 'winner', message: 'Ganador generado para sorteo #8820', time: 'Hace 1 hora', url: 'GeneradorGanadoresAdminstradores.php' }
+    ];
+    
+    const existingModal = document.getElementById('notificationModal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'notificationModal';
+    modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    
+    modal.innerHTML = `
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm"></div>
+            <div class="inline-block align-bottom bg-white dark:bg-[#1c212c] rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-border-dark">
+                <div class="px-4 pt-5 pb-4 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-4">Notificaciones</h3>
+                    <div class="space-y-3">
+                        ${notifications.map(n => `
+                            <div onclick="window.location.href='${n.url}'" class="p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg cursor-pointer border border-gray-200 dark:border-border-dark transition-colors">
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">${n.message}</p>
+                                <p class="text-xs text-gray-500 mt-1">${n.time}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-[#151a23] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button onclick="document.getElementById('notificationModal').remove()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-blue-600 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Función para manejar el logout del administrador
+function handleLogoutAdmin() {
+    // Usar customConfirm para mantener consistencia con el resto de la aplicación
+    if (typeof customConfirm === 'function') {
+        customConfirm('¿Estás seguro de que deseas cerrar sesión?', 'Cerrar Sesión', 'warning').then(confirmed => {
+            if (confirmed) {
+                // Redirigir al logout.php que destruye la sesión del servidor
+                window.location.href = 'logout.php';
+            }
+        });
+    } else {
+        // Si customConfirm no está disponible, esperar a que se cargue
+        setTimeout(() => {
+            if (typeof customConfirm === 'function') {
+                handleLogoutAdmin();
+            } else {
+                // Fallback si customConfirm no se carga
+                if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                    window.location.href = 'logout.php';
+                }
+            }
+        }, 200);
+    }
+}
+
+// Función para inicializar el menú desplegable del usuario administrador
+function initAdminUserMenu() {
+    const menuTrigger = document.getElementById('admin-user-menu-trigger');
+    const menu = document.getElementById('admin-user-menu');
+    
+    if (menuTrigger && menu) {
+        // Toggle del menú al hacer clic en el trigger
+        menuTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+        
+        // Cerrar el menú al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!menuTrigger.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+        
+        // Cerrar el menú con la tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+    }
+}
+
+// Inicializar cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    initAdminUserMenu();
+});
 </script>
 </body>
-</html>s
+</html>
