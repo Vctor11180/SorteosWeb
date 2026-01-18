@@ -35,7 +35,8 @@ require_once __DIR__ . '/config/database.php';
 $db = getDB();
 
 // Función para obtener todas las ganancias del cliente con información completa
-function obtenerGananciasCliente($db, $usuarioId) {
+function obtenerGananciasCliente($db, $usuarioId)
+{
     try {
         // Obtener todas las ganancias del usuario con información del sorteo y boleto
         $stmt = $db->prepare("
@@ -56,10 +57,10 @@ function obtenerGananciasCliente($db, $usuarioId) {
             WHERE g.id_usuario = :usuario_id
             ORDER BY g.fecha_anuncio DESC
         ");
-        
+
         $stmt->execute([':usuario_id' => $usuarioId]);
         $ganancias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Procesar ganancias para formatear datos
         $gananciasProcesadas = [];
         foreach ($ganancias as $ganancia) {
@@ -67,18 +68,18 @@ function obtenerGananciasCliente($db, $usuarioId) {
             $fechaAnuncio = new DateTime($ganancia['fecha_anuncio']);
             $fechaDisplay = $fechaAnuncio->format('d M Y');
             $fechaDisplayShort = $fechaAnuncio->format('d M, Y');
-            
+
             // URL de imagen del sorteo (usar default si no hay)
             $imagenSorteo = $ganancia['sorteo_imagen'] ?? 'https://via.placeholder.com/150';
-            
+
             // Determinar descripción del premio
             $premioDetalle = $ganancia['premio_detalle'] ?? 'Primer Premio';
-            
+
             // Estado de entrega
-            $entregado = (bool)$ganancia['entregado'];
+            $entregado = (bool) $ganancia['entregado'];
             $estadoTexto = $entregado ? 'Entregado' : 'Pendiente de Contacto';
             $estadoBadge = $entregado ? 'green' : 'yellow';
-            
+
             $gananciasProcesadas[] = [
                 'id_sorteo' => $ganancia['id_sorteo'],
                 'id_boleto' => $ganancia['id_boleto'],
@@ -96,9 +97,9 @@ function obtenerGananciasCliente($db, $usuarioId) {
                 'precio_boleto' => floatval($ganancia['precio_boleto'])
             ];
         }
-        
+
         return $gananciasProcesadas;
-        
+
     } catch (PDOException $e) {
         error_log("Error al obtener ganancias del cliente: " . $e->getMessage());
         return [];
@@ -113,7 +114,8 @@ $gananciasCliente = obtenerGananciasCliente($db, $usuarioId);
 
 // Calcular estadísticas
 $totalPremios = count($gananciasCliente);
-$premiosEntregados = count(array_filter($gananciasCliente, function($g) { return $g['entregado']; }));
+$premiosEntregados = count(array_filter($gananciasCliente, function ($g) {
+    return $g['entregado']; }));
 $premiosPendientes = $totalPremios - $premiosEntregados;
 
 // Calcular valor estimado (suma de precio_boleto de los sorteos ganados, multiplicado por un factor estimado)
@@ -127,19 +129,26 @@ foreach ($gananciasCliente as $ganancia) {
 ?>
 <!DOCTYPE html>
 
-<html class="dark" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Mis Ganancias - Sorteos Web</title>
-<!-- Fonts and Icons -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<html class="dark" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Mis Ganancias - Sorteos Web</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -156,608 +165,749 @@ foreach ($gananciasCliente as $ganancia) {
                     fontFamily: {
                         "display": ["Inter", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
     </script>
-<style>
+    <style>
         /* Custom Scrollbar for dark theme */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #111318; 
+            background: #111318;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #282d39; 
+            background: #282d39;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #3b4254; 
+            background: #3b4254;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen flex text-gray-900 dark:text-white">
-<!-- Sidebar -->
-<aside class="w-72 hidden lg:flex flex-col border-r border-[#282d39]/50 bg-gradient-to-b from-[#111318] to-[#151a23] h-full shadow-2xl shadow-black/20">
-<div class="p-6 pb-2">
-<div class="flex items-center gap-3 mb-8">
-<div class="size-8 text-primary">
-<svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-<h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
-</div>
-<!-- User Mini Profile -->
-<div class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-card-dark/80 to-[#151a23] mb-6 border border-[#282d39]/50 shadow-lg">
-<div class="relative">
-<div id="sidebar-user-avatar" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-2 ring-primary/30 ring-offset-2 ring-offset-[#111318] shadow-lg" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
-</div>
-<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg"></div>
-</div>
-<div class="flex flex-col overflow-hidden">
-<h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight"><?php echo htmlspecialchars($usuarioNombre); ?></h1>
-<p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate"><?php echo htmlspecialchars($tipoUsuario); ?></p>
-</div>
-</div>
-<!-- Navigation -->
-<nav class="flex flex-col gap-2">
-<a id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="DashboardCliente.php">
-<span class="material-symbols-outlined text-xl">dashboard</span>
-<p class="text-sm font-medium">Dashboard</p>
-</a>
-<a id="nav-sorteos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="ListadoSorteosActivos.php">
-<span class="material-symbols-outlined text-xl">local_activity</span>
-<p class="text-sm font-medium">Sorteos</p>
-</a>
-<a id="nav-boletos" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="MisBoletosCliente.php">
-<span class="material-symbols-outlined text-xl">confirmation_number</span>
-<p class="text-sm font-medium">Mis Boletos</p>
-</a>
-<a id="nav-ganadores" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30" href="MisGanancias.php">
-<span class="material-symbols-outlined text-xl">emoji_events</span>
-<p class="text-sm font-bold">Ganadores</p>
-</a>
-<a id="nav-perfil" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="AjustesPefilCliente.php">
-<span class="material-symbols-outlined text-xl">person</span>
-<p class="text-sm font-medium">Perfil</p>
-</a>
-<a id="nav-soporte" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md" href="ContactoSoporteCliente.php">
-<span class="material-symbols-outlined text-xl">support_agent</span>
-<p class="text-sm font-medium">Soporte</p>
-</a>
-</nav>
-</div>
-<div class="mt-auto p-6">
-<button id="logout-btn" class="flex w-full items-center justify-center gap-2 rounded-xl h-11 px-4 bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-[#9da6b9] hover:text-white text-sm font-bold transition-all duration-200 border border-[#3e4552]/50 shadow-lg hover:shadow-xl">
-<span class="material-symbols-outlined text-[20px]">logout</span>
-<span>Cerrar Sesión</span>
-</button>
-</div>
-</aside>
-<!-- Mobile Menu Container -->
-<div id="client-mobile-menu-container"></div>
-<!-- Main Content -->
-<main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
-<!-- Top Header -->
-<header class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39]/50 bg-gradient-to-r from-[#111318] via-[#151a23] to-[#111318] backdrop-blur-sm sticky top-0 z-20 shadow-lg shadow-black/10">
-<!-- Mobile Menu Toggle -->
-<button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
-<span class="material-symbols-outlined">menu</span>
-</button>
-<!-- Page Title -->
-<h1 class="text-xl font-bold text-white hidden sm:block">Mis Ganancias</h1>
-<div class="ml-auto"></div>
-</header>
-<!-- Scrollable Content Area -->
-<div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
-<div class="max-w-[1280px] mx-auto">
-<!-- Page Header -->
-<div class="mb-8">
-<h1 class="text-3xl md:text-4xl font-black text-white tracking-tight mb-3 bg-gradient-to-r from-white via-white to-[#9da6b9] bg-clip-text text-transparent">Mis Ganancias</h1>
-<p class="text-[#9da6b9] text-base md:text-lg leading-relaxed">
-                ¡Felicidades por tus premios! Aquí puedes gestionar tus victorias y el estado de entrega.
-            </p>
-</div>
-<!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-<!-- Stat Card 1 -->
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-primary/30 transition-all duration-300 hover:shadow-primary/10 hover:-translate-y-1">
-<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-<span class="material-symbols-outlined text-6xl text-primary">emoji_events</span>
-</div>
-<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-<div class="relative z-10 flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<div class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2 border border-primary/20">
-<span class="material-symbols-outlined text-primary text-xl">emoji_events</span>
-</div>
-<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Total Premios</p>
-</div>
-<p class="text-white text-4xl font-black tracking-tight"><?php echo $totalPremios; ?></p>
-</div>
-</div>
-<!-- Stat Card 2 -->
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-green-500/30 transition-all duration-300 hover:shadow-green-500/10 hover:-translate-y-1">
-<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-<span class="material-symbols-outlined text-6xl text-green-500">payments</span>
-</div>
-<div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-<div class="relative z-10 flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<div class="rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-2 border border-green-500/20">
-<span class="material-symbols-outlined text-green-400 text-xl">payments</span>
-</div>
-<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Valor Estimado</p>
-</div>
-<p class="text-white text-4xl font-black tracking-tight">$<?php echo number_format($valorEstimado, 0, '.', ','); ?> <span class="text-lg font-normal text-[#9da6b9]">USD</span></p>
-</div>
-</div>
-<!-- Stat Card 3 -->
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-yellow-500/30 transition-all duration-300 hover:shadow-yellow-500/10 hover:-translate-y-1">
-<div class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-<span class="material-symbols-outlined text-6xl text-yellow-500">local_shipping</span>
-</div>
-<div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-<div class="relative z-10 flex flex-col gap-2">
-<div class="flex items-center gap-2">
-<div class="rounded-lg bg-gradient-to-br from-yellow-500/20 to-amber-500/20 p-2 border border-yellow-500/20">
-<span class="material-symbols-outlined text-yellow-400 text-xl">local_shipping</span>
-</div>
-<p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Pendientes de Entrega</p>
-</div>
-<p class="text-yellow-400 text-4xl font-black tracking-tight"><?php echo $premiosPendientes; ?></p>
-</div>
-</div>
-</div>
-<!-- Filters & Actions -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-<div class="flex gap-2 p-1.5 bg-gradient-to-br from-card-dark to-[#151a23] rounded-xl border border-[#282d39]/50 shadow-lg">
-<button class="px-5 py-2 rounded-lg bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-0.5 active:translate-y-0">Todos</button>
-<button class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Pendientes</button>
-<button class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Entregados</button>
-</div>
-<div class="flex items-center gap-3 w-full sm:w-auto">
-<div class="relative w-full sm:w-52">
-<select class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary block px-4 py-3 pr-10 appearance-none cursor-pointer transition-all duration-200 shadow-inner">
-<option class="bg-[#0d1117] text-white">Más recientes</option>
-<option class="bg-[#0d1117] text-white">Más antiguos</option>
-<option class="bg-[#0d1117] text-white">Mayor valor</option>
-</select>
-<div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-[#9da6b9]">
-<span class="material-symbols-outlined text-xl">expand_more</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Main Table -->
-<div class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] overflow-hidden shadow-2xl shadow-black/20">
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-gradient-to-r from-[#1a1f28] via-[#1e2330] to-[#1a1f28] border-b border-[#282d39]/50">
-<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[35%]">Sorteo / Premio</th>
-<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">Fecha Ganada</th>
-<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">Estado</th>
-<th class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[25%] text-right">Acciones</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-[#282d39]">
-<?php if (empty($gananciasCliente)): ?>
-<!-- Mensaje cuando no hay ganancias -->
-<tr>
-<td colspan="4" class="px-6 py-16">
-<div class="flex flex-col items-center justify-center text-center">
-<div class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-5xl text-[#9da6b9]">sentiment_content</span>
-</div>
-<h3 class="text-white text-xl font-bold mb-2">Aún no tienes victorias</h3>
-<p class="text-[#9da6b9] max-w-md mb-6">Participa en nuestros sorteos activos para tener la oportunidad de ganar increíbles premios.</p>
-<a href="ListadoSorteosActivos.php" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors inline-block">
-Ver Sorteos Activos
-</a>
-</div>
-</td>
-</tr>
-<?php else: ?>
-<?php foreach ($gananciasCliente as $ganancia): 
-    $entregado = $ganancia['entregado'];
-    $estadoTexto = $ganancia['estado_texto'];
-    $estadoBadge = $ganancia['estado_badge'];
-    $sorteoTitulo = htmlspecialchars($ganancia['sorteo_titulo']);
-    $sorteoImagen = htmlspecialchars($ganancia['sorteo_imagen']);
-    $premioDetalle = htmlspecialchars($ganancia['premio_detalle']);
-    $fechaDisplay = htmlspecialchars($ganancia['fecha_display']);
-    $numeroBoleto = htmlspecialchars($ganancia['numero_boleto']);
-    $idSorteo = $ganancia['id_sorteo'];
-    $idBoleto = $ganancia['id_boleto'];
-    
-    // Clases CSS según el estado
-    $badgeClass = $entregado 
-        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400' 
-        : 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 text-yellow-400';
-    $badgeIcon = $entregado ? 'check_circle' : 'pending';
-?>
-<!-- Ganancia: <?php echo $estadoTexto; ?> -->
-<tr class="ganancia-row group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30"
-    data-ganancia-id="<?php echo $idSorteo . '-' . $idBoleto; ?>"
-    data-estado="<?php echo $entregado ? 'entregado' : 'pendiente'; ?>"
-    data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
-    data-premio="<?php echo $premioDetalle; ?>">
-<td class="px-6 py-5">
-<div class="flex items-center gap-4">
-<div class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-<img alt="<?php echo $sorteoTitulo; ?>" class="w-full h-full object-cover" src="<?php echo $sorteoImagen; ?>" onerror="this.src='https://via.placeholder.com/150'"/>
-</div>
-<div>
-<p class="text-white font-bold text-sm group-hover:text-white"><?php echo $sorteoTitulo; ?></p>
-<p class="text-[#9da6b9] text-xs mt-1"><?php echo $premioDetalle; ?></p>
-</div>
-</div>
-</td>
-<td class="px-6 py-5">
-<span class="text-white text-sm font-semibold"><?php echo $fechaDisplay; ?></span>
-<p class="text-[#566074] text-xs mt-1">Boleto #<?php echo $numeroBoleto; ?></p>
-</td>
-<td class="px-6 py-5">
-<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full <?php echo $badgeClass; ?> text-xs font-bold shadow-lg <?php echo $entregado ? 'shadow-green-500/10' : 'shadow-yellow-500/10'; ?>">
-<span class="material-symbols-outlined text-[16px]"><?php echo $badgeIcon; ?></span>
-<?php echo $estadoTexto; ?>
-</div>
-</td>
-<td class="px-6 py-5 text-right">
-<?php if (!$entregado): ?>
-<button class="btn-reclamar inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white text-sm font-bold transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0"
-        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
-        data-premio="<?php echo $premioDetalle; ?>"
-        data-fecha="<?php echo $fechaDisplay; ?>"
-        data-numero-boleto="<?php echo $numeroBoleto; ?>"
-        data-id-sorteo="<?php echo $idSorteo; ?>"
-        data-id-boleto="<?php echo $idBoleto; ?>">
-<span class="mr-2">Reclamar</span>
-<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-</button>
-<?php else: ?>
-<button class="btn-ver-detalles inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
-        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
-        data-premio="<?php echo $premioDetalle; ?>"
-        data-fecha="<?php echo $fechaDisplay; ?>"
-        data-numero-boleto="<?php echo $numeroBoleto; ?>"
-        data-id-sorteo="<?php echo $idSorteo; ?>"
-        data-id-boleto="<?php echo $idBoleto; ?>">
-Ver Detalles
-</button>
-<?php endif; ?>
-</td>
-</tr>
-<?php endforeach; ?>
-<?php endif; ?>
-</tbody>
-</table>
-</div>
-<!-- Pagination -->
-<div class="flex items-center justify-between px-6 py-5 border-t border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28] to-[#151a23]">
-<p class="text-sm text-[#9da6b9] font-medium">Mostrando <?php echo $totalPremios > 0 ? '1' : '0'; ?>-<?php echo $totalPremios; ?> de <?php echo $totalPremios; ?> resultado<?php echo $totalPremios != 1 ? 's' : ''; ?></p>
-<div class="flex gap-2">
-<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
-<span class="material-symbols-outlined text-lg">chevron_left</span>
-</button>
-<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20">1</button>
-<button class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
-<span class="material-symbols-outlined text-lg">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-<!-- Empty State (Ya manejado en la tabla, mantener por compatibilidad) -->
-<div class="hidden flex flex-col items-center justify-center py-20 text-center">
-<div class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-5xl text-text-secondary">sentiment_content</span>
-</div>
-<h3 class="text-white text-xl font-bold mb-2">Aún no tienes victorias</h3>
-<p class="text-text-secondary max-w-md mb-6">Participa en nuestros sorteos activos para tener la oportunidad de ganar increíbles premios.</p>
-<button class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors">
-                Ver Sorteos Activos
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen flex text-gray-900 dark:text-white">
+    <!-- Sidebar -->
+    <aside
+        class="w-72 hidden lg:flex flex-col border-r border-[#282d39]/50 bg-gradient-to-b from-[#111318] to-[#151a23] h-full shadow-2xl shadow-black/20">
+        <div class="p-6 pb-2">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="size-8 text-primary">
+                    <svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd"
+                            d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z"
+                            fill="currentColor" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h2 class="text-white text-xl font-bold tracking-tight">Sorteos Web</h2>
+            </div>
+            <!-- User Mini Profile -->
+            <div
+                class="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-card-dark/80 to-[#151a23] mb-6 border border-[#282d39]/50 shadow-lg">
+                <div class="relative">
+                    <div id="sidebar-user-avatar"
+                        class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 ring-2 ring-primary/30 ring-offset-2 ring-offset-[#111318] shadow-lg"
+                        data-alt="User profile picture"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg");'>
+                    </div>
+                    <div
+                        class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#111318] shadow-lg">
+                    </div>
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <h1 id="sidebar-user-name" class="text-white text-sm font-bold truncate tracking-tight">
+                        <?php echo htmlspecialchars($usuarioNombre); ?></h1>
+                    <p id="sidebar-user-type" class="text-primary/80 text-xs font-medium truncate">
+                        <?php echo htmlspecialchars($tipoUsuario); ?></p>
+                </div>
+            </div>
+            <!-- Navigation -->
+            <nav class="flex flex-col gap-2">
+                <a id="nav-dashboard"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md"
+                    href="DashboardCliente.php">
+                    <span class="material-symbols-outlined text-xl">dashboard</span>
+                    <p class="text-sm font-medium">Dashboard</p>
+                </a>
+                <a id="nav-sorteos"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md"
+                    href="ListadoSorteosActivos.php">
+                    <span class="material-symbols-outlined text-xl">local_activity</span>
+                    <p class="text-sm font-medium">Sorteos</p>
+                </a>
+                <a id="nav-boletos"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md"
+                    href="MisBoletosCliente.php">
+                    <span class="material-symbols-outlined text-xl">confirmation_number</span>
+                    <p class="text-sm font-medium">Mis Boletos</p>
+                </a>
+                <a id="nav-ganadores"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30"
+                    href="MisGanancias.php">
+                    <span class="material-symbols-outlined text-xl">emoji_events</span>
+                    <p class="text-sm font-bold">Ganadores</p>
+                </a>
+                <a id="nav-perfil"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md"
+                    href="AjustesPefilCliente.php">
+                    <span class="material-symbols-outlined text-xl">person</span>
+                    <p class="text-sm font-medium">Perfil</p>
+                </a>
+                <a id="nav-soporte"
+                    class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#9da6b9] hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 hover:text-white transition-all duration-200 hover:shadow-md"
+                    href="ContactoSoporteCliente.php">
+                    <span class="material-symbols-outlined text-xl">support_agent</span>
+                    <p class="text-sm font-medium">Soporte</p>
+                </a>
+            </nav>
+        </div>
+        <div class="mt-auto p-6">
+            <button id="logout-btn"
+                class="flex w-full items-center justify-center gap-2 rounded-xl h-11 px-4 bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-[#9da6b9] hover:text-white text-sm font-bold transition-all duration-200 border border-[#3e4552]/50 shadow-lg hover:shadow-xl">
+                <span class="material-symbols-outlined text-[20px]">logout</span>
+                <span>Cerrar Sesión</span>
             </button>
         </div>
-    </div>
-    </div>
-</main>
-<!-- Client Layout Script -->
-<script src="js/custom-alerts.js"></script>
-<script src="js/client-layout.js"></script>
-<script>
-// Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
-const userSessionData = {
-    nombre: '<?php echo addslashes($usuarioNombre); ?>',
-    tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
-    email: '<?php echo addslashes($usuarioEmail); ?>',
-    saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
-    avatar: '<?php echo addslashes($usuarioAvatar); ?>'
-};
+    </aside>
+    <!-- Mobile Menu Container -->
+    <div id="client-mobile-menu-container"></div>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#111318]">
+        <!-- Top Header -->
+        <header
+            class="h-16 flex items-center justify-between px-6 lg:px-10 border-b border-[#282d39]/50 bg-gradient-to-r from-[#111318] via-[#151a23] to-[#111318] backdrop-blur-sm sticky top-0 z-20 shadow-lg shadow-black/10">
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-toggle" class="lg:hidden text-white mr-4" aria-label="Abrir menú de navegación">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <!-- Page Title -->
+            <h1 class="text-xl font-bold text-white hidden sm:block">Mis Ganancias</h1>
+            <div class="ml-auto"></div>
+        </header>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10 space-y-8">
+            <div class="max-w-[1280px] mx-auto">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h1
+                        class="text-3xl md:text-4xl font-black text-white tracking-tight mb-3 bg-gradient-to-r from-white via-white to-[#9da6b9] bg-clip-text text-transparent">
+                        Mis Ganancias</h1>
+                    <p class="text-[#9da6b9] text-base md:text-lg leading-relaxed">
+                        ¡Felicidades por tus premios! Aquí puedes gestionar tus victorias y el estado de entrega.
+                    </p>
+                </div>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <!-- Stat Card 1 -->
+                    <div
+                        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-primary/30 transition-all duration-300 hover:shadow-primary/10 hover:-translate-y-1">
+                        <div
+                            class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+                            <span class="material-symbols-outlined text-6xl text-primary">emoji_events</span>
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                        <div class="relative z-10 flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="rounded-lg bg-gradient-to-br from-primary/20 to-blue-600/20 p-2 border border-primary/20">
+                                    <span class="material-symbols-outlined text-primary text-xl">emoji_events</span>
+                                </div>
+                                <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Total Premios
+                                </p>
+                            </div>
+                            <p class="text-white text-4xl font-black tracking-tight"><?php echo $totalPremios; ?></p>
+                        </div>
+                    </div>
+                    <!-- Stat Card 2 -->
+                    <div
+                        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-green-500/30 transition-all duration-300 hover:shadow-green-500/10 hover:-translate-y-1">
+                        <div
+                            class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+                            <span class="material-symbols-outlined text-6xl text-green-500">payments</span>
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                        <div class="relative z-10 flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-2 border border-green-500/20">
+                                    <span class="material-symbols-outlined text-green-400 text-xl">payments</span>
+                                </div>
+                                <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Valor Estimado
+                                </p>
+                            </div>
+                            <p class="text-white text-4xl font-black tracking-tight">
+                                $<?php echo number_format($valorEstimado, 0, '.', ','); ?> <span
+                                    class="text-lg font-normal text-[#9da6b9]">USD</span></p>
+                        </div>
+                    </div>
+                    <!-- Stat Card 3 -->
+                    <div
+                        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card-dark to-[#151a23] border border-[#282d39]/50 p-6 shadow-2xl shadow-black/20 group hover:border-yellow-500/30 transition-all duration-300 hover:shadow-yellow-500/10 hover:-translate-y-1">
+                        <div
+                            class="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+                            <span class="material-symbols-outlined text-6xl text-yellow-500">local_shipping</span>
+                        </div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                        <div class="relative z-10 flex flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="rounded-lg bg-gradient-to-br from-yellow-500/20 to-amber-500/20 p-2 border border-yellow-500/20">
+                                    <span
+                                        class="material-symbols-outlined text-yellow-400 text-xl">local_shipping</span>
+                                </div>
+                                <p class="text-[#9da6b9] text-xs font-semibold uppercase tracking-wider">Pendientes de
+                                    Entrega</p>
+                            </div>
+                            <p class="text-yellow-400 text-4xl font-black tracking-tight">
+                                <?php echo $premiosPendientes; ?></p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filters & Actions -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div
+                        class="flex gap-2 p-1.5 bg-gradient-to-br from-card-dark to-[#151a23] rounded-xl border border-[#282d39]/50 shadow-lg">
+                        <button
+                            class="px-5 py-2 rounded-lg bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20 transition-all duration-200 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-0.5 active:translate-y-0">Todos</button>
+                        <button
+                            class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Pendientes</button>
+                        <button
+                            class="px-5 py-2 rounded-lg text-[#9da6b9] hover:text-white hover:bg-gradient-to-r hover:from-[#282d39]/80 hover:to-[#323846]/50 text-sm font-medium transition-all duration-200">Entregados</button>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <div class="relative w-full sm:w-52">
+                            <select
+                                class="w-full bg-[#0d1117] border border-[#282d39] hover:border-[#3b4254] text-white text-sm rounded-xl focus:ring-2 focus:ring-primary focus:border-primary block px-4 py-3 pr-10 appearance-none cursor-pointer transition-all duration-200 shadow-inner">
+                                <option class="bg-[#0d1117] text-white">Más recientes</option>
+                                <option class="bg-[#0d1117] text-white">Más antiguos</option>
+                                <option class="bg-[#0d1117] text-white">Mayor valor</option>
+                            </select>
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-[#9da6b9]">
+                                <span class="material-symbols-outlined text-xl">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Main Table -->
+                <div
+                    class="rounded-2xl border border-[#282d39]/50 bg-gradient-to-br from-card-dark to-[#151a23] overflow-hidden shadow-2xl shadow-black/20">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-gradient-to-r from-[#1a1f28] via-[#1e2330] to-[#1a1f28] border-b border-[#282d39]/50">
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[35%]">
+                                        Sorteo / Premio</th>
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">
+                                        Fecha Ganada</th>
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[20%]">
+                                        Estado</th>
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold text-[#9da6b9] uppercase tracking-wider w-[25%] text-right">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#282d39]">
+                                <?php if (empty($gananciasCliente)): ?>
+                                    <!-- Mensaje cuando no hay ganancias -->
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-16">
+                                            <div class="flex flex-col items-center justify-center text-center">
+                                                <div
+                                                    class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
+                                                    <span
+                                                        class="material-symbols-outlined text-5xl text-[#9da6b9]">sentiment_content</span>
+                                                </div>
+                                                <h3 class="text-white text-xl font-bold mb-2">Aún no tienes victorias</h3>
+                                                <p class="text-[#9da6b9] max-w-md mb-6">Participa en nuestros sorteos
+                                                    activos para tener la oportunidad de ganar increíbles premios.</p>
+                                                <a href="ListadoSorteosActivos.php"
+                                                    class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors inline-block">
+                                                    Ver Sorteos Activos
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($gananciasCliente as $ganancia):
+                                        $entregado = $ganancia['entregado'];
+                                        $estadoTexto = $ganancia['estado_texto'];
+                                        $estadoBadge = $ganancia['estado_badge'];
+                                        $sorteoTitulo = htmlspecialchars($ganancia['sorteo_titulo']);
+                                        $sorteoImagen = htmlspecialchars($ganancia['sorteo_imagen']);
+                                        $premioDetalle = htmlspecialchars($ganancia['premio_detalle']);
+                                        $fechaDisplay = htmlspecialchars($ganancia['fecha_display']);
+                                        $numeroBoleto = htmlspecialchars($ganancia['numero_boleto']);
+                                        $idSorteo = $ganancia['id_sorteo'];
+                                        $idBoleto = $ganancia['id_boleto'];
 
-// Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
-if (userSessionData.nombre && userSessionData.tipoUsuario) {
-    const sessionClientData = {
-        nombre: userSessionData.nombre,
-        tipoUsuario: userSessionData.tipoUsuario,
-        email: userSessionData.email,
-        saldo: userSessionData.saldo,
-        fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
-    };
-    localStorage.setItem('clientData', JSON.stringify(sessionClientData));
-    sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
-}
+                                        // Clases CSS según el estado
+                                        $badgeClass = $entregado
+                                            ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-400'
+                                            : 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 text-yellow-400';
+                                        $badgeIcon = $entregado ? 'check_circle' : 'pending';
+                                        ?>
+                                        <!-- Ganancia: <?php echo $estadoTexto; ?> -->
+                                        <tr class="ganancia-row group hover:bg-gradient-to-r hover:from-[#1a1f28]/50 hover:to-[#151a23]/50 transition-all duration-200 border-b border-[#282d39]/30"
+                                            data-ganancia-id="<?php echo $idSorteo . '-' . $idBoleto; ?>"
+                                            data-estado="<?php echo $entregado ? 'entregado' : 'pendiente'; ?>"
+                                            data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+                                            data-premio="<?php echo $premioDetalle; ?>">
+                                            <td class="px-6 py-5">
+                                                <div class="flex items-center gap-4">
+                                                    <div
+                                                        class="h-14 w-14 rounded-xl bg-gradient-to-br from-[#282d39] to-[#1a1f28] border border-[#3b4354]/50 flex items-center justify-center shrink-0 overflow-hidden shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                                                        <img alt="<?php echo $sorteoTitulo; ?>"
+                                                            class="w-full h-full object-cover"
+                                                            src="<?php echo $sorteoImagen; ?>"
+                                                            onerror="this.src='https://via.placeholder.com/150'" />
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-white font-bold text-sm group-hover:text-white">
+                                                            <?php echo $sorteoTitulo; ?></p>
+                                                        <p class="text-[#9da6b9] text-xs mt-1"><?php echo $premioDetalle; ?></p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-5">
+                                                <span
+                                                    class="text-white text-sm font-semibold"><?php echo $fechaDisplay; ?></span>
+                                                <p class="text-[#566074] text-xs mt-1">Boleto #<?php echo $numeroBoleto; ?></p>
+                                            </td>
+                                            <td class="px-6 py-5">
+                                                <div
+                                                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full <?php echo $badgeClass; ?> text-xs font-bold shadow-lg <?php echo $entregado ? 'shadow-green-500/10' : 'shadow-yellow-500/10'; ?>">
+                                                    <span
+                                                        class="material-symbols-outlined text-[16px]"><?php echo $badgeIcon; ?></span>
+                                                    <?php echo $estadoTexto; ?>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-5 text-right">
+                                                <?php if (!$entregado): ?>
+                                                    <button
+                                                        class="btn-reclamar inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white text-sm font-bold transition-all duration-200 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transform hover:-translate-y-0.5 active:translate-y-0"
+                                                        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+                                                        data-premio="<?php echo $premioDetalle; ?>"
+                                                        data-fecha="<?php echo $fechaDisplay; ?>"
+                                                        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+                                                        data-id-sorteo="<?php echo $idSorteo; ?>"
+                                                        data-id-boleto="<?php echo $idBoleto; ?>">
+                                                        <span class="mr-2">Reclamar</span>
+                                                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button
+                                                        class="btn-ver-detalles inline-flex items-center justify-center h-10 px-5 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] hover:from-[#323846] hover:to-[#3b4254] text-white text-sm font-bold border border-[#3b4354]/50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
+                                                        data-sorteo-titulo="<?php echo $sorteoTitulo; ?>"
+                                                        data-premio="<?php echo $premioDetalle; ?>"
+                                                        data-fecha="<?php echo $fechaDisplay; ?>"
+                                                        data-numero-boleto="<?php echo $numeroBoleto; ?>"
+                                                        data-id-sorteo="<?php echo $idSorteo; ?>"
+                                                        data-id-boleto="<?php echo $idBoleto; ?>">
+                                                        Ver Detalles
+                                                    </button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div
+                        class="flex items-center justify-between px-6 py-5 border-t border-[#282d39]/50 bg-gradient-to-r from-[#1a1f28] to-[#151a23]">
+                        <p class="text-sm text-[#9da6b9] font-medium">Mostrando
+                            <?php echo $totalPremios > 0 ? '1' : '0'; ?>-<?php echo $totalPremios; ?> de
+                            <?php echo $totalPremios; ?> resultado<?php echo $totalPremios != 1 ? 's' : ''; ?></p>
+                        <div class="flex gap-2">
+                            <button
+                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
+                                <span class="material-symbols-outlined text-lg">chevron_left</span>
+                            </button>
+                            <button
+                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-white text-sm font-bold shadow-lg shadow-primary/20">1</button>
+                            <button
+                                class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-r from-[#282d39] to-[#323846] text-[#9da6b9] hover:text-white hover:from-[#323846] hover:to-[#3b4254] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg">
+                                <span class="material-symbols-outlined text-lg">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Empty State (Ya manejado en la tabla, mantener por compatibilidad) -->
+                <div class="hidden flex flex-col items-center justify-center py-20 text-center">
+                    <div class="w-24 h-24 bg-[#282d39] rounded-full flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-5xl text-text-secondary">sentiment_content</span>
+                    </div>
+                    <h3 class="text-white text-xl font-bold mb-2">Aún no tienes victorias</h3>
+                    <p class="text-text-secondary max-w-md mb-6">Participa en nuestros sorteos activos para tener la
+                        oportunidad de ganar increíbles premios.</p>
+                    <button
+                        class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                        Ver Sorteos Activos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Client Layout Script -->
+    <script src="js/custom-alerts.js"></script>
+    <script src="js/client-layout.js"></script>
+    <script>
+        // Datos del usuario desde PHP (sesión) - DEBE estar antes de inicializar ClientLayout
+        const userSessionData = {
+            nombre: '<?php echo addslashes($usuarioNombre); ?>',
+            tipoUsuario: '<?php echo addslashes($tipoUsuario); ?>',
+            email: '<?php echo addslashes($usuarioEmail); ?>',
+            saldo: <?php echo number_format($usuarioSaldo, 2, '.', ''); ?>,
+            avatar: '<?php echo addslashes($usuarioAvatar); ?>'
+        };
 
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.ClientLayout) {
-        ClientLayout.init('ganadores');
-    }
-    
-    // Inicializar funcionalidades de botones
-    initMisGananciasButtons();
-});
+        // Actualizar localStorage con los datos de la sesión ANTES de inicializar ClientLayout
+        if (userSessionData.nombre && userSessionData.tipoUsuario) {
+            const sessionClientData = {
+                nombre: userSessionData.nombre,
+                tipoUsuario: userSessionData.tipoUsuario,
+                email: userSessionData.email,
+                saldo: userSessionData.saldo,
+                fotoPerfil: userSessionData.avatar || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAscTJ1Xcq7edw4JqzzGbgOvjdyQ9_nDg7kkxtlCQw51-EJsv1RJyDd9OAZC89eniVl2ujzIik6wgxd5FTvho_ak6ccsWrWelinVwXj6yQUdpPUXYUTJN0pSvhRh-smWf81cMQz40x4U3setrSFDsyX4KkfxOsHc6PnTND68lGw6JkA9B0ag_4fNu5s0Z9OMbq83llAZUv3xuo3s6VI1no110ozE88mRALnX-rhgavHoJxmYpvBcUxV7BtrJr_9Q0BlgvZQL2BXCFg'
+            };
+            localStorage.setItem('clientData', JSON.stringify(sessionClientData));
+            sessionStorage.setItem('clientData', JSON.stringify(sessionClientData));
+        }
 
-// Función para inicializar todas las funcionalidades de Mis Ganancias
-function initMisGananciasButtons() {
-    // Filtros
-    initGananciasFilters();
-    
-    // Select de ordenamiento
-    initSortSelect();
-    
-    // Botones de acciones en la tabla
-    initGananciasActions();
-    
-    // Paginación
-    initPagination();
-    
-    // Botón del estado vacío
-    initEmptyStateButton();
-}
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.ClientLayout) {
+                ClientLayout.init('ganadores');
+            }
 
-// Función para inicializar filtros (Todos, Pendientes, Entregados)
-function initGananciasFilters() {
-    // Buscar el contenedor de filtros de manera más específica
-    const filtersSection = document.querySelector('div.flex.flex-col.sm\\:flex-row.justify-between');
-    if (!filtersSection) return;
-    
-    const filterContainer = filtersSection.querySelector('div.flex.gap-2');
-    if (!filterContainer) return;
-    
-    const filterButtons = filterContainer.querySelectorAll('button');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remover clases activas de todos
-            filterButtons.forEach(btn => {
-                btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
-                btn.classList.add('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
+            // Inicializar funcionalidades de botones
+            initMisGananciasButtons();
+        });
+
+        // Función para inicializar todas las funcionalidades de Mis Ganancias
+        function initMisGananciasButtons() {
+            // Filtros
+            initGananciasFilters();
+
+            // Select de ordenamiento
+            initSortSelect();
+
+            // Botones de acciones en la tabla
+            initGananciasActions();
+
+            // Paginación
+            initPagination();
+
+            // Botón del estado vacío
+            initEmptyStateButton();
+        }
+
+        // Función para inicializar filtros (Todos, Pendientes, Entregados)
+        function initGananciasFilters() {
+            // Buscar el contenedor de filtros de manera más específica
+            const filtersSection = document.querySelector('div.flex.flex-col.sm\\:flex-row.justify-between');
+            if (!filtersSection) return;
+
+            const filterContainer = filtersSection.querySelector('div.flex.gap-2');
+            if (!filterContainer) return;
+
+            const filterButtons = filterContainer.querySelectorAll('button');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    // Remover clases activas de todos
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+                        btn.classList.add('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
+                    });
+
+                    // Agregar clases activas al clickeado
+                    this.classList.remove('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
+                    this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+
+                    // Filtrar ganancias
+                    const filterText = this.textContent.trim().toLowerCase();
+                    filterGanancias(filterText);
+                });
             });
-            
-            // Agregar clases activas al clickeado
-            this.classList.remove('text-[#9da6b9]', 'hover:text-white', 'hover:bg-gradient-to-r', 'hover:from-[#282d39]/80', 'hover:to-[#323846]/50', 'font-medium');
-            this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
-            
-            // Filtrar ganancias
-            const filterText = this.textContent.trim().toLowerCase();
-            filterGanancias(filterText);
-        });
-    });
-}
+        }
 
-// Función para filtrar ganancias
-function filterGanancias(filter) {
-    const tableRows = document.querySelectorAll('.ganancia-row');
-    
-    if (filter === 'todos') {
-        tableRows.forEach(row => {
-            row.style.display = '';
-        });
-        return;
-    }
-    
-    tableRows.forEach(row => {
-        const estado = row.getAttribute('data-estado') || '';
-        
-        if (filter === 'pendientes') {
-            if (estado === 'pendiente') {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
+        // Función para filtrar ganancias
+        function filterGanancias(filter) {
+            const tableRows = document.querySelectorAll('.ganancia-row');
+
+            if (filter === 'todos') {
+                tableRows.forEach(row => {
+                    row.style.display = '';
+                });
+                return;
             }
-        } else if (filter === 'entregados') {
-            if (estado === 'entregado') {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        }
-    });
-}
 
-// Función para inicializar select de ordenamiento
-function initSortSelect() {
-    const sortSelect = document.querySelector('select');
-    
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            const sortOption = this.value.toLowerCase();
-            sortGanancias(sortOption);
-        });
-    }
-}
+            tableRows.forEach(row => {
+                const estado = row.getAttribute('data-estado') || '';
 
-// Función para ordenar ganancias
-function sortGanancias(sortOption) {
-    const tableBody = document.querySelector('tbody');
-    const rows = Array.from(tableBody.querySelectorAll('tr'));
-    
-    rows.sort((a, b) => {
-        if (sortOption.includes('recientes')) {
-            // Ordenar por fecha (más recientes primero)
-            const dateA = a.querySelector('td:nth-child(2) span')?.textContent || '';
-            const dateB = b.querySelector('td:nth-child(2) span')?.textContent || '';
-            // Asumiendo formato "DD MMM YYYY", necesitaríamos parsear las fechas
-            // Por ahora, solo ordenamos visualmente
-            return 0;
-        } else if (sortOption.includes('antiguos')) {
-            // Ordenar por fecha (más antiguos primero)
-            return 0;
-        } else if (sortOption.includes('valor')) {
-            // Ordenar por valor (mayor primero)
-            // Esto requeriría tener el valor en los datos
-            return 0;
-        }
-        return 0;
-    });
-    
-    // Reordenar filas en el DOM
-    rows.forEach(row => tableBody.appendChild(row));
-    
-    customToast(`Ganancias ordenadas por: ${document.querySelector('select').value}`, 'info', 2000);
-}
-
-// Función para inicializar botones de acciones en la tabla
-function initGananciasActions() {
-    // Buscar botones dentro de la tabla específicamente
-    const table = document.querySelector('table');
-    if (!table) return;
-    
-    // Botón "Reclamar"
-    const reclamarButtons = Array.from(table.querySelectorAll('button')).filter(
-        btn => {
-            const text = btn.textContent.trim();
-            return text.includes('Reclamar');
-        }
-    );
-    
-    reclamarButtons.forEach(button => {
-        // Evitar múltiples event listeners
-        button.removeEventListener('click', button._reclamarHandler);
-        button._reclamarHandler = function(e) {
-            e.stopPropagation();
-            const row = this.closest('tr');
-            if (!row) return;
-            
-            // Obtener datos desde atributos data-
-            const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
-            const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
-            const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
-            const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
-            
-            customConfirm(`¿Deseas reclamar el premio "${premioName}" del sorteo "${sorteoName}"?\n\nFecha ganada: ${fecha}\n${ticketNumber}\n\nSe te pedirá que proporciones información de contacto para coordinar la entrega.`, 'Reclamar Premio', 'help').then(confirmed => {
-                if (confirmed) {
-                    customAlert('Solicitud de reclamación enviada. Nuestro equipo se pondrá en contacto contigo pronto para coordinar la entrega del premio.\n\n¡Felicidades por tu victoria!', 'Reclamación Enviada', 'success');
-                    // Aquí se podría actualizar el estado del premio o redirigir a un formulario
+                if (filter === 'pendientes') {
+                    if (estado === 'pendiente') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else if (filter === 'entregados') {
+                    if (estado === 'entregado') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 }
             });
-        };
-        button.addEventListener('click', button._reclamarHandler);
-    });
-    
-    // Botones "Ver Detalles"
-    const verDetallesButtons = Array.from(table.querySelectorAll('button')).filter(
-        btn => {
-            const text = btn.textContent.trim();
-            return text.includes('Ver Detalles');
         }
-    );
-    
-    verDetallesButtons.forEach(button => {
-        // Evitar múltiples event listeners
-        button.removeEventListener('click', button._detallesHandler);
-        button._detallesHandler = function(e) {
-            e.stopPropagation();
-            const row = this.closest('tr');
-            if (!row) return;
-            
-            // Obtener datos desde atributos data-
-            const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
-            const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
-            const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
-            const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
-            const estadoBadge = row.querySelector('.inline-flex');
-            const estado = estadoBadge ? estadoBadge.textContent.replace(/\s+/g, ' ').trim() : 'N/A';
-            
-            customAlert(`Sorteo: ${sorteoName}\n` +
-                  `Premio: ${premioName}\n` +
-                  `Fecha ganada: ${fecha}\n` +
-                  `${ticketNumber}\n` +
-                  `Estado: ${estado}\n\n` +
-                  `Aquí se mostrarían más detalles como:\n` +
-                  `- Información de entrega\n` +
-                  `- Fecha de entrega\n` +
-                  `- Comprobante\n` +
-                  `- Contacto del equipo de entrega`, 'Detalles del Premio', 'info');
-            
-            // Aquí se podría abrir un modal con más detalles o redirigir a una página de detalles
-        };
-        button.addEventListener('click', button._detallesHandler);
-    });
-}
 
-// Función para inicializar paginación
-function initPagination() {
-    // Buscar el contenedor de paginación específicamente (el div que contiene "Mostrando 1-3 de 3 resultados")
-    const paginationSection = document.querySelector('div.flex.items-center.justify-between.px-6.py-5');
-    if (!paginationSection) return;
-    
-    const paginationButtons = paginationSection.querySelectorAll('button');
-    
-    paginationButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            if (this.disabled) return;
-            
-            const buttonContent = this.innerHTML.trim();
-            const isChevronLeft = buttonContent.includes('chevron_left');
-            const isChevronRight = buttonContent.includes('chevron_right');
-            const isNumber = !isNaN(parseInt(this.textContent.trim()));
-            
-            if (isChevronLeft) {
-                // Página anterior
-                customToast('Cargando página anterior...', 'info', 1500);
-            } else if (isChevronRight) {
-                // Página siguiente
-                customToast('Cargando página siguiente...', 'info', 1500);
-            } else if (isNumber) {
-                // Número de página
-                const pageNum = parseInt(this.textContent.trim());
-                
-                // Remover clase activa de todos los botones numéricos
-                paginationButtons.forEach(btn => {
-                    const btnText = btn.textContent.trim();
-                    if (!isNaN(parseInt(btnText)) && btnText !== '') {
-                        btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
-                        btn.classList.add('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
+        // Función para inicializar select de ordenamiento
+        function initSortSelect() {
+            const sortSelect = document.querySelector('select');
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function () {
+                    const sortOption = this.value.toLowerCase();
+                    sortGanancias(sortOption);
+                });
+            }
+        }
+
+        // Función para ordenar ganancias
+        function sortGanancias(sortOption) {
+            const tableBody = document.querySelector('tbody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                if (sortOption.includes('recientes')) {
+                    // Ordenar por fecha (más recientes primero)
+                    const dateA = a.querySelector('td:nth-child(2) span')?.textContent || '';
+                    const dateB = b.querySelector('td:nth-child(2) span')?.textContent || '';
+                    // Asumiendo formato "DD MMM YYYY", necesitaríamos parsear las fechas
+                    // Por ahora, solo ordenamos visualmente
+                    return 0;
+                } else if (sortOption.includes('antiguos')) {
+                    // Ordenar por fecha (más antiguos primero)
+                    return 0;
+                } else if (sortOption.includes('valor')) {
+                    // Ordenar por valor (mayor primero)
+                    // Esto requeriría tener el valor en los datos
+                    return 0;
+                }
+                return 0;
+            });
+
+            // Reordenar filas en el DOM
+            rows.forEach(row => tableBody.appendChild(row));
+
+            customToast(`Ganancias ordenadas por: ${document.querySelector('select').value}`, 'info', 2000);
+        }
+
+        // Función para inicializar botones de acciones en la tabla
+        function initGananciasActions() {
+            // Buscar botones dentro de la tabla específicamente
+            const table = document.querySelector('table');
+            if (!table) return;
+
+            // Botón "Reclamar"
+            const reclamarButtons = Array.from(table.querySelectorAll('button')).filter(
+                btn => {
+                    const text = btn.textContent.trim();
+                    return text.includes('Reclamar');
+                }
+            );
+
+            reclamarButtons.forEach(button => {
+                // Evitar múltiples event listeners
+                button.removeEventListener('click', button._reclamarHandler);
+                button._reclamarHandler = function (e) {
+                    e.stopPropagation();
+                    const row = this.closest('tr');
+                    if (!row) return;
+
+                    // Obtener datos desde atributos data-
+                    const sorteoId = this.getAttribute('data-sorteo-id') || row.getAttribute('data-sorteo-id');
+                    const boletoId = this.getAttribute('data-boleto-id') || row.getAttribute('data-boleto-id');
+                    const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
+                    const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
+                    const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+                    const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
+
+                    // Si falta ID, intentar obtenerlo de atributo data-id (a veces se usa data-id en vez de data-sorteo-id)
+                    // IMPORTANTE: Asegurarse de que el PHP renderice estos atributos. 
+                    // Si no están, el fetch fallará.
+
+                    customConfirm(`¿Deseas reclamar el premio "${premioName}" del sorteo "${sorteoName}"?\n\nFecha ganada: ${fecha}\n${ticketNumber}\n\nAl confirmar, se enviará una solicitud oficial a la administración. Asegúrate de tener tus datos de contacto actualizados en tu perfil.`, 'Reclamar Premio', 'help').then(confirmed => {
+                        if (confirmed) {
+                            // Mostrar loading state
+                            const originalText = this.innerHTML;
+                            this.disabled = true;
+                            this.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">autorenew</span> Procesando...';
+
+                            // Preparar datos
+                            const payload = {
+                                id_sorteo: sorteoId,
+                                id_boleto: boletoId,
+                                mensaje: "Solicitud de reclamo iniciada desde Mis Ganancias",
+                                info_contacto: {
+                                    origen: "web_client",
+                                    fecha: new Date().toISOString()
+                                }
+                            };
+
+                            fetch('api_ganancias.php?action=reclamar', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        customAlert(data.message || 'Solicitud de reclamación enviada correctamente.', 'Reclamación Exitosa', 'success');
+                                        // Actualizar UI: Cambiar botón a "Pendiente" o deshabilitar
+                                        this.textContent = 'Reclamo Pendiente';
+                                        this.classList.remove('bg-primary', 'hover:bg-blue-600');
+                                        this.classList.add('bg-yellow-500', 'cursor-not-allowed', 'opacity-80');
+                                        this.onclick = null; // Quitar handler
+                                    } else {
+                                        throw new Error(data.error || 'Error al procesar el reclamo');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    customAlert(error.message || 'Hubo un problema al intentar reclamar el premio. Por favor intenta de nuevo.', 'Error', 'error');
+                                    // Restaurar botón
+                                    this.disabled = false;
+                                    this.innerHTML = originalText;
+                                });
+                        }
+                    });
+                };
+                button.addEventListener('click', button._reclamarHandler);
+            });
+
+            // Botones "Ver Detalles"
+            const verDetallesButtons = Array.from(table.querySelectorAll('button')).filter(
+                btn => {
+                    const text = btn.textContent.trim();
+                    return text.includes('Ver Detalles');
+                }
+            );
+
+            verDetallesButtons.forEach(button => {
+                // Evitar múltiples event listeners
+                button.removeEventListener('click', button._detallesHandler);
+                button._detallesHandler = function (e) {
+                    e.stopPropagation();
+                    const row = this.closest('tr');
+                    if (!row) return;
+
+                    // Obtener datos desde atributos data-
+                    const sorteoName = this.getAttribute('data-sorteo-titulo') || row.getAttribute('data-sorteo-titulo') || 'Sorteo';
+                    const premioName = this.getAttribute('data-premio') || row.getAttribute('data-premio') || 'Premio';
+                    const fecha = this.getAttribute('data-fecha') || row.querySelector('td:nth-child(2) span')?.textContent?.trim() || 'N/A';
+                    const ticketNumber = 'Boleto #' + (this.getAttribute('data-numero-boleto') || row.querySelector('td:nth-child(2) p')?.textContent?.replace('Boleto #', '').trim() || 'N/A');
+                    const estadoBadge = row.querySelector('.inline-flex');
+                    const estado = estadoBadge ? estadoBadge.textContent.replace(/\s+/g, ' ').trim() : 'N/A';
+
+                    customAlert(`Sorteo: ${sorteoName}\n` +
+                        `Premio: ${premioName}\n` +
+                        `Fecha ganada: ${fecha}\n` +
+                        `${ticketNumber}\n` +
+                        `Estado: ${estado}\n\n` +
+                        `Aquí se mostrarían más detalles como:\n` +
+                        `- Información de entrega\n` +
+                        `- Fecha de entrega\n` +
+                        `- Comprobante\n` +
+                        `- Contacto del equipo de entrega`, 'Detalles del Premio', 'info');
+
+                    // Aquí se podría abrir un modal con más detalles o redirigir a una página de detalles
+                };
+                button.addEventListener('click', button._detallesHandler);
+            });
+        }
+
+        // Función para inicializar paginación
+        function initPagination() {
+            // Buscar el contenedor de paginación específicamente (el div que contiene "Mostrando 1-3 de 3 resultados")
+            const paginationSection = document.querySelector('div.flex.items-center.justify-between.px-6.py-5');
+            if (!paginationSection) return;
+
+            const paginationButtons = paginationSection.querySelectorAll('button');
+
+            paginationButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    if (this.disabled) return;
+
+                    const buttonContent = this.innerHTML.trim();
+                    const isChevronLeft = buttonContent.includes('chevron_left');
+                    const isChevronRight = buttonContent.includes('chevron_right');
+                    const isNumber = !isNaN(parseInt(this.textContent.trim()));
+
+                    if (isChevronLeft) {
+                        // Página anterior
+                        customToast('Cargando página anterior...', 'info', 1500);
+                    } else if (isChevronRight) {
+                        // Página siguiente
+                        customToast('Cargando página siguiente...', 'info', 1500);
+                    } else if (isNumber) {
+                        // Número de página
+                        const pageNum = parseInt(this.textContent.trim());
+
+                        // Remover clase activa de todos los botones numéricos
+                        paginationButtons.forEach(btn => {
+                            const btnText = btn.textContent.trim();
+                            if (!isNaN(parseInt(btnText)) && btnText !== '') {
+                                btn.classList.remove('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+                                btn.classList.add('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
+                            }
+                        });
+
+                        // Agregar clase activa al clickeado
+                        this.classList.remove('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
+                        this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
+
+                        customToast(`Cargando página ${pageNum}...`, 'info', 1500);
                     }
                 });
-                
-                // Agregar clase activa al clickeado
-                this.classList.remove('bg-gradient-to-r', 'from-[#282d39]', 'to-[#323846]', 'text-[#9da6b9]', 'hover:text-white', 'hover:from-[#323846]', 'hover:to-[#3b4254]');
-                this.classList.add('bg-gradient-to-r', 'from-primary', 'to-blue-600', 'text-white', 'font-bold', 'shadow-lg', 'shadow-primary/20');
-                
-                customToast(`Cargando página ${pageNum}...`, 'info', 1500);
-            }
-        });
-    });
-}
+            });
+        }
 
-// Función para inicializar botón del estado vacío
-function initEmptyStateButton() {
-    const emptyStateButton = Array.from(document.querySelectorAll('button')).find(
-        btn => btn.textContent.includes('Ver Sorteos Activos')
-    );
-    
-    if (emptyStateButton) {
-        emptyStateButton.addEventListener('click', function() {
-            // Redirigir a la página de sorteos activos
-            window.location.href = 'ListadoSorteosActivos.php';
-        });
-    }
-}
-</script>
-</body></html>
+        // Función para inicializar botón del estado vacío
+        function initEmptyStateButton() {
+            const emptyStateButton = Array.from(document.querySelectorAll('button')).find(
+                btn => btn.textContent.includes('Ver Sorteos Activos')
+            );
+
+            if (emptyStateButton) {
+                emptyStateButton.addEventListener('click', function () {
+                    // Redirigir a la página de sorteos activos
+                    window.location.href = 'ListadoSorteosActivos.php';
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
