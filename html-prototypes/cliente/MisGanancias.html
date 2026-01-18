@@ -347,6 +347,14 @@ document.addEventListener('DOMContentLoaded', function() {
         ClientLayout.init('ganadores');
     }
     
+    // Agregar listener para el botón de logout estático del sidebar
+    const staticLogoutBtn = document.getElementById('logout-btn');
+    if (staticLogoutBtn && window.ClientLayout) {
+        staticLogoutBtn.addEventListener('click', function() {
+            ClientLayout.handleLogout();
+        });
+    }
+    
     // Inicializar funcionalidades de botones
     initMisGananciasButtons();
 });

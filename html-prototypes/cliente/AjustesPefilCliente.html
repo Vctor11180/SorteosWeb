@@ -617,6 +617,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.ClientLayout) {
         ClientLayout.init('perfil');
     }
+    
+    // Agregar listener para el botón de logout estático del sidebar
+    const staticLogoutBtn = document.getElementById('logout-btn');
+    if (staticLogoutBtn && window.ClientLayout) {
+        staticLogoutBtn.addEventListener('click', function() {
+            ClientLayout.handleLogout();
+        });
+    }
 });
 </script>
 
